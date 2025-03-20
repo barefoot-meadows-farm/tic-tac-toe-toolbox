@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Collection from "./pages/Collection";
 import GameDetails from "./pages/GameDetails";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import AnimatedTransition from "./components/AnimatedTransition";
 
@@ -40,6 +41,14 @@ const App = () => (
             element={
               <AnimatedTransition>
                 <GameDetails />
+              </AnimatedTransition>
+            } 
+          />
+          <Route 
+            path="/settings" 
+            element={
+              <AnimatedTransition>
+                <Settings />
               </AnimatedTransition>
             } 
           />

@@ -12,7 +12,7 @@ const Footer = () => {
             <Link to="/" className="text-xl font-bold tracking-tight flex items-center">
               <span className="mr-1 text-primary">Tic</span>
               <span className="mr-1">Tac</span>
-              <span className="text-primary">Toe</span>
+              <span className="text-primary">Toolbox</span>
             </Link>
             <p className="text-sm text-muted-foreground mt-2">
               A collection of Tic-Tac-Toe variants
@@ -32,10 +32,16 @@ const Footer = () => {
             >
               Collection
             </Link>
+            <Link 
+              to="/settings" 
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors my-1 md:my-0"
+            >
+              Settings
+            </Link>
           </div>
           
           <div className="mt-4 md:mt-0 text-sm text-muted-foreground">
-            &copy; {currentYear} Tic Tac Toe Collection
+            &copy; {currentYear} Tic Tac Toolbox
           </div>
         </div>
       </div>

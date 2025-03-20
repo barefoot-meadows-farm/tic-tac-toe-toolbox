@@ -31,6 +31,7 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Collection', path: '/collection' },
+    { name: 'Settings', path: '/settings' },
   ];
 
   return (
@@ -48,7 +49,7 @@ const Navbar = () => {
           >
             <span className="mr-1 text-primary">Tic</span>
             <span className="mr-1">Tac</span>
-            <span className="text-primary">Toe</span>
+            <span className="text-primary">Toolbox</span>
           </Link>
           
           {/* Desktop Navigation */}
