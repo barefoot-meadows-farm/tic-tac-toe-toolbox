@@ -13,7 +13,7 @@ export const gameVariants: GameVariant[] = [
   {
     id: 'classic',
     name: 'Classic',
-    description: 'The timeless game of X's and O's that everyone knows and loves.',
+    description: 'The timeless game of X\'s and O\'s that everyone knows and loves.',
     difficulty: 'easy',
     featured: true,
     rules: [
@@ -72,7 +72,7 @@ export const gameVariants: GameVariant[] = [
   {
     id: 'numttt',
     name: 'Numerical',
-    description: 'Use numbers instead of X's and O's. Sum of three numbers must equal 15 to win.',
+    description: 'Use numbers instead of X\'s and O\'s. Sum of three numbers must equal 15 to win.',
     difficulty: 'medium',
     rules: [
       'Player 1 uses odd numbers (1, 3, 5, 7, 9) and Player 2 uses even numbers (2, 4, 6, 8)',
