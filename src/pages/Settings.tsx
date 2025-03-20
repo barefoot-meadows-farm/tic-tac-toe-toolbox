@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { 
   Gamepad, Palette, Volume2, Accessibility, User, 
-  ChevronDown, ChevronRight, Sidebar, Dice, Monitor, 
-  Grid3X3, SquareUser, Music, VolumeX, VolumeX, 
+  ChevronDown, ChevronRight, Sidebar, Dice1, Monitor, 
+  Grid3X3, SquareUser, Music, VolumeX, 
   Ear, LayoutGrid, BrainCircuit
 } from 'lucide-react';
 
@@ -106,7 +105,7 @@ const Settings = () => {
                     <AccordionItem value="game-rules">
                       <AccordionTrigger className="text-lg font-medium">
                         <div className="flex items-center">
-                          <Dice className="mr-2 h-4 w-4" />
+                          <Dice1 className="mr-2 h-4 w-4" />
                           Game Rules
                         </div>
                       </AccordionTrigger>
