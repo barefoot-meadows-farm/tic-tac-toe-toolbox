@@ -1,6 +1,5 @@
 
 import { Palette } from 'lucide-react';
-import { Accordion } from "@/components/ui/accordion";
 import ThemeSettings from './ThemeSettings';
 import GameBoardSettings from './GameBoardSettings';
 import GamePiecesSettings from './GamePiecesSettings';
@@ -13,11 +12,11 @@ const AppearanceSettings = () => {
         <h2 className="text-2xl font-semibold">Appearance</h2>
       </div>
       
-      <Accordion type="single" collapsible className="w-full">
+      <div className="space-y-4">
         <ThemeSettings />
         <GameBoardSettings />
         <GamePiecesSettings />
-      </Accordion>
+      </div>
     </div>
   );
 };

@@ -1,6 +1,5 @@
 
 import { Accessibility } from 'lucide-react';
-import { Accordion } from "@/components/ui/accordion";
 import VisibleAccessibilitySettings from './VisibleAccessibilitySettings';
 import AuditoryAccessibilitySettings from './AuditoryAccessibilitySettings';
 import MotorAccessibilitySettings from './MotorAccessibilitySettings';
@@ -14,12 +13,12 @@ const AccessibilitySettings = () => {
         <h2 className="text-2xl font-semibold">Accessibility</h2>
       </div>
       
-      <Accordion type="single" collapsible className="w-full">
+      <div className="space-y-4">
         <VisibleAccessibilitySettings />
         <AuditoryAccessibilitySettings />
         <MotorAccessibilitySettings />
         <CognitiveAccessibilitySettings />
-      </Accordion>
+      </div>
     </div>
   );
 };

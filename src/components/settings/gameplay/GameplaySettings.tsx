@@ -1,6 +1,5 @@
 
 import { Gamepad } from 'lucide-react';
-import { Accordion } from "@/components/ui/accordion";
 import GameRulesSettings from './GameRulesSettings';
 import DisplayOptionsSettings from './DisplayOptionsSettings';
 
@@ -12,10 +11,10 @@ const GameplaySettings = () => {
         <h2 className="text-2xl font-semibold">Gameplay</h2>
       </div>
       
-      <Accordion type="single" collapsible className="w-full">
+      <div className="space-y-4">
         <GameRulesSettings />
         <DisplayOptionsSettings />
-      </Accordion>
+      </div>
     </div>
   );
 };

@@ -1,39 +1,43 @@
 
 import { Monitor } from 'lucide-react';
-import {
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
 
 const DisplayOptionsSettings = () => {
   return (
-    <AccordionItem value="display-options">
-      <AccordionTrigger className="text-lg font-medium">
-        <div className="flex items-center">
+    <div className="border rounded-lg p-4">
+      <div className="mb-4">
+        <div className="flex items-center mb-1">
           <Monitor className="mr-2 h-4 w-4" />
-          Display Options
+          <h3 className="text-lg font-medium">Display Options</h3>
         </div>
-      </AccordionTrigger>
-      <AccordionContent className="px-4 pt-2">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">Customize what information is shown during gameplay.</p>
+      </div>
+      
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
             <span className="font-medium">Show Move History</span>
-            <input type="checkbox" className="h-4 w-4" />
+            <p className="text-xs text-muted-foreground">Displays a record of moves made during the game.</p>
           </div>
-          
-          <div className="flex items-center justify-between">
-            <span className="font-medium">Show Coordinates</span>
-            <input type="checkbox" className="h-4 w-4" />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <span className="font-medium">Highlight Winning Line</span>
-            <input type="checkbox" className="h-4 w-4" defaultChecked />
-          </div>
+          <input type="checkbox" className="h-4 w-4" />
         </div>
-      </AccordionContent>
-    </AccordionItem>
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="font-medium">Show Coordinates</span>
+            <p className="text-xs text-muted-foreground">Shows position coordinates on the game board.</p>
+          </div>
+          <input type="checkbox" className="h-4 w-4" />
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="font-medium">Highlight Winning Line</span>
+            <p className="text-xs text-muted-foreground">Visually emphasizes the winning combination of moves.</p>
+          </div>
+          <input type="checkbox" className="h-4 w-4" defaultChecked />
+        </div>
+      </div>
+    </div>
   );
 };
 

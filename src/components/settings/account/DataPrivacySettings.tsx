@@ -1,37 +1,38 @@
 
 import { User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
 
 const DataPrivacySettings = () => {
   return (
-    <AccordionItem value="data-privacy">
-      <AccordionTrigger className="text-lg font-medium">
-        <div className="flex items-center">
+    <div className="border rounded-lg p-4">
+      <div className="mb-4">
+        <div className="flex items-center mb-1">
           <User className="mr-2 h-4 w-4" />
-          Data and Privacy
+          <h3 className="text-lg font-medium">Data and Privacy</h3>
         </div>
-      </AccordionTrigger>
-      <AccordionContent className="px-4 pt-2">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">Control how your data is stored and used.</p>
+      </div>
+      
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
             <span className="font-medium">Save Game History</span>
-            <input type="checkbox" className="h-4 w-4" defaultChecked />
+            <p className="text-xs text-muted-foreground">Keep records of your past games for review.</p>
           </div>
-          
-          <div className="flex items-center justify-between">
-            <span className="font-medium">Share Usage Statistics</span>
-            <input type="checkbox" className="h-4 w-4" />
-          </div>
-          
-          <Button variant="destructive">Delete Account</Button>
+          <input type="checkbox" className="h-4 w-4" defaultChecked />
         </div>
-      </AccordionContent>
-    </AccordionItem>
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="font-medium">Share Usage Statistics</span>
+            <p className="text-xs text-muted-foreground">Help improve the app by sending anonymous usage data.</p>
+          </div>
+          <input type="checkbox" className="h-4 w-4" />
+        </div>
+        
+        <Button variant="destructive">Delete Account</Button>
+      </div>
+    </div>
   );
 };
 
