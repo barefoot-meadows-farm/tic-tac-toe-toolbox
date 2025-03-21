@@ -1,6 +1,8 @@
 
-import { Monitor } from 'lucide-react';
+import { Monitor, Eye, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 
 const VisibleAccessibilitySettings = () => {
   return (
@@ -19,7 +21,7 @@ const VisibleAccessibilitySettings = () => {
             <span className="font-medium">High Contrast Mode</span>
             <p className="text-xs text-muted-foreground">Increases color contrast to improve visibility.</p>
           </div>
-          <input type="checkbox" className="h-4 w-4" />
+          <Switch id="high-contrast" />
         </div>
         
         <div className="grid gap-2">
@@ -37,7 +39,35 @@ const VisibleAccessibilitySettings = () => {
             <span className="font-medium">Reduce Animations</span>
             <p className="text-xs text-muted-foreground">Minimizes movement and visual effects.</p>
           </div>
-          <input type="checkbox" className="h-4 w-4" />
+          <Switch id="reduce-animations" />
+        </div>
+        
+        <div>
+          <div className="flex items-center mb-1">
+            <Eye className="mr-2 h-4 w-4" />
+            <span className="font-medium">Colorblind Modes</span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-2">Optimize colors for different types of color vision deficiency.</p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" size="sm">None</Button>
+            <Button variant="outline" size="sm">Protanopia</Button>
+            <Button variant="outline" size="sm">Deuteranopia</Button>
+            <Button variant="outline" size="sm">Tritanopia</Button>
+          </div>
+        </div>
+        
+        <div>
+          <div className="flex items-center mb-1">
+            <ZoomIn className="mr-2 h-4 w-4" />
+            <span className="font-medium">Zoom Controls</span>
+          </div>
+          <p className="text-xs text-muted-foreground">Adjust the zoom level of the game board.</p>
+          <div className="flex items-center justify-between mt-2">
+            <Button variant="outline" size="icon" className="h-8 w-8">-</Button>
+            <span className="text-sm">100%</span>
+            <Button variant="outline" size="icon" className="h-8 w-8">+</Button>
+          </div>
+          <Slider defaultValue={[100]} min={50} max={200} step={10} className="mt-2" />
         </div>
       </div>
     </div>

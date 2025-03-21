@@ -3,6 +3,7 @@ import { Volume2 } from 'lucide-react';
 import SoundSettings from './SoundSettings';
 import VolumeControlSettings from './VolumeControlSettings';
 import SoundOptionsSettings from './SoundOptionsSettings';
+import AdvancedSoundSettings from './AdvancedSoundSettings';
 
 const AudioSettings = () => {
   return (
@@ -15,6 +16,7 @@ const AudioSettings = () => {
       <div className="space-y-4">
         <SoundSettings />
         <VolumeControlSettings />
+        <AdvancedSoundSettings />
         <SoundOptionsSettings />
       </div>
     </div>

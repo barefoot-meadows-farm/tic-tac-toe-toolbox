@@ -1,9 +1,12 @@
 
 import { User } from 'lucide-react';
-import { Accordion } from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import UserProfileSettings from './UserProfileSettings';
 import ConnectionSettings from './ConnectionSettings';
 import DataPrivacySettings from './DataPrivacySettings';
+import LanguageSettings from './LanguageSettings';
+import SecuritySettings from './SecuritySettings';
+import ActivitySettings from './ActivitySettings';
 
 const AccountSettings = () => {
   return (
@@ -13,11 +16,14 @@ const AccountSettings = () => {
         <h2 className="text-2xl font-semibold">Account</h2>
       </div>
       
-      <Accordion type="single" collapsible className="w-full">
+      <div className="space-y-4">
         <UserProfileSettings />
+        <LanguageSettings />
+        <SecuritySettings />
+        <ActivitySettings />
         <ConnectionSettings />
         <DataPrivacySettings />
-      </Accordion>
+      </div>
     </div>
   );
 };

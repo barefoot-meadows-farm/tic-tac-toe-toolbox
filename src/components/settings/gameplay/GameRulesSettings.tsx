@@ -1,6 +1,6 @@
 
-import { Dice1 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Dice1, Check, Play } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 const GameRulesSettings = () => {
   return (
@@ -27,14 +27,20 @@ const GameRulesSettings = () => {
           </select>
         </div>
         
-        <div className="space-y-2">
-          <span className="font-medium">First Player</span>
-          <p className="text-xs text-muted-foreground">Determines which symbol starts the game by default.</p>
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm">X</Button>
-            <Button variant="outline" size="sm">Random</Button>
-            <Button variant="outline" size="sm">O</Button>
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="font-medium">Move Confirmation</span>
+            <p className="text-xs text-muted-foreground">Require confirmation before finalizing each move.</p>
           </div>
+          <Switch id="move-confirmation" />
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="font-medium">Auto-start Next Game</span>
+            <p className="text-xs text-muted-foreground">Automatically start a new game after current game ends.</p>
+          </div>
+          <Switch id="auto-start" />
         </div>
       </div>
     </div>
