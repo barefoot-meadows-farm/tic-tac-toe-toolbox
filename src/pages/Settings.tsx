@@ -9,6 +9,7 @@ import AppearanceSettings from '@/components/settings/appearance/AppearanceSetti
 import AudioSettings from '@/components/settings/audio/AudioSettings';
 import AccessibilitySettings from '@/components/settings/accessibility/AccessibilitySettings';
 import AccountSettings from '@/components/settings/account/AccountSettings';
+import DeveloperSettings from '@/components/settings/DeveloperSettings';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("gameplay");
@@ -43,6 +44,7 @@ const Settings = () => {
               {activeTab === "audio" && <AudioSettings />}
               {activeTab === "accessibility" && <AccessibilitySettings />}
               {activeTab === "account" && <AccountSettings />}
+              {activeTab === "developer" && <DeveloperSettings />}
             </div>
           </div>
         </div>

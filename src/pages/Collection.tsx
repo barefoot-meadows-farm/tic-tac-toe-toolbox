@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Unlock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { usePaywall } from '@/contexts/PaywallContext';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,7 @@ type GameType = 'all' | 'free' | 'premium';
 const Collection = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>('all');
   const [gameType, setGameType] = useState<GameType>('all');
+  const { paywallEnabled } = usePaywall();
   
   const filterGames = () => {
     let filtered = [...gameVariants];
@@ -103,7 +105,7 @@ const Collection = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {filteredGames.map((game, index) => (
                 <div key={game.id} className="animate-fade-in" style={{ animationDelay: `${300 + (index * 100)}ms` }}>
-                  {game.premium ? (
+                  {game.premium && paywallEnabled ? (
                     <PremiumGameCard game={game} />
                   ) : (
                     <GameCard game={game} />

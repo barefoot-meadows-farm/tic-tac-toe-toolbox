@@ -1,7 +1,6 @@
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Gamepad, Palette, Volume2, Accessibility, User } from 'lucide-react';
+import { Gamepad, Palette, Volume2, Accessibility, User, Code2 } from 'lucide-react';
 
 interface SettingsSidebarProps {
   activeTab: string;
@@ -50,6 +49,14 @@ const SettingsSidebar = ({ activeTab, onTabChange }: SettingsSidebarProps) => {
       >
         <User className="mr-2 h-4 w-4" />
         Account
+      </Button>
+      <Button
+        variant={activeTab === "developer" ? "default" : "ghost"}
+        className="justify-start"
+        onClick={() => onTabChange("developer")}
+      >
+        <Code2 className="mr-2 h-4 w-4" />
+        Developer
       </Button>
     </div>
   );

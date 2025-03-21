@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getGameById } from '@/utils/games';
 import { cn } from '@/lib/utils';
+import { usePaywall } from '@/contexts/PaywallContext';
 import {
   Dialog,
   DialogContent,
@@ -26,14 +27,15 @@ const GameDetails = () => {
   const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   const [showGameStart, setShowGameStart] = useState(true);
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
+  const { paywallEnabled } = usePaywall();
   
   useEffect(() => {
     if (!id || !game) {
       navigate('/collection');
-    } else if (game.premium) {
+    } else if (game.premium && paywallEnabled) {
       setShowPremiumDialog(true);
     }
-  }, [id, game, navigate]);
+  }, [id, game, navigate, paywallEnabled]);
   
   if (!game) {
     return null;
@@ -49,6 +51,9 @@ const GameDetails = () => {
     medium: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
     hard: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
   };
+  
+  // Check if the game is premium and paywall is enabled
+  const isPremiumLocked = game.premium && paywallEnabled;
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -144,7 +149,7 @@ const GameDetails = () => {
             <div className="animate-scale-in [animation-delay:400ms] order-1 lg:order-2">
               <div className="bg-background rounded-lg p-6 shadow-md border border-border/50">
                 <h2 className="text-xl font-bold mb-6 text-center">Play {game.name}</h2>
-                {game.premium ? (
+                {isPremiumLocked ? (
                   <div className="p-8 text-center">
                     <Lock className="h-12 w-12 mx-auto mb-4 text-primary/70" />
                     <h3 className="text-xl font-bold mb-2">Premium Game</h3>
