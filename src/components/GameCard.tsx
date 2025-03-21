@@ -5,14 +5,23 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GameVariant } from '@/utils/games';
+import { ReactNode } from 'react';
 
 interface GameCardProps {
   game: GameVariant;
   className?: string;
   featured?: boolean;
+  renderFooter?: () => ReactNode;
+  children?: ReactNode;
 }
 
-const GameCard: React.FC<GameCardProps> = ({ game, className, featured = false }) => {
+const GameCard: React.FC<GameCardProps> = ({ 
+  game, 
+  className, 
+  featured = false, 
+  renderFooter,
+  children 
+}) => {
   const difficultyColor = {
     easy: 'bg-green-500/10 text-green-500 hover:bg-green-500/20',
     medium: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
@@ -61,17 +70,24 @@ const GameCard: React.FC<GameCardProps> = ({ game, className, featured = false }
           )}
         </div>
       </CardContent>
-      <CardFooter className="p-6 mt-4">
-        <Link 
-          to={`/game/${game.id}`}
-          className="flex items-center text-primary font-medium group/link"
-        >
-          Play Now 
-          <ArrowRight 
-            className="ml-2 w-4 h-4 transition-transform group-hover/link:translate-x-1" 
-          />
-        </Link>
-      </CardFooter>
+      
+      {renderFooter ? (
+        renderFooter()
+      ) : (
+        <CardFooter className="p-6 mt-4">
+          <Link 
+            to={`/game/${game.id}`}
+            className="flex items-center text-primary font-medium group/link"
+          >
+            Play Now 
+            <ArrowRight 
+              className="ml-2 w-4 h-4 transition-transform group-hover/link:translate-x-1" 
+            />
+          </Link>
+        </CardFooter>
+      )}
+      
+      {children}
     </Card>
   );
 };

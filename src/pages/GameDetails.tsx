@@ -1,7 +1,7 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Lock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import TicTacToeGame from '@/components/TicTacToeGame';
@@ -9,15 +9,26 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getGameById } from '@/utils/games';
 import { cn } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const GameDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const game = getGameById(id || '');
+  const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   
   useEffect(() => {
     if (!id || !game) {
       navigate('/collection');
+    } else if (game.premium) {
+      setShowPremiumDialog(true);
     }
   }, [id, game, navigate]);
   
@@ -47,7 +58,15 @@ const GameDetails = () => {
             
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold">{game.name}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-3xl md:text-4xl font-bold">{game.name}</h1>
+                  {game.premium && (
+                    <Badge className="bg-primary/90 text-primary-foreground flex items-center">
+                      <Lock className="h-3 w-3 mr-1" />
+                      Premium
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-lg text-muted-foreground mt-2">{game.description}</p>
               </div>
               <Badge 
@@ -79,7 +98,7 @@ const GameDetails = () => {
               <div className="mt-8">
                 <h2 className="text-xl font-bold mb-4">About This Variant</h2>
                 <p className="text-foreground/80">
-                  {game.id === 'classic' ? (
+                  {game.id === 'traditional' ? (
                     <>
                       The classic Tic-Tac-Toe game has been played for centuries. It's a simple yet engaging game
                       that helps develop strategic thinking and pattern recognition.
@@ -94,6 +113,16 @@ const GameDetails = () => {
                       Misère Tic-Tac-Toe flips the objective, creating an interesting twist where players must
                       avoid making three in a row. This reversal changes the entire strategy of the game.
                     </>
+                  ) : game.id === 'sos' ? (
+                    <>
+                      The SOS variant changes the pieces from X's and O's to S's and O's. Each turn, the player's
+                      piece alternates, adding a unique rhythm to the game and changing the winning patterns.
+                    </>
+                  ) : game.id === 'feral' ? (
+                    <>
+                      Feral Tic-Tac-Toe introduces the ability to overwrite an opponent's placement with your own,
+                      meaning no placement is permanent and requiring players to think even more strategically.
+                    </>
                   ) : (
                     <>
                       This unique variant of Tic-Tac-Toe offers a fresh perspective on the classic game,
@@ -107,12 +136,54 @@ const GameDetails = () => {
             <div className="animate-scale-in [animation-delay:400ms] order-1 lg:order-2">
               <div className="bg-background rounded-lg p-6 shadow-md border border-border/50">
                 <h2 className="text-xl font-bold mb-6 text-center">Play {game.name}</h2>
-                <TicTacToeGame variant={game.id} />
+                {game.premium ? (
+                  <div className="p-8 text-center">
+                    <Lock className="h-12 w-12 mx-auto mb-4 text-primary/70" />
+                    <h3 className="text-xl font-bold mb-2">Premium Game</h3>
+                    <p className="text-muted-foreground mb-6">
+                      This game variant is only available to premium subscribers.
+                    </p>
+                    <Button 
+                      onClick={() => setShowPremiumDialog(true)}
+                      className="w-full max-w-xs mx-auto"
+                    >
+                      Unlock Premium
+                    </Button>
+                  </div>
+                ) : (
+                  <TicTacToeGame variant={game.id} />
+                )}
               </div>
             </div>
           </div>
         </div>
       </main>
+      
+      <Dialog open={showPremiumDialog} onOpenChange={setShowPremiumDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Unlock Premium Games</DialogTitle>
+            <DialogDescription>
+              Upgrade to Tic Tac Toolbox Premium to access all premium game variants, including {game.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="rounded-lg bg-muted/50 p-4 mb-4">
+              <h3 className="font-semibold mb-2">Premium features include:</h3>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Access to all premium game variants</li>
+                <li>Ad-free experience</li>
+                <li>Custom themes and board designs</li>
+                <li>Early access to new game modes</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" className="w-full sm:w-auto">Subscribe Monthly - $2.99</Button>
+            <Button className="w-full sm:w-auto">Subscribe Yearly - $24.99</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>
