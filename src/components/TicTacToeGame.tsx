@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { GameSettings } from './GameStart';
 
 type Player = 'X' | 'O' | null;
 type Board = (Player)[][];
@@ -10,45 +11,144 @@ type Board = (Player)[][];
 interface TicTacToeGameProps {
   variant?: string;
   className?: string;
+  settings?: GameSettings | null;
 }
 
 const TicTacToeGame: React.FC<TicTacToeGameProps> = ({ 
   variant = 'classic',
-  className
+  className,
+  settings
 }) => {
-  const [board, setBoard] = useState<Board>(Array(3).fill(null).map(() => Array(3).fill(null)));
-  const [currentPlayer, setCurrentPlayer] = useState<'X' | 'O'>('X');
+  // Use settings?.boardSize or default to 3
+  const boardSize = settings?.boardSize || 3;
+  
+  // Initialize the board based on boardSize
+  const [board, setBoard] = useState<Board>(
+    Array(boardSize).fill(null).map(() => Array(boardSize).fill(null))
+  );
+  
+  // Determine first player based on settings
+  const getInitialPlayer = (): 'X' | 'O' => {
+    if (!settings || settings.firstPlayer === 'random') {
+      return Math.random() < 0.5 ? 'X' : 'O';
+    }
+    return settings.firstPlayer === 'player1' ? 'X' : 'O';
+  };
+  
+  const [currentPlayer, setCurrentPlayer] = useState<'X' | 'O'>(getInitialPlayer());
   const [winner, setWinner] = useState<Player>(null);
   const [isDraw, setIsDraw] = useState(false);
   const [winningLine, setWinningLine] = useState<number[][]>([]);
   const [gameStarted, setGameStarted] = useState(false);
+  
+  // Reset the timer when it's used
+  const [timeLeft, setTimeLeft] = useState(settings?.timeLimit || null);
+  
+  // Reset the game when settings change
+  useEffect(() => {
+    resetGame();
+  }, [settings, boardSize]);
+  
+  // Timer logic
+  useEffect(() => {
+    if (!gameStarted || winner || isDraw || !settings?.timeLimit) return;
+    
+    if (timeLeft === 0) {
+      // Time's up, switch player
+      setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
+      setTimeLeft(settings.timeLimit);
+      return;
+    }
+    
+    const timer = setTimeout(() => {
+      if (timeLeft !== null) {
+        setTimeLeft(timeLeft - 1);
+      }
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [timeLeft, gameStarted, winner, isDraw, settings?.timeLimit, currentPlayer]);
 
   const checkWinner = (board: Board) => {
+    const size = board.length;
+    const winLength = settings?.winLength || size;
+    
     // Check rows
-    for (let i = 0; i < 3; i++) {
-      if (board[i][0] && board[i][0] === board[i][1] && board[i][0] === board[i][2]) {
-        setWinningLine([[i, 0], [i, 1], [i, 2]]);
-        return board[i][0];
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j <= size - winLength; j++) {
+        let sequence = board[i].slice(j, j + winLength);
+        if (sequence.every(cell => cell === 'X') || sequence.every(cell => cell === 'O')) {
+          const winLine = Array.from({length: winLength}, (_, k) => [i, j + k]);
+          setWinningLine(winLine);
+          return sequence[0];
+        }
       }
     }
     
     // Check columns
-    for (let i = 0; i < 3; i++) {
-      if (board[0][i] && board[0][i] === board[1][i] && board[0][i] === board[2][i]) {
-        setWinningLine([[0, i], [1, i], [2, i]]);
-        return board[0][i];
+    for (let i = 0; i <= size - winLength; i++) {
+      for (let j = 0; j < size; j++) {
+        let match = true;
+        let firstCell = board[i][j];
+        if (!firstCell) continue;
+        
+        for (let k = 1; k < winLength; k++) {
+          if (board[i + k][j] !== firstCell) {
+            match = false;
+            break;
+          }
+        }
+        
+        if (match) {
+          const winLine = Array.from({length: winLength}, (_, k) => [i + k, j]);
+          setWinningLine(winLine);
+          return firstCell;
+        }
       }
     }
     
-    // Check diagonals
-    if (board[0][0] && board[0][0] === board[1][1] && board[0][0] === board[2][2]) {
-      setWinningLine([[0, 0], [1, 1], [2, 2]]);
-      return board[0][0];
+    // Check diagonals (top-left to bottom-right)
+    for (let i = 0; i <= size - winLength; i++) {
+      for (let j = 0; j <= size - winLength; j++) {
+        let match = true;
+        let firstCell = board[i][j];
+        if (!firstCell) continue;
+        
+        for (let k = 1; k < winLength; k++) {
+          if (board[i + k][j + k] !== firstCell) {
+            match = false;
+            break;
+          }
+        }
+        
+        if (match) {
+          const winLine = Array.from({length: winLength}, (_, k) => [i + k, j + k]);
+          setWinningLine(winLine);
+          return firstCell;
+        }
+      }
     }
     
-    if (board[0][2] && board[0][2] === board[1][1] && board[0][2] === board[2][0]) {
-      setWinningLine([[0, 2], [1, 1], [2, 0]]);
-      return board[0][2];
+    // Check diagonals (top-right to bottom-left)
+    for (let i = 0; i <= size - winLength; i++) {
+      for (let j = winLength - 1; j < size; j++) {
+        let match = true;
+        let firstCell = board[i][j];
+        if (!firstCell) continue;
+        
+        for (let k = 1; k < winLength; k++) {
+          if (board[i + k][j - k] !== firstCell) {
+            match = false;
+            break;
+          }
+        }
+        
+        if (match) {
+          const winLine = Array.from({length: winLength}, (_, k) => [i + k, j - k]);
+          setWinningLine(winLine);
+          return firstCell;
+        }
+      }
     }
     
     // Check for draw
@@ -61,35 +161,59 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
   };
 
   const handleClick = (row: number, col: number) => {
-    if (board[row][col] || winner || isDraw) return;
+    // Handle special case for Feral variant
+    const canOverwrite = variant === 'feral';
+    
+    if ((board[row][col] && !canOverwrite) || winner || isDraw) return;
 
     if (!gameStarted) {
       setGameStarted(true);
+      if (settings?.timeLimit) {
+        setTimeLeft(settings.timeLimit);
+      }
     }
     
     const newBoard = [...board.map(row => [...row])];
     newBoard[row][col] = currentPlayer;
     setBoard(newBoard);
     
+    // For misere variant, we invert the winner logic
+    if (variant === 'misere') {
+      const potentialWinner = checkWinner(newBoard);
+      if (potentialWinner) {
+        // In misere, the player who makes three in a row loses
+        setWinner(potentialWinner === 'X' ? 'O' : 'X');
+        return;
+      }
+    } else {
+      // Regular winner check for other variants
+      const potentialWinner = checkWinner(newBoard);
+      if (potentialWinner) {
+        setWinner(potentialWinner);
+        return;
+      }
+    }
+    
+    // Reset the timer when a move is made
+    if (settings?.timeLimit) {
+      setTimeLeft(settings.timeLimit);
+    }
+    
     const nextPlayer = currentPlayer === 'X' ? 'O' : 'X';
     setCurrentPlayer(nextPlayer);
   };
 
   const resetGame = () => {
-    setBoard(Array(3).fill(null).map(() => Array(3).fill(null)));
-    setCurrentPlayer('X');
+    setBoard(Array(boardSize).fill(null).map(() => Array(boardSize).fill(null)));
+    setCurrentPlayer(getInitialPlayer());
     setWinner(null);
     setIsDraw(false);
     setWinningLine([]);
     setGameStarted(false);
-  };
-
-  useEffect(() => {
-    const winner = checkWinner(board);
-    if (winner) {
-      setWinner(winner);
+    if (settings?.timeLimit) {
+      setTimeLeft(settings.timeLimit);
     }
-  }, [board]);
+  };
 
   const isWinningCell = (row: number, col: number) => {
     return winningLine.some(([r, c]) => r === row && c === col);
@@ -98,6 +222,20 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
   return (
     <div className={cn("w-full max-w-md mx-auto", className)}>
       <div className="text-center mb-6">
+        {settings?.timeLimit && gameStarted && !winner && !isDraw && (
+          <div className="mb-2">
+            <p className="text-sm text-muted-foreground">Time left: {timeLeft}s</p>
+            <div className="w-full bg-muted h-1 mt-1 rounded-full overflow-hidden">
+              <div 
+                className="bg-primary h-full transition-all duration-1000"
+                style={{ 
+                  width: `${(timeLeft! / settings.timeLimit) * 100}%` 
+                }}
+              />
+            </div>
+          </div>
+        )}
+      
         {!gameStarted && (
           <div className="animate-fade-in">
             <p className="text-lg text-muted-foreground mb-4">
@@ -147,8 +285,14 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
       <div 
         className={cn(
           "board-grid w-full max-w-sm mx-auto bg-muted/30 p-4 rounded-lg shadow-sm",
-          (winner || isDraw) ? "opacity-90" : ""
+          (winner || isDraw) ? "opacity-90" : "",
+          boardSize > 3 ? "grid grid-cols-" + boardSize + " gap-1" : "grid grid-cols-3 gap-2"
         )}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${boardSize}, 1fr)`,
+          gap: boardSize > 3 ? '0.25rem' : '0.5rem'
+        }}
       >
         {board.map((row, rowIndex) => (
           row.map((cell, colIndex) => (
@@ -157,10 +301,11 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
               className={cn(
                 "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-300",
                 gameStarted && !cell && !winner && !isDraw ? "hover:border-primary/50" : "",
-                isWinningCell(rowIndex, colIndex) ? "bg-primary/10 border-primary" : ""
+                isWinningCell(rowIndex, colIndex) ? "bg-primary/10 border-primary" : "",
+                boardSize > 3 ? "text-xl" : "text-3xl"
               )}
               onClick={() => handleClick(rowIndex, colIndex)}
-              disabled={!!cell || !!winner || isDraw}
+              disabled={!!winner || isDraw}
               aria-label={`Cell ${rowIndex}-${colIndex}`}
             >
               {cell === 'X' && (

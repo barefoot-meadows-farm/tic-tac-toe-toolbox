@@ -5,6 +5,7 @@ import { ArrowLeft, Lock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import TicTacToeGame from '@/components/TicTacToeGame';
+import GameStart, { GameSettings } from '@/components/GameStart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getGameById } from '@/utils/games';
@@ -23,6 +24,8 @@ const GameDetails = () => {
   const navigate = useNavigate();
   const game = getGameById(id || '');
   const [showPremiumDialog, setShowPremiumDialog] = useState(false);
+  const [showGameStart, setShowGameStart] = useState(true);
+  const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
   
   useEffect(() => {
     if (!id || !game) {
@@ -35,6 +38,11 @@ const GameDetails = () => {
   if (!game) {
     return null;
   }
+  
+  const handleStartGame = (settings: GameSettings) => {
+    setGameSettings(settings);
+    setShowGameStart(false);
+  };
   
   const difficultyColor = {
     easy: 'bg-green-500/10 text-green-500 hover:bg-green-500/20',
@@ -151,7 +159,31 @@ const GameDetails = () => {
                     </Button>
                   </div>
                 ) : (
-                  <TicTacToeGame variant={game.id} />
+                  <>
+                    {showGameStart ? (
+                      <GameStart 
+                        game={game}
+                        onStart={handleStartGame}
+                        onCancel={() => navigate('/collection')}
+                      />
+                    ) : (
+                      <>
+                        <TicTacToeGame 
+                          variant={game.id} 
+                          settings={gameSettings}
+                        />
+                        <div className="mt-4 text-center">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setShowGameStart(true)}
+                            size="sm"
+                          >
+                            Change Settings
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </>
                 )}
               </div>
             </div>
