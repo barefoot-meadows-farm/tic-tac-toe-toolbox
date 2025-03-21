@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Lock } from 'lucide-react';
+import { ArrowLeft, Lock, Gamepad } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import TicTacToeGame from '@/components/TicTacToeGame';
@@ -91,6 +91,20 @@ const GameDetails = () => {
               >
                 {game.difficulty}
               </Badge>
+            </div>
+            
+            <div className="mt-4">
+              <Button 
+                asChild 
+                size="sm" 
+                className="gap-2"
+                disabled={isPremiumLocked}
+              >
+                <Link to={`/play/${game.id}`}>
+                  <Gamepad className="h-4 w-4" />
+                  Play Full Screen
+                </Link>
+              </Button>
             </div>
           </div>
           

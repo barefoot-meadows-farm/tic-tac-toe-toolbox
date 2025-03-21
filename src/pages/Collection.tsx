@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -7,7 +6,7 @@ import GameCard from '@/components/GameCard';
 import { gameVariants } from '@/utils/games';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Unlock } from 'lucide-react';
+import { Lock, Unlock, Info, Gamepad } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePaywall } from '@/contexts/PaywallContext';
 import {
@@ -31,12 +30,10 @@ const Collection = () => {
   const filterGames = () => {
     let filtered = [...gameVariants];
     
-    // Filter by difficulty
     if (difficulty !== 'all') {
       filtered = filtered.filter(game => game.difficulty === difficulty);
     }
     
-    // Filter by game type (free/premium)
     if (gameType === 'free') {
       filtered = filtered.filter(game => !game.premium);
     } else if (gameType === 'premium') {
@@ -108,7 +105,25 @@ const Collection = () => {
                   {game.premium && paywallEnabled ? (
                     <PremiumGameCard game={game} />
                   ) : (
-                    <GameCard game={game} />
+                    <GameCard 
+                      game={game} 
+                      renderFooter={() => (
+                        <div className="flex gap-2 mt-4">
+                          <Button asChild variant="outline" className="flex-1 gap-1">
+                            <Link to={`/game/${game.id}`}>
+                              <Info className="h-4 w-4" />
+                              <span>Details</span>
+                            </Link>
+                          </Button>
+                          <Button asChild className="flex-1 gap-1">
+                            <Link to={`/play/${game.id}`}>
+                              <Gamepad className="h-4 w-4" />
+                              <span>Play</span>
+                            </Link>
+                          </Button>
+                        </div>
+                      )}
+                    />
                   )}
                 </div>
               ))}

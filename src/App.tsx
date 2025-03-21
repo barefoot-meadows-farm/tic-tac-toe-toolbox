@@ -11,6 +11,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import AnimatedTransition from "./components/AnimatedTransition";
 import { PaywallProvider } from "./contexts/PaywallContext";
+import GamePage from "./pages/GamePage";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,14 @@ const App = () => (
               element={
                 <AnimatedTransition>
                   <GameDetails />
+                </AnimatedTransition>
+              } 
+            />
+            <Route 
+              path="/play/:id" 
+              element={
+                <AnimatedTransition>
+                  <GamePage />
                 </AnimatedTransition>
               } 
             />
