@@ -3,6 +3,13 @@
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+// Type declaration for window.dataLayer
+declare global {
+  interface Window {
+    dataLayer?: any[];
+  }
+}
+
 // Types for analytics events
 type GameEvent = {
   gameId: string;

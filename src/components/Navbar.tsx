@@ -1,23 +1,20 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, X, Home, Grid3X3, Gamepad2, Settings } from 'lucide-react';
 import { AuthButton } from './AuthButton';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
-  // Close menu when location changes
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location]);
   
-  // Close menu when switching from mobile to desktop
   useEffect(() => {
     if (!isMobile) {
       setIsMenuOpen(false);
@@ -35,7 +32,6 @@ const Navbar = () => {
             </Link>
           </div>
           
-          {/* Desktop navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             <Button variant="ghost" size="sm" asChild>
               <Link 
@@ -79,7 +75,6 @@ const Navbar = () => {
             </div>
           </nav>
           
-          {/* Mobile menu button */}
           <div className="flex items-center md:hidden space-x-2">
             <AuthButton />
             <Button
@@ -93,7 +88,6 @@ const Navbar = () => {
           </div>
         </div>
         
-        {/* Mobile navigation */}
         {isMenuOpen && (
           <nav className="pt-4 pb-2 md:hidden">
             <div className="flex flex-col space-y-2">

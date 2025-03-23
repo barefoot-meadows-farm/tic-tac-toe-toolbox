@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,14 +23,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check premium status
           const { data: subscriptionData } = await supabase
             .from('subscriptions')
             .select('is_premium')
@@ -47,13 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // Check premium status
         supabase
           .from('subscriptions')
           .select('is_premium')
@@ -99,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, username: string) => {
     try {
       setIsLoading(true);
-      const { error, data } = await supabase.auth.signUp({ 
+      const { error } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
@@ -115,8 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Account created!",
         description: "You've successfully signed up. Welcome!",
       });
-      
-      return data;
     } catch (error: any) {
       toast({
         title: "Sign up failed",
