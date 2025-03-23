@@ -80,14 +80,16 @@ const App = () => (
                         </ErrorBoundary>
                     }
                 />
-              <Route 
-                path="/auth" 
-                element={
-                  <AnimatedTransition>
-                    <Auth />
-                  </AnimatedTransition>
-                } 
-              />
+                <Route
+                    path="/auth"
+                    element={
+                        <ErrorBoundary FallbackComponent={ErrorFallback}>
+                            <AnimatedTransition>
+                                <Auth />
+                            </AnimatedTransition>
+                        </ErrorBoundary>
+                    }
+                />
                 <Route
                     path="/profile"
                     element={
