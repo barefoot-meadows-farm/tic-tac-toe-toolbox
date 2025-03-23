@@ -1,4 +1,7 @@
+
 // Analytics utility for managing Google Analytics and Tag Manager
+import { User } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 // Types for analytics events
 type GameEvent = {
@@ -37,8 +40,9 @@ export const initGTM = (gtmId: string): void => {
   document.body.appendChild(noscript);
 };
 
-// Track game start
-export const trackGameStart = (event: GameEvent): void => {
+// Track game start and record to analytics
+export const trackGameStart = async (event: GameEvent, user?: User | null): Promise<void> => {
+  // Push to Google Analytics dataLayer
   window.dataLayer?.push({
     event: 'game_start',
     gameId: event.gameId,
@@ -46,10 +50,17 @@ export const trackGameStart = (event: GameEvent): void => {
     opponent: event.opponent,
     difficulty: event.difficulty
   });
+  
+  // If user is logged in, we could record this event to our database
+  // but we typically don't need to record game starts
 };
 
-// Track game completion
-export const trackGameComplete = (event: GameEvent & { result: 'win' | 'loss' | 'draw' }): void => {
+// Track game completion and record to database
+export const trackGameComplete = async (
+  event: GameEvent & { result: 'win' | 'loss' | 'draw' },
+  user?: User | null
+): Promise<void> => {
+  // Push to Google Analytics dataLayer
   window.dataLayer?.push({
     event: 'game_complete',
     gameId: event.gameId,
@@ -58,6 +69,22 @@ export const trackGameComplete = (event: GameEvent & { result: 'win' | 'loss' | 
     difficulty: event.difficulty,
     result: event.result
   });
+  
+  // If user is logged in, record this in our database
+  if (user) {
+    try {
+      await supabase.from('game_stats').insert({
+        user_id: user.id,
+        game_id: event.gameId,
+        variant: event.variant,
+        opponent: event.opponent,
+        difficulty: event.difficulty,
+        result: event.result
+      });
+    } catch (error) {
+      console.error('Error recording game stats:', error);
+    }
+  }
 };
 
 // Track premium feature interactions

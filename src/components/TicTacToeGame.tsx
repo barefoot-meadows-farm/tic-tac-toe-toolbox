@@ -1,9 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GameSettings } from './GameStart';
+import { useAuth } from '@/contexts/AuthContext';
+import { trackGameComplete } from '@/utils/analytics';
 
 type Player = 'X' | 'O' | null;
 type Board = (Player)[][];
@@ -43,6 +44,9 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
   
   // Reset the timer when it's used
   const [timeLeft, setTimeLeft] = useState(settings?.timeLimit || null);
+  
+  // Get auth context
+  const { user } = useAuth();
   
   // Reset the game when settings change
   useEffect(() => {
@@ -182,7 +186,24 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
       const potentialWinner = checkWinner(newBoard);
       if (potentialWinner) {
         // In misere, the player who makes three in a row loses
-        setWinner(potentialWinner === 'X' ? 'O' : 'X');
+        const actualWinner = potentialWinner === 'X' ? 'O' : 'X';
+        setWinner(actualWinner);
+        
+        // Track the game completion
+        if (user) {
+          const opponent = settings?.opponent || 'ai';
+          trackGameComplete(
+            {
+              gameId: variant || 'traditional',
+              variant: variant || 'traditional',
+              opponent: opponent === 'ai' ? 'ai' : 'human',
+              difficulty: settings?.difficulty,
+              result: actualWinner === 'X' ? 'win' : 'loss'
+            }, 
+            user
+          );
+        }
+        
         return;
       }
     } else {
@@ -190,7 +211,41 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
       const potentialWinner = checkWinner(newBoard);
       if (potentialWinner) {
         setWinner(potentialWinner);
+        
+        // Track the game completion
+        if (user) {
+          const opponent = settings?.opponent || 'ai';
+          trackGameComplete(
+            {
+              gameId: variant || 'traditional',
+              variant: variant || 'traditional',
+              opponent: opponent === 'ai' ? 'ai' : 'human',
+              difficulty: settings?.difficulty,
+              result: potentialWinner === 'X' ? 'win' : 'loss'
+            }, 
+            user
+          );
+        }
+        
         return;
+      }
+    }
+    
+    // Check for draw
+    if (isDraw) {
+      // Track the game completion as a draw
+      if (user) {
+        const opponent = settings?.opponent || 'ai';
+        trackGameComplete(
+          {
+            gameId: variant || 'traditional',
+            variant: variant || 'traditional',
+            opponent: opponent === 'ai' ? 'ai' : 'human',
+            difficulty: settings?.difficulty,
+            result: 'draw'
+          }, 
+          user
+        );
       }
     }
     

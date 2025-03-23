@@ -1,110 +1,141 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { useMobile } from '@/hooks/use-mobile';
+import { Menu, X, Home, Grid3X3, Gamepad2, Settings } from 'lucide-react';
+import { AuthButton } from './AuthButton';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
+  const isMobile = useMobile();
+  
+  // Close menu when location changes
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location]);
-
+  
+  // Close menu when switching from mobile to desktop
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Collection', path: '/collection' },
-    { name: 'Settings', path: '/settings' },
-  ];
+    if (!isMobile) {
+      setIsMenuOpen(false);
+    }
+  }, [isMobile]);
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled ? "py-3 glass dark:glass-dark shadow-md" : "py-5 bg-transparent"
-      )}
-    >
-      <div className="container mx-auto px-4 md:px-6">
-        <nav className="flex items-center justify-between">
-          <Link 
-            to="/" 
-            className="text-2xl font-bold tracking-tight animate-fade-in flex items-center"
-          >
-            <span className="mr-1 text-primary">Tic</span>
-            <span className="mr-1">Tac</span>
-            <span className="text-primary">Toolbox</span>
-          </Link>
-          
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={cn(
-                  "link-underline text-base font-medium transition-colors",
-                  location.pathname === link.path 
-                    ? "text-primary" 
-                    : "text-foreground/80 hover:text-foreground"
-                )}
-              >
-                {link.name}
-              </Link>
-            ))}
+    <header className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md shadow-sm">
+      <div className="container mx-auto px-4 md:px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-2">
+              <Gamepad2 className="h-6 w-6 text-primary" />
+              <span className="font-bold text-lg md:text-xl">Tic Tac Toolbox</span>
+            </Link>
           </div>
           
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-foreground"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </nav>
-      </div>
-      
-      {/* Mobile Navigation */}
-      <div
-        className={cn(
-          "fixed inset-0 bg-background/95 backdrop-blur-sm z-40 md:hidden flex flex-col justify-center transition-all duration-300 ease-in-out",
-          isMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        )}
-      >
-        <div className="container mx-auto px-4 py-8 flex flex-col items-center space-y-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={cn(
-                "text-2xl font-medium transition-all hover:scale-105",
-                location.pathname === link.path 
-                  ? "text-primary" 
-                  : "text-foreground/80 hover:text-foreground"
-              )}
-              onClick={() => setIsMenuOpen(false)}
+          {/* Desktop navigation */}
+          <nav className="hidden md:flex items-center space-x-1">
+            <Button variant="ghost" size="sm" asChild>
+              <Link 
+                to="/" 
+                className={cn(
+                  "flex items-center space-x-1",
+                  location.pathname === "/" ? "text-primary font-medium" : "text-muted-foreground"
+                )}
+              >
+                <Home className="h-4 w-4" />
+                <span>Home</span>
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link 
+                to="/collection" 
+                className={cn(
+                  "flex items-center space-x-1",
+                  location.pathname === "/collection" ? "text-primary font-medium" : "text-muted-foreground"
+                )}
+              >
+                <Grid3X3 className="h-4 w-4" />
+                <span>Games</span>
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link 
+                to="/settings" 
+                className={cn(
+                  "flex items-center space-x-1",
+                  location.pathname === "/settings" ? "text-primary font-medium" : "text-muted-foreground"
+                )}
+              >
+                <Settings className="h-4 w-4" />
+                <span>Settings</span>
+              </Link>
+            </Button>
+            
+            <div className="ml-2">
+              <AuthButton />
+            </div>
+          </nav>
+          
+          {/* Mobile menu button */}
+          <div className="flex items-center md:hidden space-x-2">
+            <AuthButton />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             >
-              {link.name}
-            </Link>
-          ))}
+              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
+        
+        {/* Mobile navigation */}
+        {isMenuOpen && (
+          <nav className="pt-4 pb-2 md:hidden">
+            <div className="flex flex-col space-y-2">
+              <Link 
+                to="/" 
+                className={cn(
+                  "flex items-center space-x-2 rounded-md px-3 py-2 transition-colors",
+                  location.pathname === "/" 
+                    ? "bg-primary/10 text-primary" 
+                    : "text-muted-foreground hover:bg-accent"
+                )}
+              >
+                <Home className="h-4 w-4" />
+                <span>Home</span>
+              </Link>
+              <Link 
+                to="/collection" 
+                className={cn(
+                  "flex items-center space-x-2 rounded-md px-3 py-2 transition-colors",
+                  location.pathname === "/collection" 
+                    ? "bg-primary/10 text-primary" 
+                    : "text-muted-foreground hover:bg-accent"
+                )}
+              >
+                <Grid3X3 className="h-4 w-4" />
+                <span>Games</span>
+              </Link>
+              <Link 
+                to="/settings" 
+                className={cn(
+                  "flex items-center space-x-2 rounded-md px-3 py-2 transition-colors",
+                  location.pathname === "/settings" 
+                    ? "bg-primary/10 text-primary" 
+                    : "text-muted-foreground hover:bg-accent"
+                )}
+              >
+                <Settings className="h-4 w-4" />
+                <span>Settings</span>
+              </Link>
+            </div>
+          </nav>
+        )}
       </div>
     </header>
   );

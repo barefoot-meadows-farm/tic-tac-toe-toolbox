@@ -1,38 +1,43 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface PaywallContextType {
+type PaywallContextType = {
   paywallEnabled: boolean;
   togglePaywall: () => void;
-}
+};
 
 const PaywallContext = createContext<PaywallContextType | undefined>(undefined);
 
-export const PaywallProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [paywallEnabled, setPaywallEnabled] = useState<boolean>(true);
-
-  // Load from localStorage on initial render
+export const PaywallProvider = ({ children }: { children: ReactNode }) => {
+  const [paywallEnabled, setPaywallEnabled] = useState(true);
+  const { user, isPremium } = useAuth();
+  
+  // Disable paywall for premium users
   useEffect(() => {
-    const storedValue = localStorage.getItem('paywallEnabled');
-    if (storedValue !== null) {
-      setPaywallEnabled(storedValue === 'true');
+    if (isPremium) {
+      setPaywallEnabled(false);
     }
-  }, []);
-
+  }, [isPremium]);
+  
   const togglePaywall = () => {
-    const newValue = !paywallEnabled;
-    setPaywallEnabled(newValue);
-    localStorage.setItem('paywallEnabled', String(newValue));
+    setPaywallEnabled(!paywallEnabled);
   };
-
+  
   return (
-    <PaywallContext.Provider value={{ paywallEnabled, togglePaywall }}>
+    <PaywallContext.Provider
+      value={{
+        paywallEnabled: isPremium ? false : paywallEnabled,
+        togglePaywall,
+      }}
+    >
       {children}
     </PaywallContext.Provider>
   );
 };
 
-export const usePaywall = (): PaywallContextType => {
+export const usePaywall = () => {
   const context = useContext(PaywallContext);
   if (context === undefined) {
     throw new Error('usePaywall must be used within a PaywallProvider');
