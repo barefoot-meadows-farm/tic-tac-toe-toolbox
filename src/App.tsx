@@ -15,8 +15,19 @@ import GamePage from "./pages/GamePage";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ErrorBoundary } from 'react-error-boundary';
 
 const queryClient = new QueryClient();
+
+
+const ErrorFallback = ({ error }) => {
+    return (
+        <div className="p-4 text-red-500">
+            <h2>Something went wrong:</h2>
+            <pre>{error.message}</pre>
+        </div>
+    );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -59,14 +70,16 @@ const App = () => (
                   </AnimatedTransition>
                 } 
               />
-              <Route 
-                path="/settings" 
-                element={
-                  <AnimatedTransition>
-                    <Settings />
-                  </AnimatedTransition>
-                } 
-              />
+                <Route
+                    path="/settings"
+                    element={
+                        <ErrorBoundary FallbackComponent={ErrorFallback}>
+                            <AnimatedTransition>
+                                <Settings />
+                            </AnimatedTransition>
+                        </ErrorBoundary>
+                    }
+                />
               <Route 
                 path="/auth" 
                 element={
@@ -75,14 +88,16 @@ const App = () => (
                   </AnimatedTransition>
                 } 
               />
-              <Route 
-                path="/profile" 
-                element={
-                  <AnimatedTransition>
-                    <Profile />
-                  </AnimatedTransition>
-                } 
-              />
+                <Route
+                    path="/profile"
+                    element={
+                        <ErrorBoundary FallbackComponent={ErrorFallback}>
+                            <AnimatedTransition>
+                                <Profile />
+                            </AnimatedTransition>
+                        </ErrorBoundary>
+                    }
+                />
               <Route 
                 path="*" 
                 element={
