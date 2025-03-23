@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -36,6 +36,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('login');
   const [formError, setFormError] = useState<string | null>(null);
+  const [formSubmitting, setFormSubmitting] = useState(false);
   
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -56,24 +57,40 @@ const Auth = () => {
   });
   
   const onLoginSubmit = async (values: LoginFormValues) => {
+    setFormSubmitting(true);
     try {
       setFormError(null);
       await signIn(values.email, values.password);
       navigate('/');
     } catch (error: any) {
       setFormError(error.message);
+    } finally {
+      setFormSubmitting(false);
     }
   };
   
   const onSignupSubmit = async (values: SignupFormValues) => {
+    setFormSubmitting(true);
     try {
       setFormError(null);
       await signUp(values.email, values.password, values.username);
       navigate('/');
     } catch (error: any) {
       setFormError(error.message);
+    } finally {
+      setFormSubmitting(false);
     }
   };
+  
+  // Show a loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
   
   // Redirect if already logged in
   if (user) {
@@ -137,8 +154,15 @@ const Auth = () => {
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Signing in...' : 'Sign In'}
+                    <Button type="submit" className="w-full" disabled={formSubmitting}>
+                      {formSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Signing in...
+                        </>
+                      ) : (
+                        'Sign In'
+                      )}
                     </Button>
                   </form>
                 </Form>
@@ -226,8 +250,15 @@ const Auth = () => {
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Creating account...' : 'Create Account'}
+                    <Button type="submit" className="w-full" disabled={formSubmitting}>
+                      {formSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating account...
+                        </>
+                      ) : (
+                        'Create Account'
+                      )}
                     </Button>
                   </form>
                 </Form>

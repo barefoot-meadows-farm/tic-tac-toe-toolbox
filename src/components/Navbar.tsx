@@ -4,13 +4,15 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, X, Home, Grid3X3, Gamepad2, Settings } from 'lucide-react';
+import { Menu, X, Home, Grid3X3, Gamepad2, Settings, Loader2 } from 'lucide-react';
 import { AuthButton } from './AuthButton';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { isLoading } = useAuth();
   
   useEffect(() => {
     setIsMenuOpen(false);
@@ -72,12 +74,25 @@ const Navbar = () => {
             </Button>
             
             <div className="ml-2">
-              <AuthButton />
+              {isLoading ? (
+                <Button variant="ghost" size="sm" disabled>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <span>Loading...</span>
+                </Button>
+              ) : (
+                <AuthButton />
+              )}
             </div>
           </nav>
           
           <div className="flex items-center md:hidden space-x-2">
-            <AuthButton />
+            {isLoading ? (
+              <Button variant="ghost" size="icon" disabled>
+                <Loader2 className="h-4 w-4 animate-spin" />
+              </Button>
+            ) : (
+              <AuthButton />
+            )}
             <Button
               variant="ghost"
               size="icon"

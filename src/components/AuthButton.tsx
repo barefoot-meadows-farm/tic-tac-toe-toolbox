@@ -11,17 +11,19 @@ import {
 import { 
   LogIn, 
   LogOut, 
-  User, 
   Settings, 
   Crown, 
-  CircleUser
+  CircleUser,
+  Loader2
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 
 export function AuthButton() {
   const { user, signOut, isPremium } = useAuth();
   const navigate = useNavigate();
+  const [isSigningOut, setIsSigningOut] = useState(false);
   
   // Show login button if not logged in
   if (!user) {
@@ -38,6 +40,18 @@ export function AuthButton() {
   // Show user avatar with dropdown if logged in
   const userEmail = user.email || '';
   const userInitials = userEmail.charAt(0).toUpperCase();
+  
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
   
   return (
     <DropdownMenu>
@@ -81,13 +95,20 @@ export function AuthButton() {
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="cursor-pointer flex items-center text-destructive focus:text-destructive"
-          onClick={async () => {
-            await signOut();
-            navigate('/');
-          }}
+          onClick={handleSignOut}
+          disabled={isSigningOut}
         >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Sign out</span>
+          {isSigningOut ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <span>Signing out...</span>
+            </>
+          ) : (
+            <>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sign out</span>
+            </>
+          )}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

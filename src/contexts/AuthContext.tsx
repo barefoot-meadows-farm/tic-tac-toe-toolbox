@@ -24,16 +24,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Set loading to true at the start of the auth check
+    setIsLoading(true);
+    
+    // First set up the auth listener for future state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      async (event, currentSession) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
         
-        if (session?.user) {
+        if (currentSession?.user) {
+          // Fetch premium status for the user
           const { data: subscriptionData } = await supabase
             .from('subscriptions')
             .select('is_premium')
-            .eq('user_id', session.user.id)
+            .eq('user_id', currentSession.user.id)
             .single();
           
           setIsPremium(subscriptionData?.is_premium || false);
@@ -45,23 +50,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Then check for an existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
       
-      if (session?.user) {
+      if (currentSession?.user) {
+        // Fetch premium status for the user
         supabase
           .from('subscriptions')
           .select('is_premium')
-          .eq('user_id', session.user.id)
+          .eq('user_id', currentSession.user.id)
           .single()
           .then(({ data }) => {
             setIsPremium(data?.is_premium || false);
+            setIsLoading(false);
+          })
+          .catch(error => {
+            console.error("Error fetching subscription data:", error);
             setIsLoading(false);
           });
       } else {
         setIsLoading(false);
       }
+    }).catch(error => {
+      console.error("Error getting session:", error);
+      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();

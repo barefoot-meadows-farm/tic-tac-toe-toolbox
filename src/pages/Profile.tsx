@@ -15,7 +15,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Crown, User, Trophy, Calendar } from 'lucide-react';
+import { Crown, User, Trophy, Calendar, Loader2 } from 'lucide-react';
 
 const profileFormSchema = z.object({
   username: z.string().min(3, {
@@ -36,9 +36,10 @@ interface GameStat {
 }
 
 const Profile = () => {
-  const { user, isPremium } = useAuth();
+  const { user, isPremium, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [profile, setProfile] = useState<{ username: string; avatar_url: string | null }>({ 
     username: '', 
     avatar_url: null 
@@ -52,6 +53,16 @@ const Profile = () => {
     },
   });
   
+  // Show auth loading state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="mt-2 text-sm text-muted-foreground">Loading authentication...</p>
+      </div>
+    );
+  }
+  
   // Redirect if not logged in
   if (!user) {
     return <Navigate to="/auth" />;
@@ -60,6 +71,8 @@ const Profile = () => {
   // Fetch profile data
   useEffect(() => {
     if (user) {
+      setProfileLoading(true);
+      
       const fetchProfile = async () => {
         try {
           const { data, error } = await supabase
@@ -96,11 +109,16 @@ const Profile = () => {
           }
         } catch (error) {
           console.error('Error fetching game stats:', error);
+        } finally {
+          setProfileLoading(false);
         }
       };
       
-      fetchProfile();
-      fetchGameStats();
+      Promise.all([fetchProfile(), fetchGameStats()])
+        .catch(error => {
+          console.error('Error loading profile data:', error);
+          setProfileLoading(false);
+        });
     }
   }, [user, form]);
   
@@ -138,6 +156,22 @@ const Profile = () => {
     const wins = gameStats.filter(stat => stat.result === 'win').length;
     return Math.round((wins / gameStats.length) * 100);
   };
+
+  // Show profile loading state
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow pt-24 pb-12 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="mt-2 text-sm text-muted-foreground">Loading profile data...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -287,7 +321,14 @@ const Profile = () => {
                           )}
                         />
                         <Button type="submit" disabled={isLoading}>
-                          {isLoading ? 'Saving...' : 'Save changes'}
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            'Save changes'
+                          )}
                         </Button>
                       </form>
                     </Form>
