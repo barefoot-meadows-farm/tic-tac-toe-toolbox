@@ -64,8 +64,6 @@ const Auth = () => {
       // Don't navigate here - let the auth state change handle it
     } catch (error: any) {
       setFormError(error.message);
-    } finally {
-      setFormSubmitting(false);
     }
   };
   

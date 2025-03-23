@@ -17,8 +17,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
+import {useAuth} from "@/contexts/AuthContext.tsx";
 
 export function AuthButton() {
   const { user, signOut, isPremium } = useAuth();

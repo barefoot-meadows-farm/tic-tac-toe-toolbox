@@ -62,13 +62,15 @@ const App = () => (
                   </AnimatedTransition>
                 } 
               />
-              <Route 
-                path="/play/:id" 
+              <Route
+                path="/play/:id"
                 element={
-                  <AnimatedTransition>
-                    <GamePage />
-                  </AnimatedTransition>
-                } 
+                  <ErrorBoundary FallbackComponent={ErrorFallback}>
+                    <AnimatedTransition>
+                      <GamePage />
+                    </AnimatedTransition>
+                  </ErrorBoundary>
+                }
               />
                 <Route
                     path="/settings"
