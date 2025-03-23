@@ -51,32 +51,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     // Then check for an existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      
-      if (currentSession?.user) {
-        // Fetch premium status for the user
-        supabase
-          .from('subscriptions')
-          .select('is_premium')
-          .eq('user_id', currentSession.user.id)
-          .single()
-          .then(({ data }) => {
+    const checkSession = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (currentSession?.user) {
+          // Fetch premium status for the user
+          try {
+            const { data } = await supabase
+              .from('subscriptions')
+              .select('is_premium')
+              .eq('user_id', currentSession.user.id)
+              .single();
+              
             setIsPremium(data?.is_premium || false);
-            setIsLoading(false);
-          })
-          .catch(error => {
+          } catch (error) {
             console.error("Error fetching subscription data:", error);
-            setIsLoading(false);
-          });
-      } else {
+          }
+        }
+      } catch (error) {
+        console.error("Error getting session:", error);
+      } finally {
         setIsLoading(false);
       }
-    }).catch(error => {
-      console.error("Error getting session:", error);
-      setIsLoading(false);
-    });
+    };
+    
+    checkSession();
 
     return () => subscription.unsubscribe();
   }, []);
