@@ -53,73 +53,58 @@ const Profile = () => {
     },
   });
   
-  // Show auth loading state
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-2 text-sm text-muted-foreground">Loading authentication...</p>
-      </div>
-    );
-  }
-  
-  // Redirect if not logged in
-  if (!user) {
-    return <Navigate to="/auth" />;
-  }
-  
   // Fetch profile data
   useEffect(() => {
-    if (user) {
-      setProfileLoading(true);
-      
-      const fetchProfile = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('username, avatar_url')
-            .eq('id', user.id)
-            .single();
-          
-          if (error) throw error;
-          
-          if (data) {
-            setProfile(data);
-            form.reset({
-              username: data.username || '',
-            });
-          }
-        } catch (error) {
-          console.error('Error fetching profile:', error);
+    if (!user) return; // Don't fetch if no user is available
+    
+    setProfileLoading(true);
+    
+    const fetchProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('username, avatar_url')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          setProfile(data);
+          form.reset({
+            username: data.username || '',
+          });
         }
-      };
-      
-      const fetchGameStats = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('game_stats')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
-          
-          if (error) throw error;
-          
-          if (data) {
-            setGameStats(data as GameStat[]);
-          }
-        } catch (error) {
-          console.error('Error fetching game stats:', error);
-        } finally {
-          setProfileLoading(false);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+    
+    const fetchGameStats = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('game_stats')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        if (data) {
+          setGameStats(data as GameStat[]);
         }
-      };
-      
-      Promise.all([fetchProfile(), fetchGameStats()])
-        .catch(error => {
-          console.error('Error loading profile data:', error);
-          setProfileLoading(false);
-        });
-    }
+      } catch (error) {
+        console.error('Error fetching game stats:', error);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    
+    Promise.all([fetchProfile(), fetchGameStats()])
+      .catch(error => {
+        console.error('Error loading profile data:', error);
+        setProfileLoading(false);
+      });
   }, [user, form]);
   
   const onSubmit = async (data: ProfileFormValues) => {
@@ -157,6 +142,21 @@ const Profile = () => {
     return Math.round((wins / gameStats.length) * 100);
   };
 
+  // Show auth loading state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="mt-2 text-sm text-muted-foreground">Loading authentication...</p>
+      </div>
+    );
+  }
+  
+  // Redirect if not logged in
+  if (!user) {
+    return <Navigate to="/auth" />;
+  }
+  
   // Show profile loading state
   if (profileLoading) {
     return (
