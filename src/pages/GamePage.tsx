@@ -10,6 +10,12 @@ import { getGameById } from '@/utils/games';
 import TicTacToeConfig from '../../Games/tictactoe';
 import MisereTicTacToe from '../../Games/misere';
 import NumericalTicTacToe from '../../Games/numerical';
+import SOSTicTacToe from '../../Games/sos';
+import SOSExtendedTicTacToe from '../../Games/sosextended';
+import UltimateTicTacToe from '../../Games/ultimate';
+import ThreeDTicTacToe from '../../Games/3D';
+import FeralTicTacToe from '../../Games/feral';
+import UnrestrictedTicTacToe from '../../Games/unrestricted';
 
 const GamePage = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +29,18 @@ const GamePage = () => {
         return <MisereTicTacToe />;
       case 'numerical':
         return <NumericalTicTacToe />;
+      case 'sos':
+        return <SOSTicTacToe />;
+      case 'sos-extended':
+        return <SOSExtendedTicTacToe />;
+      case 'ultimate':
+        return <UltimateTicTacToe />;
+      case '3d':
+        return <ThreeDTicTacToe />;
+      case 'feral':
+        return <FeralTicTacToe />;
+      case 'unrestricted':
+        return <UnrestrictedTicTacToe />;
       default:
         return (
           <div className="text-center py-10">
