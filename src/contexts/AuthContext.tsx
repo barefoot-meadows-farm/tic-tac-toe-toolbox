@@ -24,29 +24,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set loading to true at the start of the auth check
-    setIsLoading(true);
+    let mounted = true;
     
-    // First set up the auth listener for future state changes
+    // Set up the auth listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
+        if (!mounted) return;
         
         if (currentSession?.user) {
-          // Fetch premium status for the user
-          const { data: subscriptionData } = await supabase
-            .from('subscriptions')
-            .select('is_premium')
-            .eq('user_id', currentSession.user.id)
-            .single();
+          setSession(currentSession);
+          setUser(currentSession.user);
           
-          setIsPremium(subscriptionData?.is_premium || false);
+          // Fetch premium status for the user
+          try {
+            const { data: subscriptionData } = await supabase
+              .from('subscriptions')
+              .select('is_premium')
+              .eq('user_id', currentSession.user.id)
+              .single();
+            
+            if (mounted) {
+              setIsPremium(subscriptionData?.is_premium || false);
+            }
+          } catch (error) {
+            console.error("Error fetching subscription data:", error);
+          }
         } else {
+          setSession(null);
+          setUser(null);
           setIsPremium(false);
         }
         
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     );
 
@@ -55,10 +66,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
+        if (!mounted) return;
         
         if (currentSession?.user) {
+          setSession(currentSession);
+          setUser(currentSession.user);
+          
           // Fetch premium status for the user
           try {
             const { data } = await supabase
@@ -67,7 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               .eq('user_id', currentSession.user.id)
               .single();
               
-            setIsPremium(data?.is_premium || false);
+            if (mounted) {
+              setIsPremium(data?.is_premium || false);
+            }
           } catch (error) {
             console.error("Error fetching subscription data:", error);
           }
@@ -75,13 +90,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error("Error getting session:", error);
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
     
     checkSession();
 
-    return () => subscription.unsubscribe();
+    // Cleanup
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

@@ -61,7 +61,7 @@ const Auth = () => {
     try {
       setFormError(null);
       await signIn(values.email, values.password);
-      navigate('/');
+      // Don't navigate here - let the auth state change handle it
     } catch (error: any) {
       setFormError(error.message);
     } finally {
@@ -74,7 +74,7 @@ const Auth = () => {
     try {
       setFormError(null);
       await signUp(values.email, values.password, values.username);
-      navigate('/');
+      // Don't navigate here - let the auth state change handle it
     } catch (error: any) {
       setFormError(error.message);
     } finally {
@@ -82,7 +82,7 @@ const Auth = () => {
     }
   };
   
-  // Show a loading state while checking authentication
+  // Show a loading state while checking authentication with a timeout
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
