@@ -16,9 +16,9 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ErrorBoundary } from 'react-error-boundary';
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 const queryClient = new QueryClient();
-
 
 const ErrorFallback = ({ error }) => {
     return (
@@ -34,44 +34,45 @@ const App = () => (
     <TooltipProvider>
       <AuthProvider>
         <PaywallProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route 
-                path="/" 
-                element={
-                  <AnimatedTransition>
-                    <Index />
-                  </AnimatedTransition>
-                } 
-              />
-              <Route 
-                path="/collection" 
-                element={
-                  <AnimatedTransition>
-                    <Collection />
-                  </AnimatedTransition>
-                } 
-              />
-              <Route 
-                path="/game/:id" 
-                element={
-                  <AnimatedTransition>
-                    <GameDetails />
-                  </AnimatedTransition>
-                } 
-              />
-              <Route
-                path="/play/:id"
-                element={
-                  <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <ThemeProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route 
+                  path="/" 
+                  element={
                     <AnimatedTransition>
-                      <GamePage />
+                      <Index />
                     </AnimatedTransition>
-                  </ErrorBoundary>
-                }
-              />
+                  } 
+                />
+                <Route 
+                  path="/collection" 
+                  element={
+                    <AnimatedTransition>
+                      <Collection />
+                    </AnimatedTransition>
+                  } 
+                />
+                <Route 
+                  path="/game/:id" 
+                  element={
+                    <AnimatedTransition>
+                      <GameDetails />
+                    </AnimatedTransition>
+                  } 
+                />
+                <Route
+                  path="/play/:id"
+                  element={
+                    <ErrorBoundary FallbackComponent={ErrorFallback}>
+                      <AnimatedTransition>
+                        <GamePage />
+                      </AnimatedTransition>
+                    </ErrorBoundary>
+                  }
+                />
                 <Route
                     path="/settings"
                     element={
@@ -102,16 +103,17 @@ const App = () => (
                         </ErrorBoundary>
                     }
                 />
-              <Route 
-                path="*" 
-                element={
-                  <AnimatedTransition>
-                    <NotFound />
-                  </AnimatedTransition>
-                } 
-              />
-            </Routes>
-          </BrowserRouter>
+                <Route 
+                  path="*" 
+                  element={
+                    <AnimatedTransition>
+                      <NotFound />
+                    </AnimatedTransition>
+                  } 
+                />
+              </Routes>
+            </BrowserRouter>
+          </ThemeProvider>
         </PaywallProvider>
       </AuthProvider>
     </TooltipProvider>

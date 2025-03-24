@@ -1,8 +1,27 @@
 
 import { Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 const ThemeSettings = () => {
+  const { 
+    isDarkMode, 
+    toggleDarkMode, 
+    primaryColor, 
+    setPrimaryColor 
+  } = useTheme();
+
+  const colorOptions = [
+    { color: "#7C3AED", className: "bg-primary" }, // Default primary
+    { color: "#6366F1", className: "bg-indigo-500" },
+    { color: "#3B82F6", className: "bg-blue-500" },
+    { color: "#10B981", className: "bg-green-500" },
+    { color: "#F59E0B", className: "bg-yellow-500" },
+    { color: "#EF4444", className: "bg-red-500" },
+  ];
+
   return (
     <div className="border rounded-lg p-4">
       <div className="mb-4">
@@ -18,21 +37,29 @@ const ThemeSettings = () => {
           <span className="font-medium">Color Theme</span>
           <p className="text-xs text-muted-foreground">Select a color palette for the application interface.</p>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-primary"></Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-indigo-500"></Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-blue-500"></Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-green-500"></Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-yellow-500"></Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-red-500"></Button>
+            {colorOptions.map((option) => (
+              <Button 
+                key={option.color}
+                variant="outline" 
+                size="sm" 
+                className={`h-8 w-8 p-0 ${option.className} ${primaryColor === option.color ? 'ring-2 ring-offset-2' : ''}`}
+                onClick={() => setPrimaryColor(option.color)}
+                aria-label={`Set color to ${option.color}`}
+              />
+            ))}
           </div>
         </div>
         
         <div className="flex items-center justify-between">
           <div>
-            <span className="font-medium">Dark Mode</span>
+            <Label htmlFor="dark-mode-toggle" className="font-medium cursor-pointer">Dark Mode</Label>
             <p className="text-xs text-muted-foreground">Switch between light and dark color schemes.</p>
           </div>
-          <input type="checkbox" className="h-4 w-4" />
+          <Switch 
+            id="dark-mode-toggle" 
+            checked={isDarkMode}
+            onCheckedChange={toggleDarkMode}
+          />
         </div>
       </div>
     </div>

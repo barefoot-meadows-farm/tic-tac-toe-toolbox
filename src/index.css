@@ -1,87 +1,51 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 220 20% 10%;
-
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
-
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
-
-    --primary: 220 70% 50%;
-    --primary-foreground: 210 20% 98%;
-
-    --secondary: 220 20% 96%;
-    --secondary-foreground: 220 20% 10%;
-
-    --muted: 220 20% 96%;
-    --muted-foreground: 220 10% 50%;
-
-    --accent: 220 70% 95%;
-    --accent-foreground: 220 70% 20%;
-
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 20% 98%;
-
-    --border: 220 20% 90%;
-    --input: 220 20% 90%;
-    --ring: 220 70% 50%;
-
-    --radius: 0.75rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 220 20% 5%;
-    --foreground: 210 20% 98%;
-
-    --card: 220 20% 7%;
-    --card-foreground: 210 20% 98%;
-
-    --popover: 220 20% 7%;
-    --popover-foreground: 210 20% 98%;
-
-    --primary: 220 70% 50%;
-    --primary-foreground: 210 20% 98%;
-
-    --secondary: 220 20% 12%;
-    --secondary-foreground: 210 20% 98%;
-
-    --muted: 220 20% 12%;
-    --muted-foreground: 220 10% 70%;
-
-    --accent: 220 20% 12%;
-    --accent-foreground: 210 20% 98%;
-
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 20% 98%;
-
-    --border: 220 20% 18%;
-    --input: 220 20% 18%;
-    --ring: 220 70% 60%;
-
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
   }
 }
 
@@ -89,161 +53,9 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-@layer components {
-  .page-transition-enter {
-    @apply opacity-0;
-  }
-  
-  .page-transition-enter-active {
-    @apply opacity-100 transition-opacity duration-300;
-  }
-  
-  .page-transition-exit {
-    @apply opacity-100;
-  }
-  
-  .page-transition-exit-active {
-    @apply opacity-0 transition-opacity duration-300;
-  }
-
-  .board-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 0.5rem;
-    aspect-ratio: 1/1;
-  }
-
-  .cell-hover {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .cell-hover::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: currentColor;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-
-  .cell-hover:hover::after {
-    opacity: 0.05;
-  }
-
-  .x-icon {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-
-  .x-icon::before,
-  .x-icon::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 60%;
-    height: 3px;
-    background-color: currentColor;
-    border-radius: 1.5px;
-    transform-origin: center;
-  }
-
-  .x-icon::before {
-    transform: translate(-50%, -50%) rotate(45deg) scale(0);
-    animation: x-line-1 0.2s forwards ease-out;
-  }
-
-  .x-icon::after {
-    transform: translate(-50%, -50%) rotate(-45deg) scale(0);
-    animation: x-line-2 0.2s 0.1s forwards ease-out;
-  }
-
-  @keyframes x-line-1 {
-    to {
-      transform: translate(-50%, -50%) rotate(45deg) scale(1);
-    }
-  }
-
-  @keyframes x-line-2 {
-    to {
-      transform: translate(-50%, -50%) rotate(-45deg) scale(1);
-    }
-  }
-
-  .o-icon {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .o-icon::before {
-    content: '';
-    position: absolute;
-    width: 60%;
-    height: 60%;
-    border: 3px solid currentColor;
-    border-radius: 50%;
-    opacity: 0;
-    transform: scale(0.8);
-    animation: o-circle 0.3s forwards ease-out;
-  }
-
-  @keyframes o-circle {
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  .link-underline {
-    position: relative;
-  }
-
-  .link-underline::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 1px;
-    bottom: -2px;
-    left: 0;
-    background-color: currentColor;
-    transform: scaleX(0);
-    transform-origin: right;
-    transition: transform 0.3s ease;
-  }
-
-  .link-underline:hover::after {
-    transform: scaleX(1);
-    transform-origin: left;
-  }
-
-  .glass {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-
-  .glass-dark {
-    background: rgba(20, 20, 30, 0.8);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-}
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
