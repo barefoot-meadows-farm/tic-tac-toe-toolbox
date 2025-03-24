@@ -48,12 +48,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Find the min and max values to determine lightness
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
-    let h, s, l = (max + min) / 2;
+    let h = 0, s = 0, l = (max + min) / 2;
     
-    if (max === min) {
-      // Achromatic
-      h = s = 0;
-    } else {
+    if (max !== min) {
       const d = max - min;
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
       
@@ -61,7 +58,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         case r: h = (g - b) / d + (g < b ? 6 : 0); break;
         case g: h = (b - r) / d + 2; break;
         case b: h = (r - g) / d + 4; break;
-        default: h = 0;
       }
       
       h = Math.round(h * 60);
@@ -73,51 +69,79 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return `${h} ${s}% ${l}%`;
   };
 
+  // Apply theme settings to the document
+  const applyThemeSettings = () => {
+    // Apply dark mode
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    // Apply primary color to CSS variables
+    document.documentElement.style.setProperty('--primary', hexToHSL(primaryColor));
+  };
+
   // Load settings from localStorage on mount
   useEffect(() => {
     const loadSettings = () => {
-      const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
-      const primaryColor = localStorage.getItem('primaryColor') || "#7C3AED";
-      const boardSize = localStorage.getItem('boardSize') as 'small' | 'medium' | 'large' || 'medium';
-      const boardStyle = localStorage.getItem('boardStyle') as 'classic' | 'minimal' | 'modern' || 'modern';
-      const boardColor = localStorage.getItem('boardColor') || "#f3f4f6";
-      const animationSpeed = parseInt(localStorage.getItem('animationSpeed') || "75");
-      const player1Symbol = localStorage.getItem('player1Symbol') || 'X';
-      const player2Symbol = localStorage.getItem('player2Symbol') || 'O';
+      try {
+        const storedIsDarkMode = localStorage.getItem('isDarkMode');
+        if (storedIsDarkMode !== null) {
+          setIsDarkMode(storedIsDarkMode === 'true');
+        }
 
-      setIsDarkMode(isDarkMode);
-      setPrimaryColor(primaryColor);
-      setBoardSize(boardSize);
-      setBoardStyle(boardStyle);
-      setBoardColor(boardColor);
-      setAnimationSpeed(animationSpeed);
-      setPlayer1Symbol(player1Symbol);
-      setPlayer2Symbol(player2Symbol);
+        const storedPrimaryColor = localStorage.getItem('primaryColor');
+        if (storedPrimaryColor) {
+          setPrimaryColor(storedPrimaryColor);
+        }
 
-      // Apply dark mode if enabled
-      if (isDarkMode) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
+        const storedBoardSize = localStorage.getItem('boardSize') as 'small' | 'medium' | 'large' | null;
+        if (storedBoardSize) {
+          setBoardSize(storedBoardSize);
+        }
+
+        const storedBoardStyle = localStorage.getItem('boardStyle') as 'classic' | 'minimal' | 'modern' | null;
+        if (storedBoardStyle) {
+          setBoardStyle(storedBoardStyle);
+        }
+
+        const storedBoardColor = localStorage.getItem('boardColor');
+        if (storedBoardColor) {
+          setBoardColor(storedBoardColor);
+        }
+
+        const storedAnimationSpeed = localStorage.getItem('animationSpeed');
+        if (storedAnimationSpeed) {
+          setAnimationSpeed(parseInt(storedAnimationSpeed));
+        }
+
+        const storedPlayer1Symbol = localStorage.getItem('player1Symbol');
+        if (storedPlayer1Symbol) {
+          setPlayer1Symbol(storedPlayer1Symbol);
+        }
+
+        const storedPlayer2Symbol = localStorage.getItem('player2Symbol');
+        if (storedPlayer2Symbol) {
+          setPlayer2Symbol(storedPlayer2Symbol);
+        }
+      } catch (error) {
+        console.error("Error loading theme settings:", error);
       }
-
-      // Apply primary color
-      document.documentElement.style.setProperty('--primary', hexToHSL(primaryColor));
     };
 
     loadSettings();
   }, []);
 
+  // Apply theme settings whenever they change
+  useEffect(() => {
+    applyThemeSettings();
+  }, [isDarkMode, primaryColor]);
+
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     localStorage.setItem('isDarkMode', String(newMode));
-    
-    if (newMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
     
     toast({
       title: `${newMode ? 'Dark' : 'Light'} mode enabled`,
@@ -128,7 +152,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const handleSetPrimaryColor = (color: string) => {
     setPrimaryColor(color);
     localStorage.setItem('primaryColor', color);
-    document.documentElement.style.setProperty('--primary', hexToHSL(color));
     
     toast({
       title: "Color theme updated",
@@ -173,7 +196,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const handleSetPlayer1Symbol = (symbol: string) => {
     if (symbol.length > 2) symbol = symbol.substring(0, 2);
-    if (symbol.length === 0) symbol = 'X'; // Default if empty
+    if (symbol.trim().length === 0) symbol = 'X'; // Default if empty
     setPlayer1Symbol(symbol);
     localStorage.setItem('player1Symbol', symbol);
     
@@ -185,7 +208,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const handleSetPlayer2Symbol = (symbol: string) => {
     if (symbol.length > 2) symbol = symbol.substring(0, 2);
-    if (symbol.length === 0) symbol = 'O'; // Default if empty
+    if (symbol.trim().length === 0) symbol = 'O'; // Default if empty
     setPlayer2Symbol(symbol);
     localStorage.setItem('player2Symbol', symbol);
     

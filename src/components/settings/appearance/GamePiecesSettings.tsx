@@ -39,11 +39,21 @@ const GamePiecesSettings = () => {
   };
   
   const handleSymbol1Blur = () => {
-    setPlayer1Symbol(tempPlayer1);
+    if (tempPlayer1.trim() === '') {
+      setTempPlayer1('X');
+      setPlayer1Symbol('X');
+    } else {
+      setPlayer1Symbol(tempPlayer1);
+    }
   };
   
   const handleSymbol2Blur = () => {
-    setPlayer2Symbol(tempPlayer2);
+    if (tempPlayer2.trim() === '') {
+      setTempPlayer2('O');
+      setPlayer2Symbol('O');
+    } else {
+      setPlayer2Symbol(tempPlayer2);
+    }
   };
   
   const quickSymbolSets: [string, string][] = [
