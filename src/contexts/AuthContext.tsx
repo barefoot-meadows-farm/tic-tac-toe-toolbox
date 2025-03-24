@@ -1,8 +1,8 @@
+
 import {createContext, useContext, useState, useEffect, ReactNode} from 'react';
 import {User, Session} from '@supabase/supabase-js';
 import {supabase} from '@/integrations/supabase/client';
 import {useToast} from '@/components/ui/use-toast';
-import {data} from "autoprefixer";
 
 type AuthContextType = {
   user: User | null;
@@ -31,16 +31,16 @@ export function AuthProvider({children}: { children: ReactNode }) {
     const fetchPremiumStatus = async (userId: string, retryCount = 0) => {
       console.log('Fetching premium status for user:', userId, 'attempt:', retryCount + 1);
       try {
-        const {data, error} = await Promise.race([
+        const { data, error } = await Promise.race([
           supabase
             .from('subscriptions')
             .select('is_premium')
             .eq('user_id', userId)
             .single(),
-          new Promise((_, reject) =>
+          new Promise<{data: null, error: Error}>((_, reject) =>
             setTimeout(() => reject(new Error('Request timeout')), 5000)
           )
-        ]);
+        ]) as { data: { is_premium: boolean } | null, error: Error | null };
 
         if (error) throw error;
 
@@ -67,15 +67,14 @@ export function AuthProvider({children}: { children: ReactNode }) {
     const checkSession = async () => {
       try {
         console.log('Checking for existing session...');
-        const {data: {user: UserResponse}} = await supabase.auth.getUser();
-        console.log(data);
-        // if (!mounted) return;
-        console.log('Current session:', user);
-        if (user) {
-          // User is logged in, set session and user state
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        
+        console.log('Current user:', currentUser);
+        if (currentUser) {
+          // User is logged in, set user state
           // and fetch their premium status
-          setUser(user);
-          await fetchPremiumStatus(user.id);
+          setUser(currentUser);
+          await fetchPremiumStatus(currentUser.id);
         }
       } catch (error) {
         console.error("Error getting session:", error);
