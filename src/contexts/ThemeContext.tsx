@@ -35,6 +35,44 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [player1Symbol, setPlayer1Symbol] = useState('X');
   const [player2Symbol, setPlayer2Symbol] = useState('O');
 
+  // Convert hex to HSL for CSS variables
+  const hexToHSL = (hex: string): string => {
+    // Remove the # if present
+    hex = hex.replace(/^#/, '');
+    
+    // Parse the hex values
+    let r = parseInt(hex.substring(0, 2), 16) / 255;
+    let g = parseInt(hex.substring(2, 4), 16) / 255;
+    let b = parseInt(hex.substring(4, 6), 16) / 255;
+    
+    // Find the min and max values to determine lightness
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    
+    if (max === min) {
+      // Achromatic
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+        default: h = 0;
+      }
+      
+      h = Math.round(h * 60);
+    }
+    
+    s = Math.round(s * 100);
+    l = Math.round(l * 100);
+    
+    return `${h} ${s}% ${l}%`;
+  };
+
   // Load settings from localStorage on mount
   useEffect(() => {
     const loadSettings = () => {
@@ -64,7 +102,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       // Apply primary color
-      document.documentElement.style.setProperty('--primary-color', primaryColor);
+      document.documentElement.style.setProperty('--primary', hexToHSL(primaryColor));
     };
 
     loadSettings();
@@ -90,7 +128,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const handleSetPrimaryColor = (color: string) => {
     setPrimaryColor(color);
     localStorage.setItem('primaryColor', color);
-    document.documentElement.style.setProperty('--primary-color', color);
+    document.documentElement.style.setProperty('--primary', hexToHSL(color));
     
     toast({
       title: "Color theme updated",
@@ -135,6 +173,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const handleSetPlayer1Symbol = (symbol: string) => {
     if (symbol.length > 2) symbol = symbol.substring(0, 2);
+    if (symbol.length === 0) symbol = 'X'; // Default if empty
     setPlayer1Symbol(symbol);
     localStorage.setItem('player1Symbol', symbol);
     
@@ -146,6 +185,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const handleSetPlayer2Symbol = (symbol: string) => {
     if (symbol.length > 2) symbol = symbol.substring(0, 2);
+    if (symbol.length === 0) symbol = 'O'; // Default if empty
     setPlayer2Symbol(symbol);
     localStorage.setItem('player2Symbol', symbol);
     

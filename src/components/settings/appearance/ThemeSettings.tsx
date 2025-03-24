@@ -14,12 +14,12 @@ const ThemeSettings = () => {
   } = useTheme();
 
   const colorOptions = [
-    { color: "#7C3AED", className: "bg-primary" }, // Default primary
-    { color: "#6366F1", className: "bg-indigo-500" },
-    { color: "#3B82F6", className: "bg-blue-500" },
-    { color: "#10B981", className: "bg-green-500" },
-    { color: "#F59E0B", className: "bg-yellow-500" },
-    { color: "#EF4444", className: "bg-red-500" },
+    { color: "#7C3AED", name: "Purple" }, // Default primary
+    { color: "#6366F1", name: "Indigo" },
+    { color: "#3B82F6", name: "Blue" },
+    { color: "#10B981", name: "Green" },
+    { color: "#F59E0B", name: "Yellow" },
+    { color: "#EF4444", name: "Red" },
   ];
 
   return (
@@ -42,10 +42,17 @@ const ThemeSettings = () => {
                 key={option.color}
                 variant="outline" 
                 size="sm" 
-                className={`h-8 w-8 p-0 ${option.className} ${primaryColor === option.color ? 'ring-2 ring-offset-2' : ''}`}
+                className={`h-8 w-8 p-0 rounded-full`}
+                style={{ backgroundColor: option.color }}
                 onClick={() => setPrimaryColor(option.color)}
-                aria-label={`Set color to ${option.color}`}
-              />
+                aria-label={`Set color to ${option.name}`}
+              >
+                {primaryColor === option.color && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <span className="h-2 w-2 rounded-full bg-white"></span>
+                  </span>
+                )}
+              </Button>
             ))}
           </div>
         </div>

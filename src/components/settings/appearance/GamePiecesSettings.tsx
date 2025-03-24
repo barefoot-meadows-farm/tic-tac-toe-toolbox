@@ -4,7 +4,7 @@ import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const GamePiecesSettings = () => {
   const { 
@@ -20,6 +20,12 @@ const GamePiecesSettings = () => {
   const [tempPlayer1, setTempPlayer1] = useState(player1Symbol);
   const [tempPlayer2, setTempPlayer2] = useState(player2Symbol);
   
+  // Update local state when props change
+  useEffect(() => {
+    setTempPlayer1(player1Symbol);
+    setTempPlayer2(player2Symbol);
+  }, [player1Symbol, player2Symbol]);
+  
   const handleSpeedChange = (value: number[]) => {
     setAnimationSpeed(value[0]);
   };
@@ -33,15 +39,11 @@ const GamePiecesSettings = () => {
   };
   
   const handleSymbol1Blur = () => {
-    if (tempPlayer1 !== player1Symbol) {
-      setPlayer1Symbol(tempPlayer1);
-    }
+    setPlayer1Symbol(tempPlayer1);
   };
   
   const handleSymbol2Blur = () => {
-    if (tempPlayer2 !== player2Symbol) {
-      setPlayer2Symbol(tempPlayer2);
-    }
+    setPlayer2Symbol(tempPlayer2);
   };
   
   const quickSymbolSets: [string, string][] = [
@@ -115,10 +117,9 @@ const GamePiecesSettings = () => {
               {quickSymbolSets.map((symbolSet, index) => (
                 <Button 
                   key={index}
-                  variant="outline" 
+                  variant={player1Symbol === symbolSet[0] && player2Symbol === symbolSet[1] ? "default" : "outline"}
                   size="sm"
                   onClick={() => setQuickSymbols(symbolSet)}
-                  className={player1Symbol === symbolSet[0] && player2Symbol === symbolSet[1] ? 'border-primary' : ''}
                 >
                   {symbolSet[0]}/{symbolSet[1]}
                 </Button>
