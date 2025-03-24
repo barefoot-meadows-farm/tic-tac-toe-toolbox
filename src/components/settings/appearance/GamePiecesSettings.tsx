@@ -79,7 +79,7 @@ const GamePiecesSettings = () => {
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
             <span className="font-medium">Animation Speed</span>
-            <span className="text-xs">{animationSpeed < 25 ? 'Slow' : animationSpeed < 50 ? 'Medium' : 'Fast'}</span>
+            <span className="text-xs">{animationSpeed < 25 ? 'Slow' : animationSpeed < 75 ? 'Medium' : 'Fast'}</span>
           </div>
           <p className="text-xs text-muted-foreground">Adjust the speed of gameplay animations.</p>
           <Slider 
