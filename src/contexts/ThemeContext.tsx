@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
 type ThemeContextType = {
@@ -34,6 +34,65 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [animationSpeed, setAnimationSpeed] = useState(75);
   const [player1Symbol, setPlayer1Symbol] = useState('X');
   const [player2Symbol, setPlayer2Symbol] = useState('O');
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const loadSettings = () => {
+      try {
+        // Dark mode
+        const storedIsDarkMode = localStorage.getItem('isDarkMode');
+        if (storedIsDarkMode !== null) {
+          setIsDarkMode(storedIsDarkMode === 'true');
+        } else {
+          // Check system preference if no stored preference
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          setIsDarkMode(prefersDark);
+        }
+
+        // Primary color
+        const storedPrimaryColor = localStorage.getItem('primaryColor');
+        if (storedPrimaryColor) {
+          setPrimaryColor(storedPrimaryColor);
+        }
+
+        // Board settings
+        const storedBoardSize = localStorage.getItem('boardSize') as 'small' | 'medium' | 'large' | null;
+        if (storedBoardSize) {
+          setBoardSize(storedBoardSize);
+        }
+
+        const storedBoardStyle = localStorage.getItem('boardStyle') as 'classic' | 'minimal' | 'modern' | null;
+        if (storedBoardStyle) {
+          setBoardStyle(storedBoardStyle);
+        }
+
+        const storedBoardColor = localStorage.getItem('boardColor');
+        if (storedBoardColor) {
+          setBoardColor(storedBoardColor);
+        }
+
+        // Animation and symbols
+        const storedAnimationSpeed = localStorage.getItem('animationSpeed');
+        if (storedAnimationSpeed) {
+          setAnimationSpeed(parseInt(storedAnimationSpeed));
+        }
+
+        const storedPlayer1Symbol = localStorage.getItem('player1Symbol');
+        if (storedPlayer1Symbol) {
+          setPlayer1Symbol(storedPlayer1Symbol);
+        }
+
+        const storedPlayer2Symbol = localStorage.getItem('player2Symbol');
+        if (storedPlayer2Symbol) {
+          setPlayer2Symbol(storedPlayer2Symbol);
+        }
+      } catch (error) {
+        console.error("Error loading theme settings:", error);
+      }
+    };
+
+    loadSettings();
+  }, []);
 
   // Convert hex to HSL for CSS variables
   const hexToHSL = (hex: string): string => {
@@ -74,73 +133,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  // Apply theme settings to the document
-  const applyThemeSettings = () => {
+  // Apply theme settings whenever they change
+  useEffect(() => {
+    // Apply CSS variable for primary color
+    document.documentElement.style.setProperty('--primary', hexToHSL(primaryColor));
+    
     // Apply dark mode
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-
-    // Apply primary color to CSS variables
-    document.documentElement.style.setProperty('--primary', hexToHSL(primaryColor));
-  };
-
-  // Load settings from localStorage on mount
-  useEffect(() => {
-    const loadSettings = () => {
-      try {
-        const storedIsDarkMode = localStorage.getItem('isDarkMode');
-        if (storedIsDarkMode !== null) {
-          setIsDarkMode(storedIsDarkMode === 'true');
-        }
-
-        const storedPrimaryColor = localStorage.getItem('primaryColor');
-        if (storedPrimaryColor) {
-          setPrimaryColor(storedPrimaryColor);
-        }
-
-        const storedBoardSize = localStorage.getItem('boardSize') as 'small' | 'medium' | 'large' | null;
-        if (storedBoardSize) {
-          setBoardSize(storedBoardSize);
-        }
-
-        const storedBoardStyle = localStorage.getItem('boardStyle') as 'classic' | 'minimal' | 'modern' | null;
-        if (storedBoardStyle) {
-          setBoardStyle(storedBoardStyle);
-        }
-
-        const storedBoardColor = localStorage.getItem('boardColor');
-        if (storedBoardColor) {
-          setBoardColor(storedBoardColor);
-        }
-
-        const storedAnimationSpeed = localStorage.getItem('animationSpeed');
-        if (storedAnimationSpeed) {
-          setAnimationSpeed(parseInt(storedAnimationSpeed));
-        }
-
-        const storedPlayer1Symbol = localStorage.getItem('player1Symbol');
-        if (storedPlayer1Symbol) {
-          setPlayer1Symbol(storedPlayer1Symbol);
-        }
-
-        const storedPlayer2Symbol = localStorage.getItem('player2Symbol');
-        if (storedPlayer2Symbol) {
-          setPlayer2Symbol(storedPlayer2Symbol);
-        }
-      } catch (error) {
-        console.error("Error loading theme settings:", error);
-      }
-    };
-
-    loadSettings();
-  }, []);
-
-  // Apply theme settings whenever they change
-  useEffect(() => {
-    applyThemeSettings();
   }, [isDarkMode, primaryColor]);
 
   const toggleDarkMode = () => {
@@ -197,6 +200,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const handleSetAnimationSpeed = (speed: number) => {
     setAnimationSpeed(speed);
     localStorage.setItem('animationSpeed', String(speed));
+    
+    toast({
+      title: "Animation speed updated",
+      description: `Game animations ${speed < 25 ? 'slowed down' : speed > 75 ? 'sped up' : 'set to medium speed'}.`,
+    });
   };
 
   const handleSetPlayer1Symbol = (symbol: string) => {
@@ -235,28 +243,38 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   };
 
+  // Combine context value with memoization for better performance
+  const contextValue = useMemo(() => ({
+    isDarkMode,
+    toggleDarkMode,
+    primaryColor,
+    setPrimaryColor: handleSetPrimaryColor,
+    boardSize,
+    setBoardSize: handleSetBoardSize,
+    boardStyle,
+    setBoardStyle: handleSetBoardStyle,
+    boardColor,
+    setBoardColor: handleSetBoardColor,
+    animationSpeed,
+    setAnimationSpeed: handleSetAnimationSpeed,
+    player1Symbol,
+    setPlayer1Symbol: handleSetPlayer1Symbol,
+    player2Symbol,
+    setPlayer2Symbol: handleSetPlayer2Symbol,
+    setQuickSymbols: handleSetQuickSymbols
+  }), [
+    isDarkMode, 
+    primaryColor, 
+    boardSize, 
+    boardStyle, 
+    boardColor, 
+    animationSpeed, 
+    player1Symbol, 
+    player2Symbol
+  ]);
+
   return (
-    <ThemeContext.Provider
-      value={{
-        isDarkMode,
-        toggleDarkMode,
-        primaryColor,
-        setPrimaryColor: handleSetPrimaryColor,
-        boardSize,
-        setBoardSize: handleSetBoardSize,
-        boardStyle,
-        setBoardStyle: handleSetBoardStyle,
-        boardColor,
-        setBoardColor: handleSetBoardColor,
-        animationSpeed,
-        setAnimationSpeed: handleSetAnimationSpeed,
-        player1Symbol,
-        setPlayer1Symbol: handleSetPlayer1Symbol,
-        player2Symbol,
-        setPlayer2Symbol: handleSetPlayer2Symbol,
-        setQuickSymbols: handleSetQuickSymbols
-      }}
-    >
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

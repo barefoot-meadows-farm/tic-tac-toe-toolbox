@@ -1,9 +1,11 @@
 
+import React from 'react';
 import { Grid3X3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
-const GameBoardSettings = () => {
+const GameBoardSettings: React.FC = () => {
   const { 
     boardSize, 
     setBoardSize, 
@@ -85,7 +87,7 @@ const GameBoardSettings = () => {
           <p className="text-xs text-muted-foreground">Change the background color of the game board.</p>
           <input 
             type="color" 
-            className="w-full h-10 rounded-md border border-input" 
+            className="w-full h-10 rounded-md border border-input cursor-pointer" 
             value={boardColor}
             onChange={(e) => setBoardColor(e.target.value)}
           />

@@ -1,12 +1,12 @@
 
+import React, { useState, useEffect } from 'react';
 import { SquareUser, Type } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useState, useEffect } from 'react';
 
-const GamePiecesSettings = () => {
+const GamePiecesSettings: React.FC = () => {
   const { 
     animationSpeed, 
     setAnimationSpeed, 
@@ -20,7 +20,7 @@ const GamePiecesSettings = () => {
   const [tempPlayer1, setTempPlayer1] = useState(player1Symbol);
   const [tempPlayer2, setTempPlayer2] = useState(player2Symbol);
   
-  // Update local state when props change
+  // Update local state when context props change
   useEffect(() => {
     setTempPlayer1(player1Symbol);
     setTempPlayer2(player2Symbol);
@@ -65,6 +65,12 @@ const GamePiecesSettings = () => {
     ['1', '0']
   ];
 
+  const getSpeedLabel = (speed: number) => {
+    if (speed < 25) return 'Slow';
+    if (speed < 75) return 'Medium';
+    return 'Fast';
+  };
+
   return (
     <div className="border rounded-lg p-4">
       <div className="mb-4">
@@ -79,7 +85,7 @@ const GamePiecesSettings = () => {
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
             <span className="font-medium">Animation Speed</span>
-            <span className="text-xs">{animationSpeed < 25 ? 'Slow' : animationSpeed < 75 ? 'Medium' : 'Fast'}</span>
+            <span className="text-xs">{getSpeedLabel(animationSpeed)}</span>
           </div>
           <p className="text-xs text-muted-foreground">Adjust the speed of gameplay animations.</p>
           <Slider 

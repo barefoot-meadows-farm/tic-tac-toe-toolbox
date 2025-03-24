@@ -1,66 +1,19 @@
 
+import React from 'react';
 import { Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
-const ThemeSettings = () => {
+const ThemeSettings: React.FC = () => {
   const { 
     isDarkMode, 
     toggleDarkMode, 
     primaryColor, 
     setPrimaryColor 
   } = useTheme();
-
-  // Update CSS variable when primary color changes
-  useEffect(() => {
-    const root = document.documentElement;
-    const hsl = hexToHSL(primaryColor);
-    if (hsl) {
-      root.style.setProperty('--primary', hsl);
-    }
-  }, [primaryColor]);
-
-  // Convert hex to HSL for CSS variables
-  const hexToHSL = (hex: string): string | null => {
-    try {
-      // Remove the # if present
-      hex = hex.replace(/^#/, '');
-      
-      // Parse the hex values
-      let r = parseInt(hex.substring(0, 2), 16) / 255;
-      let g = parseInt(hex.substring(2, 4), 16) / 255;
-      let b = parseInt(hex.substring(4, 6), 16) / 255;
-      
-      // Find the min and max values to determine lightness
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      let h = 0, s = 0, l = (max + min) / 2;
-      
-      if (max !== min) {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        
-        switch (max) {
-          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-          case g: h = (b - r) / d + 2; break;
-          case b: h = (r - g) / d + 4; break;
-        }
-        
-        h = Math.round(h * 60);
-      }
-      
-      s = Math.round(s * 100);
-      l = Math.round(l * 100);
-      
-      return `${h} ${s}% ${l}%`;
-    } catch (error) {
-      console.error("Error converting hex to HSL:", error);
-      return null;
-    }
-  };
 
   const colorOptions = [
     { color: "#7C3AED", name: "Purple" }, // Default primary
@@ -91,7 +44,10 @@ const ThemeSettings = () => {
                 key={option.color}
                 variant="outline" 
                 size="sm" 
-                className={`h-8 w-8 p-0 rounded-full`}
+                className={cn(
+                  "h-8 w-8 p-0 rounded-full",
+                  primaryColor === option.color && "ring-2 ring-offset-2 ring-offset-background ring-primary"
+                )}
                 style={{ backgroundColor: option.color }}
                 onClick={() => setPrimaryColor(option.color)}
                 aria-label={`Set color to ${option.name}`}
