@@ -1,489 +1,199 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-const SOSGame = () => {
-  const [boardSize, setBoardSize] = useState(3);
-  const [board, setBoard] = useState(Array(9).fill(''));
-  const [currentLetter, setCurrentLetter] = useState('S');
-  const [gameStatus, setGameStatus] = useState('Configure your game settings and press Start Game');
-  const [player1Type, setPlayer1Type] = useState('human');
-  const [player2Type, setPlayer2Type] = useState('human');
-  const [currentPlayer, setCurrentPlayer] = useState(1);
-  const [difficulty, setDifficulty] = useState('easy');
-  const [player1Score, setPlayer1Score] = useState(0);
-  const [player2Score, setPlayer2Score] = useState(0);
-  const [cpuDelay, setCpuDelay] = useState(1000);
-  const [showWinningLine, setShowWinningLine] = useState(false);
-  const [winningCells, setWinningCells] = useState([]);
+const SOS = () => {
+  // Game pieces array
+  const pieces = ['S', 'O'];
+  
+  // Initial state
+  const [board, setBoard] = useState(Array(9).fill(null));
+  const [isPlayer1Turn, setIsPlayer1Turn] = useState(true);
+  const [player1UsesFirst, setPlayer1UsesFirst] = useState(true); // Player 1 starts with 'S'
+  const [player2UsesFirst, setPlayer2UsesFirst] = useState(false); // Player 2 starts with 'O'
+  const [winner, setWinner] = useState(null);
   const [gameHistory, setGameHistory] = useState([]);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [gameStarted, setGameStarted] = useState(false);
-
-  // Initialize or reset the board when board size changes
-  useEffect(() => {
-    resetBoard();
-  }, [boardSize]);
-
-  // Computer player logic
-  useEffect(() => {
-    if (!gameStarted) return;
-    
-    if ((currentPlayer === 1 && player1Type === 'computer') || 
-        (currentPlayer === 2 && player2Type === 'computer')) {
-      if (gameStatus === 'Game in progress') {
-        // Add a delay for computer moves to make the game feel more natural
-        const timer = setTimeout(() => {
-          makeComputerMove();
-        }, cpuDelay);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [currentPlayer, player1Type, player2Type, gameStatus, board, gameStarted]);
-
-  const resetBoard = () => {
-    const newBoard = Array(boardSize * boardSize).fill('');
-    setBoard(newBoard);
-    setCurrentLetter('S');
-    setCurrentPlayer(1);
-    setShowWinningLine(false);
-    setWinningCells([]);
-  };
-
-  const startGame = () => {
-    resetBoard();
-    setGameStatus('Game in progress');
-    setGameStarted(true);
-    setGameHistory([]);
-    addToHistory("Game started");
-  };
-
-  const resetGame = () => {
-    resetBoard();
-    setGameStatus('Game in progress');
-    addToHistory("Game reset");
-  };
-
-  const newGame = () => {
-    setGameStarted(false);
-    setGameStatus('Configure your game settings and press Start Game');
-  };
-
-  const makeComputerMove = () => {
-    // Get all empty cells
-    const emptyCells = board.map((cell, index) => cell === '' ? index : null).filter(cell => cell !== null);
-    
-    if (emptyCells.length === 0) return;
-    
-    let move;
-    
-    if (difficulty === 'easy') {
-      // Easy: random move
-      move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+  
+  // Get the current piece for the current player
+  const getCurrentPiece = () => {
+    if (isPlayer1Turn) {
+      return player1UsesFirst ? pieces[0] : pieces[1];
     } else {
-      // Medium or hard: Look for winning moves or block opponent
-      // Try to find a winning move
-      move = findStrategicMove();
-      
-      // If no strategic move found, use random move
-      if (move === null) {
-        move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-      }
+      return player2UsesFirst ? pieces[0] : pieces[1];
     }
-    
-    handleCellClick(move);
   };
   
-  const findStrategicMove = () => {
-    // This is a simplified strategy for SOS
-    // For a more advanced strategy, we would need to check for potential "SOS" formations
+  // Function to check for winner
+  const checkWinner = (boardState) => {
+    const winPatterns = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+      [0, 4, 8], [2, 4, 6]             // diagonals
+    ];
     
-    const emptyCells = board.map((cell, index) => cell === '' ? index : null).filter(cell => cell !== null);
-    
-    // First check if we can complete an SOS
-    if (currentLetter === 'S') {
-      // When placing an 'S', look for existing 'SO' sequences that can be completed
-      for (let i = 0; i < emptyCells.length; i++) {
-        const position = emptyCells[i];
-        const tempBoard = [...board];
-        tempBoard[position] = 'S';
-        
-        if (checkForWinner(tempBoard, position)) {
-          return position;
-        }
+    for (const pattern of winPatterns) {
+      const [a, b, c] = pattern;
+      // Check if the pattern forms "SOS"
+      if (boardState[a] === 'S' && boardState[b] === 'O' && boardState[c] === 'S') {
+        return {
+          player: isPlayer1Turn ? 1 : 2, // Current player made the winning move
+          piece: 'SOS',
+          pattern
+        };
       }
     }
     
-    // If we're placing an 'O', look for positions between two 'S's
-    if (currentLetter === 'O') {
-      for (let i = 0; i < emptyCells.length; i++) {
-        const position = emptyCells[i];
-        const row = Math.floor(position / boardSize);
-        const col = position % boardSize;
-        
-        // Check horizontally
-        if (col > 0 && col < boardSize - 1) {
-          if (board[row * boardSize + col - 1] === 'S' && board[row * boardSize + col + 1] === 'S') {
-            return position;
-          }
-        }
-        
-        // Check vertically
-        if (row > 0 && row < boardSize - 1) {
-          if (board[(row - 1) * boardSize + col] === 'S' && board[(row + 1) * boardSize + col] === 'S') {
-            return position;
-          }
-        }
-        
-        // Check diagonal top-left to bottom-right
-        if (row > 0 && row < boardSize - 1 && col > 0 && col < boardSize - 1) {
-          if (board[(row - 1) * boardSize + col - 1] === 'S' && board[(row + 1) * boardSize + col + 1] === 'S') {
-            return position;
-          }
-        }
-        
-        // Check diagonal top-right to bottom-left
-        if (row > 0 && row < boardSize - 1 && col > 0 && col < boardSize - 1) {
-          if (board[(row - 1) * boardSize + col + 1] === 'S' && board[(row + 1) * boardSize + col - 1] === 'S') {
-            return position;
-          }
-        }
-      }
-    }
-    
-    // If no immediate strategic move, try to set up a future win or prevent opponent's win
-    if (difficulty === 'hard') {
-      if (currentLetter === 'S') {
-        // Place S strategically where it could later form part of an SOS
-        // This is a simplified approach; a more complex strategy would evaluate multiple steps ahead
-        for (let i = 0; i < emptyCells.length; i++) {
-          const position = emptyCells[i];
-          const row = Math.floor(position / boardSize);
-          const col = position % boardSize;
-          
-          // Check for empty spaces that could complete an SOS pattern
-          if (col < boardSize - 2 && board[row * boardSize + col + 1] === '' && board[row * boardSize + col + 2] === '') {
-            return position;
-          }
-          
-          if (row < boardSize - 2 && board[(row + 1) * boardSize + col] === '' && board[(row + 2) * boardSize + col] === '') {
-            return position;
-          }
-          
-          if (row < boardSize - 2 && col < boardSize - 2 && 
-              board[(row + 1) * boardSize + col + 1] === '' && 
-              board[(row + 2) * boardSize + col + 2] === '') {
-            return position;
-          }
-          
-          if (row < boardSize - 2 && col > 1 && 
-              board[(row + 1) * boardSize + col - 1] === '' && 
-              board[(row + 2) * boardSize + col - 2] === '') {
-            return position;
-          }
-        }
-      }
+    // Check for draw
+    if (boardState.every(cell => cell !== null)) {
+      return {
+        player: 'draw',
+        piece: null,
+        pattern: []
+      };
     }
     
     return null;
   };
-
+  
+  // Handle cell click
   const handleCellClick = (index) => {
-    if (!gameStarted || board[index] !== '' || gameStatus !== 'Game in progress') {
-      return;
-    }
-
-    // Create a new board with the current letter placed
-    const newBoard = [...board];
-    newBoard[index] = currentLetter;
-    setBoard(newBoard);
+    // Return if cell is already filled or there's a winner
+    if (board[index] || winner) return;
     
-    // Animation effect for the newly placed letter
-    setIsAnimating(true);
-    setTimeout(() => setIsAnimating(false), 300);
-
-    // Add to history
-    addToHistory(`Player ${currentPlayer} placed ${currentLetter} at position ${index}`);
+    // Get the current piece for this player
+    const currentPiece = getCurrentPiece();
+    
+    // Create a new board with the move
+    const newBoard = [...board];
+    newBoard[index] = currentPiece;
+    
+    // Update game history
+    const moveDescription = `Player ${isPlayer1Turn ? '1' : '2'} placed ${currentPiece} at position ${index + 1}`;
+    const newHistory = [...gameHistory, moveDescription];
     
     // Check for winner
-    if (checkForWinner(newBoard, index)) {
-      const winner = currentPlayer;
-      setGameStatus(`Player ${winner} wins!`);
-      
-      // Update score
-      if (winner === 1) {
-        setPlayer1Score(player1Score + 1);
-      } else {
-        setPlayer2Score(player2Score + 1);
-      }
-      
-      return;
+    const gameResult = checkWinner(newBoard);
+    
+    // Alternate the piece for the current player
+    if (isPlayer1Turn) {
+      setPlayer1UsesFirst(!player1UsesFirst);
+    } else {
+      setPlayer2UsesFirst(!player2UsesFirst);
     }
     
-    // Check for draw
-    if (!newBoard.includes('')) {
-      setGameStatus('Draw!');
-      return;
-    }
-
-    // Switch letter for next turn
-    setCurrentLetter(currentLetter === 'S' ? 'O' : 'S');
+    // Update state
+    setBoard(newBoard);
+    setIsPlayer1Turn(!isPlayer1Turn);
+    setGameHistory(newHistory);
     
-    // Switch player
-    setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
+    if (gameResult) {
+      setWinner(gameResult);
+    }
   };
-
-  const checkForWinner = (boardState, lastMoveIndex) => {
-    if (lastMoveIndex === undefined || boardState[lastMoveIndex] === '') {
-      return false;
-    }
-
-    const row = Math.floor(lastMoveIndex / boardSize);
-    const col = lastMoveIndex % boardSize;
-    
-    // Define directions to check: horizontal, vertical, diagonal down-right, diagonal down-left
-    const directions = [
-      [0, 1], [1, 0], [1, 1], [1, -1]
-    ];
-    
-    for (const [dx, dy] of directions) {
-      const sosSequence = [];
-      
-      for (let i = -2; i <= 0; i++) {
-        // For each starting position, check if an 'SOS' sequence exists
-        const cells = [
-          [row + i * dx, col + i * dy],
-          [row + (i + 1) * dx, col + (i + 1) * dy],
-          [row + (i + 2) * dx, col + (i + 2) * dy]
-        ];
-        
-        if (cells.every(([r, c]) => 
-          r >= 0 && r < boardSize && 
-          c >= 0 && c < boardSize)) {
-          const indices = cells.map(([r, c]) => r * boardSize + c);
-          
-          if (boardState[indices[0]] === 'S' && 
-              boardState[indices[1]] === 'O' && 
-              boardState[indices[2]] === 'S') {
-            setWinningCells(indices);
-            setShowWinningLine(true);
-            return true;
-          }
-        }
-      }
-    }
-    
-    return false;
+  
+  // Reset game
+  const resetGame = () => {
+    setBoard(Array(9).fill(null));
+    setIsPlayer1Turn(true);
+    setPlayer1UsesFirst(true); // Player 1 starts with 'S' again
+    setPlayer2UsesFirst(false); // Player 2 starts with 'O' again
+    setWinner(null);
+    setGameHistory([]);
   };
-
-  const addToHistory = (action) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const newEntry = `[${timestamp}] ${action}`;
-    setGameHistory([newEntry, ...gameHistory.slice(0, 9)]);
-  };
-
-  // Render a cell with appropriate styling
+  
+  // Render board cell
   const renderCell = (index) => {
-    const isWinningCell = winningCells.includes(index);
+    const isWinningCell = winner && winner.pattern.includes(index);
     
     return (
       <div 
-        key={index} 
-        className={`flex items-center justify-center text-3xl font-bold cursor-pointer
-                   h-16 border-2 border-gray-300 transition-all duration-200
-                   ${isWinningCell ? 'bg-green-200' : 'hover:bg-gray-100'}
-                   ${board[index] && isAnimating ? 'scale-110' : ''}`}
+        className={`w-16 h-16 flex items-center justify-center border-2 border-gray-500 text-4xl font-bold cursor-pointer ${isWinningCell ? 'bg-green-200' : 'hover:bg-gray-100'}`}
         onClick={() => handleCellClick(index)}
       >
         {board[index]}
       </div>
     );
   };
-
+  
+  // Get next piece for the next player
+  const getNextPiece = () => {
+    if (isPlayer1Turn) {
+      // What piece will Player 2 use next?
+      return player2UsesFirst ? pieces[0] : pieces[1];
+    } else {
+      // What piece will Player 1 use next?
+      return player1UsesFirst ? pieces[0] : pieces[1];
+    }
+  };
+  
+  // Game status message
+  const getGameStatus = () => {
+    if (winner) {
+      if (winner.player === 'draw') {
+        return "Game ended in a draw!";
+      }
+      return `Player ${winner.player} wins by creating SOS!`;
+    }
+    
+    const currentPlayer = isPlayer1Turn ? 1 : 2;
+    const currentPiece = getCurrentPiece();
+    const nextPlayer = isPlayer1Turn ? 2 : 1;
+    const nextPiece = getNextPiece();
+    
+    return (
+      <div>
+        <div>Player {currentPlayer}'s turn (using '{currentPiece}')</div>
+        <div className="text-sm text-gray-600">Next: Player {nextPlayer} will use '{nextPiece}'</div>
+      </div>
+    );
+  };
+  
   return (
-    <div className="flex flex-col items-center p-4 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">SOS Game</h1>
-      
-      <div className="w-full bg-blue-100 p-4 rounded-lg mb-6">
-        <h2 className="text-xl font-semibold mb-2">Game Rules:</h2>
-        <p className="text-sm mb-1">• Players take turns placing either an S or an O on the grid</p>
-        <p className="text-sm mb-1">• The letter alternates each turn (S, O, S, O...)</p>
-        <p className="text-sm mb-1">• The goal is to form the sequence "SOS" horizontally, vertically, or diagonally</p>
-        <p className="text-sm">• First player to create an SOS wins the game</p>
+    <div className="p-4 flex flex-col md:flex-row items-start gap-6">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold mb-4">SOS Tic Tac Toe</h1>
+        <p className="mb-4">
+          In this variant:
+          <br />• Player 1 starts with 'S', then alternates to 'O' on their next turn
+          <br />• Player 2 starts with 'O', then alternates to 'S' on their next turn
+          <br />• Each player alternates their own playing piece with each of their turns
+          <br />• <strong>Win by creating an "SOS" pattern in any row, column, or diagonal</strong>
+        </p>
+        
+        <div className="mb-4">
+          {getGameStatus()}
+        </div>
+        
+        <div className="grid grid-cols-3 gap-1 mb-4">
+          {Array(9).fill(null).map((_, index) => (
+            <div key={index}>
+              {renderCell(index)}
+            </div>
+          ))}
+        </div>
+        
+        <button 
+          onClick={resetGame}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Reset Game
+        </button>
       </div>
       
-      {!gameStarted ? (
-        <div className="w-full bg-white p-6 rounded-lg shadow-md mb-6">
-          <h2 className="text-2xl font-bold mb-4 text-center">Game Settings</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-bold mb-3 text-lg">Board Options</h3>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Board Size:</label>
-                <select 
-                  className="w-full p-2 border rounded"
-                  value={boardSize}
-                  onChange={(e) => setBoardSize(parseInt(e.target.value))}
-                >
-                  <option value={3}>3x3</option>
-                  <option value={4}>4x4</option>
-                  <option value={5}>5x5</option>
-                </select>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="font-bold mb-3 text-lg">Player Options</h3>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Player 1:</label>
-                <select 
-                  className="w-full p-2 border rounded"
-                  value={player1Type}
-                  onChange={(e) => setPlayer1Type(e.target.value)}
-                >
-                  <option value="human">Human</option>
-                  <option value="computer">Computer</option>
-                </select>
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Player 2:</label>
-                <select 
-                  className="w-full p-2 border rounded"
-                  value={player2Type}
-                  onChange={(e) => setPlayer2Type(e.target.value)}
-                >
-                  <option value="human">Human</option>
-                  <option value="computer">Computer</option>
-                </select>
-              </div>
-            </div>
-            
-            {(player1Type === 'computer' || player2Type === 'computer') && (
-              <div className="md:col-span-2">
-                <h3 className="font-bold mb-3 text-lg">Computer Settings</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Computer Difficulty:</label>
-                    <select 
-                      className="w-full p-2 border rounded"
-                      value={difficulty}
-                      onChange={(e) => setDifficulty(e.target.value)}
-                    >
-                      <option value="easy">Easy</option>
-                      <option value="medium">Medium</option>
-                      <option value="hard">Hard</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">CPU Move Delay (ms):</label>
-                    <input 
-                      type="range" 
-                      min="200" 
-                      max="2000" 
-                      step="200"
-                      value={cpuDelay}
-                      onChange={(e) => setCpuDelay(parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="text-center">{cpuDelay}ms</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex justify-center mt-6">
-            <button 
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded text-lg"
-              onClick={startGame}
-            >
-              Start Game
-            </button>
-          </div>
+      <div className="w-full md:w-64">
+        <h2 className="text-xl font-bold mb-2">Game History</h2>
+        <div className="border p-2 h-64 overflow-y-auto">
+          {gameHistory.length === 0 ? (
+            <p className="text-gray-500">Game moves will appear here...</p>
+          ) : (
+            <ol className="list-decimal pl-5">
+              {gameHistory.map((move, index) => (
+                <li key={index} className="mb-1">{move}</li>
+              ))}
+            </ol>
+          )}
         </div>
-      ) : (
-        <div className="flex flex-col md:flex-row w-full gap-8 mb-6">
-          <div className="flex-1">
-            <div className="flex justify-between items-center mb-4">
-              <div className="text-xl font-bold">
-                <span className={currentPlayer === 1 ? 'text-blue-600 underline' : ''}>
-                  Player 1: {player1Score}
-                </span>
-              </div>
-              <div className="text-xl font-bold">
-                <span className={currentPlayer === 2 ? 'text-red-600 underline' : ''}>
-                  Player 2: {player2Score}
-                </span>
-              </div>
-            </div>
-            
-            <div className="text-center mb-4">
-              <div className="text-lg font-semibold">
-                {gameStatus === 'Game in progress' 
-                  ? `Current Turn: Player ${currentPlayer} (${currentLetter})` 
-                  : gameStatus}
-              </div>
-            </div>
-            
-            <div 
-              className="grid gap-1 mb-6" 
-              style={{ 
-                gridTemplateColumns: `repeat(${boardSize}, 1fr)`,
-                width: `${Math.min(400, boardSize * 70)}px`,
-                margin: '0 auto'
-              }}
-            >
-              {Array(boardSize * boardSize).fill(null).map((_, index) => renderCell(index))}
-            </div>
-            
-            <div className="flex justify-center gap-4 mt-4">
-              <button 
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                onClick={resetGame}
-              >
-                Reset Board
-              </button>
-              <button 
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-                onClick={newGame}
-              >
-                New Game
-              </button>
-            </div>
-          </div>
-          
-          <div className="flex-1">
-            <div className="bg-gray-100 p-4 rounded-lg mb-4">
-              <h3 className="font-bold mb-2">Current Settings</h3>
-              <p><strong>Board Size:</strong> {boardSize}x{boardSize}</p>
-              <p><strong>Player 1:</strong> {player1Type === 'human' ? 'Human' : 'Computer'}</p>
-              <p><strong>Player 2:</strong> {player2Type === 'human' ? 'Human' : 'Computer'}</p>
-              {(player1Type === 'computer' || player2Type === 'computer') && (
-                <>
-                  <p><strong>Computer Difficulty:</strong> {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}</p>
-                  <p><strong>CPU Move Delay:</strong> {cpuDelay}ms</p>
-                </>
-              )}
-            </div>
-            
-            <div className="bg-gray-100 p-4 rounded-lg">
-              <h3 className="font-bold mb-2">Game History</h3>
-              <div className="h-48 overflow-y-auto text-sm">
-                {gameHistory.map((entry, index) => (
-                  <div key={index} className="mb-1">{entry}</div>
-                ))}
-                {gameHistory.length === 0 && <div className="text-gray-500">No moves yet</div>}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 };
 
-export default SOSGame;
+export default SOS;
