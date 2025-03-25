@@ -24,6 +24,12 @@ const ThemeSettings: React.FC = () => {
     { color: "#EF4444", name: "Red" },
   ];
 
+  const handleColorSelect = (color: string) => {
+    if (color !== primaryColor) {
+      setPrimaryColor(color);
+    }
+  };
+
   return (
     <div className="border rounded-lg p-4">
       <div className="mb-4">
@@ -49,8 +55,9 @@ const ThemeSettings: React.FC = () => {
                   primaryColor === option.color && "ring-2 ring-offset-2 ring-offset-background ring-primary"
                 )}
                 style={{ backgroundColor: option.color }}
-                onClick={() => setPrimaryColor(option.color)}
+                onClick={() => handleColorSelect(option.color)}
                 aria-label={`Set color to ${option.name}`}
+                type="button"
               >
                 {primaryColor === option.color && (
                   <span className="absolute inset-0 flex items-center justify-center">

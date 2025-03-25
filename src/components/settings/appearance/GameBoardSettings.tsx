@@ -15,6 +15,25 @@ const GameBoardSettings: React.FC = () => {
     setBoardColor 
   } = useTheme();
 
+  const handleBoardSizeChange = (size: 'small' | 'medium' | 'large') => {
+    if (size !== boardSize) {
+      setBoardSize(size);
+    }
+  };
+
+  const handleBoardStyleChange = (style: 'classic' | 'minimal' | 'modern') => {
+    if (style !== boardStyle) {
+      setBoardStyle(style);
+    }
+  };
+
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = e.target.value;
+    if (newColor !== boardColor) {
+      setBoardColor(newColor);
+    }
+  };
+
   return (
     <div className="border rounded-lg p-4">
       <div className="mb-4">
@@ -33,21 +52,24 @@ const GameBoardSettings: React.FC = () => {
             <Button 
               variant={boardSize === "small" ? "default" : "outline"} 
               size="sm"
-              onClick={() => setBoardSize("small")}
+              onClick={() => handleBoardSizeChange("small")}
+              type="button"
             >
               Small
             </Button>
             <Button 
               variant={boardSize === "medium" ? "default" : "outline"} 
               size="sm"
-              onClick={() => setBoardSize("medium")}
+              onClick={() => handleBoardSizeChange("medium")}
+              type="button"
             >
               Medium
             </Button>
             <Button 
               variant={boardSize === "large" ? "default" : "outline"} 
               size="sm"
-              onClick={() => setBoardSize("large")}
+              onClick={() => handleBoardSizeChange("large")}
+              type="button"
             >
               Large
             </Button>
@@ -61,21 +83,24 @@ const GameBoardSettings: React.FC = () => {
             <Button 
               variant={boardStyle === "classic" ? "default" : "outline"} 
               size="sm"
-              onClick={() => setBoardStyle("classic")}
+              onClick={() => handleBoardStyleChange("classic")}
+              type="button"
             >
               Classic
             </Button>
             <Button 
               variant={boardStyle === "minimal" ? "default" : "outline"} 
               size="sm"
-              onClick={() => setBoardStyle("minimal")}
+              onClick={() => handleBoardStyleChange("minimal")}
+              type="button"
             >
               Minimal
             </Button>
             <Button 
               variant={boardStyle === "modern" ? "default" : "outline"} 
               size="sm"
-              onClick={() => setBoardStyle("modern")}
+              onClick={() => handleBoardStyleChange("modern")}
+              type="button"
             >
               Modern
             </Button>
@@ -89,7 +114,7 @@ const GameBoardSettings: React.FC = () => {
             type="color" 
             className="w-full h-10 rounded-md border border-input cursor-pointer" 
             value={boardColor}
-            onChange={(e) => setBoardColor(e.target.value)}
+            onChange={handleColorChange}
           />
         </div>
       </div>

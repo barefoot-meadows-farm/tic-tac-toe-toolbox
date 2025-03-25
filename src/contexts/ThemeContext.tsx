@@ -24,6 +24,21 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// Track if toast was recently shown to prevent spamming
+let toastDebounceTimers = {
+  darkMode: 0,
+  primaryColor: 0,
+  boardSize: 0,
+  boardStyle: 0,
+  boardColor: 0,
+  animationSpeed: 0,
+  player1Symbol: 0,
+  player2Symbol: 0
+};
+
+// Debounce time in milliseconds
+const DEBOUNCE_TIME = 1000;
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { toast } = useToast();
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -34,6 +49,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [animationSpeed, setAnimationSpeed] = useState(75);
   const [player1Symbol, setPlayer1Symbol] = useState('X');
   const [player2Symbol, setPlayer2Symbol] = useState('O');
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -86,8 +102,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (storedPlayer2Symbol) {
           setPlayer2Symbol(storedPlayer2Symbol);
         }
+        
+        setInitialLoadComplete(true);
       } catch (error) {
         console.error("Error loading theme settings:", error);
+        setInitialLoadComplete(true);
       }
     };
 
@@ -135,6 +154,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Apply theme settings whenever they change
   useEffect(() => {
+    if (!initialLoadComplete) return;
+    
     // Apply CSS variable for primary color
     document.documentElement.style.setProperty('--primary', hexToHSL(primaryColor));
     
@@ -144,67 +165,89 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [isDarkMode, primaryColor]);
+  }, [isDarkMode, primaryColor, initialLoadComplete]);
+
+  // Helper function to show toast with debounce
+  const showToastWithDebounce = (
+    key: keyof typeof toastDebounceTimers, 
+    title: string, 
+    description: string
+  ) => {
+    const now = Date.now();
+    if (now - toastDebounceTimers[key] > DEBOUNCE_TIME) {
+      toast({
+        title,
+        description,
+      });
+      toastDebounceTimers[key] = now;
+    }
+  };
 
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     localStorage.setItem('isDarkMode', String(newMode));
     
-    toast({
-      title: `${newMode ? 'Dark' : 'Light'} mode enabled`,
-      description: `The app theme has been changed to ${newMode ? 'dark' : 'light'} mode.`,
-    });
+    showToastWithDebounce(
+      'darkMode',
+      `${newMode ? 'Dark' : 'Light'} mode enabled`,
+      `The app theme has been changed to ${newMode ? 'dark' : 'light'} mode.`
+    );
   };
 
   const handleSetPrimaryColor = (color: string) => {
     setPrimaryColor(color);
     localStorage.setItem('primaryColor', color);
     
-    toast({
-      title: "Color theme updated",
-      description: "The app's primary color has been updated.",
-    });
+    showToastWithDebounce(
+      'primaryColor',
+      "Color theme updated",
+      "The app's primary color has been updated."
+    );
   };
 
   const handleSetBoardSize = (size: 'small' | 'medium' | 'large') => {
     setBoardSize(size);
     localStorage.setItem('boardSize', size);
     
-    toast({
-      title: "Board size updated",
-      description: `Game board size set to ${size}.`,
-    });
+    showToastWithDebounce(
+      'boardSize',
+      "Board size updated",
+      `Game board size set to ${size}.`
+    );
   };
 
   const handleSetBoardStyle = (style: 'classic' | 'minimal' | 'modern') => {
     setBoardStyle(style);
     localStorage.setItem('boardStyle', style);
     
-    toast({
-      title: "Board style updated",
-      description: `Game board style set to ${style}.`,
-    });
+    showToastWithDebounce(
+      'boardStyle',
+      "Board style updated",
+      `Game board style set to ${style}.`
+    );
   };
 
   const handleSetBoardColor = (color: string) => {
     setBoardColor(color);
     localStorage.setItem('boardColor', color);
     
-    toast({
-      title: "Board color updated",
-      description: "Game board background color has been updated.",
-    });
+    showToastWithDebounce(
+      'boardColor',
+      "Board color updated",
+      "Game board background color has been updated."
+    );
   };
 
   const handleSetAnimationSpeed = (speed: number) => {
     setAnimationSpeed(speed);
     localStorage.setItem('animationSpeed', String(speed));
     
-    toast({
-      title: "Animation speed updated",
-      description: `Game animations ${speed < 25 ? 'slowed down' : speed > 75 ? 'sped up' : 'set to medium speed'}.`,
-    });
+    showToastWithDebounce(
+      'animationSpeed',
+      "Animation speed updated",
+      `Game animations ${speed < 25 ? 'slowed down' : speed > 75 ? 'sped up' : 'set to medium speed'}.`
+    );
   };
 
   const handleSetPlayer1Symbol = (symbol: string) => {
@@ -213,10 +256,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPlayer1Symbol(symbol);
     localStorage.setItem('player1Symbol', symbol);
     
-    toast({
-      title: "Player 1 symbol updated",
-      description: `Player 1 will now use the symbol "${symbol}".`,
-    });
+    showToastWithDebounce(
+      'player1Symbol',
+      "Player 1 symbol updated",
+      `Player 1 will now use the symbol "${symbol}".`
+    );
   };
 
   const handleSetPlayer2Symbol = (symbol: string) => {
@@ -225,10 +269,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPlayer2Symbol(symbol);
     localStorage.setItem('player2Symbol', symbol);
     
-    toast({
-      title: "Player 2 symbol updated",
-      description: `Player 2 will now use the symbol "${symbol}".`,
-    });
+    showToastWithDebounce(
+      'player2Symbol',
+      "Player 2 symbol updated",
+      `Player 2 will now use the symbol "${symbol}".`
+    );
   };
 
   const handleSetQuickSymbols = (symbols: [string, string]) => {
@@ -237,10 +282,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('player1Symbol', symbols[0]);
     localStorage.setItem('player2Symbol', symbols[1]);
     
-    toast({
-      title: "Game symbols updated",
-      description: `Player symbols changed to "${symbols[0]}" and "${symbols[1]}".`,
-    });
+    showToastWithDebounce(
+      'player1Symbol', // We can use either key here
+      "Game symbols updated",
+      `Player symbols changed to "${symbols[0]}" and "${symbols[1]}".`
+    );
   };
 
   // Combine context value with memoization for better performance

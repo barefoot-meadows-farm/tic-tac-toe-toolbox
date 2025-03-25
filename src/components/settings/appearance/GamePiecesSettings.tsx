@@ -27,7 +27,9 @@ const GamePiecesSettings: React.FC = () => {
   }, [player1Symbol, player2Symbol]);
   
   const handleSpeedChange = (value: number[]) => {
-    setAnimationSpeed(value[0]);
+    if (value[0] !== animationSpeed) {
+      setAnimationSpeed(value[0]);
+    }
   };
   
   const handleSymbol1Change = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,20 +41,30 @@ const GamePiecesSettings: React.FC = () => {
   };
   
   const handleSymbol1Blur = () => {
-    if (tempPlayer1.trim() === '') {
-      setTempPlayer1('X');
-      setPlayer1Symbol('X');
-    } else {
-      setPlayer1Symbol(tempPlayer1);
+    if (tempPlayer1 !== player1Symbol) {
+      if (tempPlayer1.trim() === '') {
+        setTempPlayer1('X');
+        setPlayer1Symbol('X');
+      } else {
+        setPlayer1Symbol(tempPlayer1);
+      }
     }
   };
   
   const handleSymbol2Blur = () => {
-    if (tempPlayer2.trim() === '') {
-      setTempPlayer2('O');
-      setPlayer2Symbol('O');
-    } else {
-      setPlayer2Symbol(tempPlayer2);
+    if (tempPlayer2 !== player2Symbol) {
+      if (tempPlayer2.trim() === '') {
+        setTempPlayer2('O');
+        setPlayer2Symbol('O');
+      } else {
+        setPlayer2Symbol(tempPlayer2);
+      }
+    }
+  };
+  
+  const handleQuickSymbolSelect = (symbolSet: [string, string]) => {
+    if (symbolSet[0] !== player1Symbol || symbolSet[1] !== player2Symbol) {
+      setQuickSymbols(symbolSet);
     }
   };
   
@@ -135,7 +147,8 @@ const GamePiecesSettings: React.FC = () => {
                   key={index}
                   variant={player1Symbol === symbolSet[0] && player2Symbol === symbolSet[1] ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setQuickSymbols(symbolSet)}
+                  onClick={() => handleQuickSymbolSelect(symbolSet)}
+                  type="button"
                 >
                   {symbolSet[0]}/{symbolSet[1]}
                 </Button>
