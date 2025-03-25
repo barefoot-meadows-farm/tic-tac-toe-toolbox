@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 const SOS = () => {
   // Get theme context
@@ -16,6 +18,8 @@ const SOS = () => {
   const [player2UsesFirst, setPlayer2UsesFirst] = useState(false); // Player 2 starts with 'O'
   const [winner, setWinner] = useState(null);
   const [gameHistory, setGameHistory] = useState([]);
+  const [lastMove, setLastMove] = useState(null);
+  const [winningSequence, setWinningSequence] = useState([]);
   
   // Get the current piece for the current player
   const getCurrentPiece = () => {
@@ -84,6 +88,9 @@ const SOS = () => {
       setPlayer2UsesFirst(!player2UsesFirst);
     }
     
+    // Set last move for highlighting
+    setLastMove(index);
+    
     // Update state
     setBoard(newBoard);
     setIsPlayer1Turn(!isPlayer1Turn);
@@ -91,6 +98,7 @@ const SOS = () => {
     
     if (gameResult) {
       setWinner(gameResult);
+      setWinningSequence(gameResult.pattern || []);
     }
   };
   
@@ -102,35 +110,13 @@ const SOS = () => {
     setPlayer2UsesFirst(false); // Player 2 starts with 'O' again
     setWinner(null);
     setGameHistory([]);
+    setLastMove(null);
+    setWinningSequence([]);
   };
   
-  // Render board cell
-  const renderCell = (index) => {
-    const isWinningCell = winner && winner.pattern.includes(index);
-    
-    return (
-      <div 
-        className={`w-16 h-16 flex items-center justify-center border-2 ${isDarkMode ? 'border-gray-600' : 'border-gray-500'} text-4xl font-bold cursor-pointer ${
-          isWinningCell 
-            ? isDarkMode ? 'bg-green-900' : 'bg-green-200' 
-            : isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
-        }`}
-        onClick={() => handleCellClick(index)}
-      >
-        {board[index]}
-      </div>
-    );
-  };
-  
-  // Get next piece for the next player
-  const getNextPiece = () => {
-    if (isPlayer1Turn) {
-      // What piece will Player 2 use next?
-      return player2UsesFirst ? pieces[0] : pieces[1];
-    } else {
-      // What piece will Player 1 use next?
-      return player1UsesFirst ? pieces[0] : pieces[1];
-    }
+  // Check if a cell is part of the winning sequence
+  const isWinningCell = (index) => {
+    return winningSequence.includes(index);
   };
   
   // Game status message
@@ -150,16 +136,27 @@ const SOS = () => {
     return (
       <div>
         <div>Player {currentPlayer}'s turn (using '{currentPiece}')</div>
-        <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Next: Player {nextPlayer} will use '{nextPiece}'</div>
+        <div className="text-sm text-muted-foreground">Next: Player {nextPlayer} will use '{nextPiece}'</div>
       </div>
     );
   };
   
+  // Get next piece for the next player
+  const getNextPiece = () => {
+    if (isPlayer1Turn) {
+      // What piece will Player 2 use next?
+      return player2UsesFirst ? pieces[0] : pieces[1];
+    } else {
+      // What piece will Player 1 use next?
+      return player1UsesFirst ? pieces[0] : pieces[1];
+    }
+  };
+  
   return (
-    <div className="p-4 flex flex-col md:flex-row items-start gap-6">
+    <div className="flex flex-col md:flex-row items-start gap-6 p-4">
       <div className="mb-4">
         <h1 className="text-2xl font-bold mb-4">SOS Tic Tac Toe</h1>
-        <p className="mb-4">
+        <p className="mb-4 text-muted-foreground">
           In this variant:
           <br />• Player 1 starts with 'S', then alternates to 'O' on their next turn
           <br />• Player 2 starts with 'O', then alternates to 'S' on their next turn
@@ -171,28 +168,50 @@ const SOS = () => {
           {getGameStatus()}
         </div>
         
-        <div className="grid grid-cols-3 gap-1 mb-4">
-          {Array(9).fill(null).map((_, index) => (
-            <div key={index}>
-              {renderCell(index)}
-            </div>
-          ))}
+        <div className="w-full max-w-sm mx-auto mb-6">
+          <div 
+            className="board-grid bg-muted/30 p-4 rounded-lg shadow-sm"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '0.5rem'
+            }}
+          >
+            {board.map((cell, index) => (
+              <button
+                key={index}
+                className={cn(
+                  "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-300",
+                  !cell && !winner ? "hover:border-primary/50" : "",
+                  isWinningCell(index) ? "bg-primary/10 border-primary" : "",
+                  lastMove === index ? "bg-accent/20" : ""
+                )}
+                onClick={() => handleCellClick(index)}
+                disabled={!!winner || !!board[index]}
+              >
+                {cell && <span className={cell === 'S' ? "text-primary" : "text-accent-foreground"}>{cell}</span>}
+              </button>
+            ))}
+          </div>
         </div>
         
-        <button 
-          onClick={resetGame}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
-          type="button"
-        >
-          Reset Game
-        </button>
+        <div className="text-center">
+          <Button 
+            onClick={resetGame}
+            variant="outline" 
+            className="px-4 py-2 rounded hover:bg-primary/10"
+            type="button"
+          >
+            Reset Game
+          </Button>
+        </div>
       </div>
       
       <div className="w-full md:w-64">
         <h2 className="text-xl font-bold mb-2">Game History</h2>
-        <div className={`border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} p-2 h-64 overflow-y-auto`}>
+        <div className="border border-border p-2 h-64 overflow-y-auto rounded-md bg-background/50">
           {gameHistory.length === 0 ? (
-            <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Game moves will appear here...</p>
+            <p className="text-muted-foreground">Game moves will appear here...</p>
           ) : (
             <ol className="list-decimal pl-5">
               {gameHistory.map((move, index) => (

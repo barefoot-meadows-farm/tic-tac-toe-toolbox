@@ -1,4 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const MisereTicTacToe = () => {
   // Game configuration options
@@ -193,41 +196,39 @@ const MisereTicTacToe = () => {
     }
   };
 
-  // Render the game cell
-  const renderCell = (index) => {
-    const isLastMove = lastMove === index && showLastMove;
-    const isLosingCell = losingLine.includes(index);
-    
-    // Determine cell background color
-    let bgColor = 'bg-white';
-    if (isLosingCell) {
-      bgColor = 'bg-red-200'; // Use red for losing lines in Misère
-    } else if (isLastMove) {
-      bgColor = 'bg-yellow-100';
-    }
-    
-    return (
-      <div
-        key={index}
-        className={`flex items-center justify-center text-4xl font-bold cursor-pointer
-                   border border-gray-400 ${bgColor}`}
-        style={{ 
-          width: `${100 / boardSize}%`, 
-          height: `${100 / boardSize}%`,
-          aspectRatio: '1 / 1'
-        }}
-        onClick={() => handleCellClick(index)}
-      >
-        {board[index]}
-      </div>
-    );
+  // Check if a cell is part of the losing line
+  const isLosingCell = (index) => {
+    return losingLine.includes(index);
   };
 
   // Render the game board
   const renderBoard = () => {
     return (
-      <div className="flex flex-wrap w-64 h-64 border border-gray-400">
-        {board.map((_, index) => renderCell(index))}
+      <div 
+        className="board-grid bg-muted/30 p-4 rounded-lg shadow-sm w-full max-w-sm mx-auto"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${boardSize}, 1fr)`,
+          gap: boardSize > 3 ? '0.25rem' : '0.5rem'
+        }}
+      >
+        {board.map((cell, index) => (
+          <button
+            key={index}
+            className={cn(
+              "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center font-bold transition-all duration-300",
+              isPlaying && !loser && !cell ? "hover:border-primary/50" : "",
+              isLosingCell(index) ? "bg-red-100 border-red-400" : "",
+              lastMove === index && showLastMove ? "bg-accent/20" : "",
+              boardSize > 3 ? "text-xl" : "text-3xl"
+            )}
+            onClick={() => handleCellClick(index)}
+            disabled={!isPlaying || loser || cell !== ''}
+          >
+            {cell === 'X' && <span className="text-primary">{cell}</span>}
+            {cell === 'O' && <span className="text-accent-foreground">{cell}</span>}
+          </button>
+        ))}
       </div>
     );
   };
@@ -247,42 +248,42 @@ const MisereTicTacToe = () => {
   return (
     <div className="flex flex-col items-center p-6">
       <h1 className="text-3xl font-bold mb-4">Misère Tic Tac Toe</h1>
-      <p className="text-gray-600 mb-4">Avoid getting {winCondition} in a row to win!</p>
+      <p className="text-muted-foreground mb-4">Avoid getting {winCondition} in a row to win!</p>
       
       {!isPlaying && !loser ? (
-        <div className="w-full max-w-md p-4 bg-gray-100 rounded mb-6">
+        <div className="w-full max-w-md p-4 bg-background/80 rounded-lg border border-border mb-6">
           <h2 className="text-xl font-semibold mb-3">Game Configuration</h2>
           
           <div className="mb-3">
-            <label className="block text-gray-700 mb-1">Board Size:</label>
+            <label className="block text-foreground mb-1">Board Size:</label>
             <select 
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded bg-background border-border"
               value={boardSize}
               onChange={(e) => setBoardSize(parseInt(e.target.value))}
             >
-              <option value="3">3x3</option>
-              <option value="4">4x4</option>
-              <option value="5">5x5</option>
+              <option value={3}>3x3</option>
+              <option value={4}>4x4</option>
+              <option value={5}>5x5</option>
             </select>
           </div>
           
           <div className="mb-3">
-            <label className="block text-gray-700 mb-1">Lose Condition (in a row):</label>
+            <label className="block text-foreground mb-1">Lose Condition (in a row):</label>
             <select 
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded bg-background border-border"
               value={winCondition}
               onChange={(e) => setWinCondition(parseInt(e.target.value))}
             >
-              <option value="3">3 in a row</option>
-              {boardSize >= 4 && <option value="4">4 in a row</option>}
-              {boardSize >= 5 && <option value="5">5 in a row</option>}
+              <option value={3}>3 in a row</option>
+              {boardSize >= 4 && <option value={4}>4 in a row</option>}
+              {boardSize >= 5 && <option value={5}>5 in a row</option>}
             </select>
           </div>
           
           <div className="mb-3">
-            <label className="block text-gray-700 mb-1">Time Limit (seconds per move):</label>
+            <label className="block text-foreground mb-1">Time Limit (seconds per move):</label>
             <select 
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded bg-background border-border"
               value={timeLimit}
               onChange={(e) => setTimeLimit(parseInt(e.target.value))}
             >
@@ -301,15 +302,16 @@ const MisereTicTacToe = () => {
               checked={showLastMove}
               onChange={(e) => setShowLastMove(e.target.checked)}
             />
-            <label htmlFor="showLastMove">Highlight last move</label>
+            <label htmlFor="showLastMove" className="text-foreground">Highlight last move</label>
           </div>
           
-          <button
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+          <Button
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold py-2 px-4 rounded"
             onClick={startGame}
+            type="button"
           >
             Start Game
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="mb-4 w-full max-w-md">
@@ -321,6 +323,14 @@ const MisereTicTacToe = () => {
             {timeLimit > 0 && isPlaying && (
               <div className="text-lg">
                 Time: {timeLeft}s
+                <div className="w-full bg-muted h-1 mt-1 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-primary h-full transition-all duration-1000"
+                    style={{ 
+                      width: `${(timeLeft / timeLimit) * 100}%` 
+                    }}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -328,19 +338,20 @@ const MisereTicTacToe = () => {
           {renderBoard()}
           
           <div className="mt-4 flex justify-between">
-            <button
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2"
+            <Button
+              variant="outline"
+              className="py-2 px-4 rounded mr-2"
               onClick={resetGame}
             >
               Reset Game
-            </button>
+            </Button>
             
-            <button
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            <Button
+              className="bg-primary text-primary-foreground hover:bg-primary/90 py-2 px-4 rounded"
               onClick={() => setIsPlaying(false)}
             >
               Change Settings
-            </button>
+            </Button>
           </div>
         </div>
       )}
