@@ -1,6 +1,11 @@
+
 import React, { useState } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const SOS = () => {
+  // Get theme context
+  const { isDarkMode } = useTheme();
+  
   // Game pieces array
   const pieces = ['S', 'O'];
   
@@ -105,7 +110,11 @@ const SOS = () => {
     
     return (
       <div 
-        className={`w-16 h-16 flex items-center justify-center border-2 border-gray-500 text-4xl font-bold cursor-pointer ${isWinningCell ? 'bg-green-200' : 'hover:bg-gray-100'}`}
+        className={`w-16 h-16 flex items-center justify-center border-2 ${isDarkMode ? 'border-gray-600' : 'border-gray-500'} text-4xl font-bold cursor-pointer ${
+          isWinningCell 
+            ? isDarkMode ? 'bg-green-900' : 'bg-green-200' 
+            : isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+        }`}
         onClick={() => handleCellClick(index)}
       >
         {board[index]}
@@ -141,7 +150,7 @@ const SOS = () => {
     return (
       <div>
         <div>Player {currentPlayer}'s turn (using '{currentPiece}')</div>
-        <div className="text-sm text-gray-600">Next: Player {nextPlayer} will use '{nextPiece}'</div>
+        <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Next: Player {nextPlayer} will use '{nextPiece}'</div>
       </div>
     );
   };
@@ -172,7 +181,8 @@ const SOS = () => {
         
         <button 
           onClick={resetGame}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+          type="button"
         >
           Reset Game
         </button>
@@ -180,9 +190,9 @@ const SOS = () => {
       
       <div className="w-full md:w-64">
         <h2 className="text-xl font-bold mb-2">Game History</h2>
-        <div className="border p-2 h-64 overflow-y-auto">
+        <div className={`border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} p-2 h-64 overflow-y-auto`}>
           {gameHistory.length === 0 ? (
-            <p className="text-gray-500">Game moves will appear here...</p>
+            <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Game moves will appear here...</p>
           ) : (
             <ol className="list-decimal pl-5">
               {gameHistory.map((move, index) => (
