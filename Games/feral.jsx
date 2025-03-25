@@ -1,6 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const FeralTicTacToe = () => {
+  // Get theme context
+  const { isDarkMode } = useTheme();
+  
   // Game configuration state
   const [gameStarted, setGameStarted] = useState(false);
   const [boardSize, setBoardSize] = useState(3);
@@ -376,7 +381,7 @@ const FeralTicTacToe = () => {
   const renderBoard = () => {
     return (
       <div 
-        className="grid gap-1 bg-gray-300 p-1 mx-auto" 
+        className={`grid gap-1 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'} p-1 mx-auto`}
         style={{ 
           gridTemplateColumns: `repeat(${boardSize}, 1fr)`,
           width: `${boardSize * 70 + (boardSize - 1) * 4 + 8}px`
@@ -392,9 +397,9 @@ const FeralTicTacToe = () => {
     const isWinningCell = winningSequence.includes(index);
     
     const cellClasses = `
-      flex items-center justify-center h-16 w-16 bg-white font-bold text-3xl cursor-pointer
+      flex items-center justify-center h-16 w-16 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} font-bold text-3xl cursor-pointer
       ${isHighlighted && isAnimating ? 'scale-110 transform transition-transform duration-200' : ''}
-      ${isWinningCell ? 'bg-green-200' : 'hover:bg-gray-100'}
+      ${isWinningCell ? (isDarkMode ? 'bg-green-900' : 'bg-green-200') : (isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
       ${board[index] === 'X' ? 'text-blue-600' : ''}
       ${board[index] === 'O' ? 'text-red-600' : ''}
     `;
@@ -417,7 +422,7 @@ const FeralTicTacToe = () => {
     <div className="flex flex-col items-center p-4 max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold mb-4">Feral Tic-Tac-Toe</h1>
       
-      <div className="w-full bg-blue-100 p-4 rounded-lg mb-6">
+      <div className={`w-full ${isDarkMode ? 'bg-blue-950' : 'bg-blue-100'} p-4 rounded-lg mb-6`}>
         <h2 className="text-xl font-semibold mb-2">Game Rules:</h2>
         <p className="text-sm mb-1">• Players take turns placing X or O on the grid</p>
         <p className="text-sm mb-1">• Unlike traditional Tic-Tac-Toe, players can overwrite existing marks</p>
@@ -426,7 +431,7 @@ const FeralTicTacToe = () => {
       </div>
       
       {!gameStarted ? (
-        <div className="w-full bg-white p-6 rounded-lg shadow-md mb-6">
+        <div className={`w-full ${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow-md mb-6`}>
           <h2 className="text-2xl font-bold mb-4 text-center">Game Settings</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -436,7 +441,7 @@ const FeralTicTacToe = () => {
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Board Size:</label>
                 <select 
-                  className="w-full p-2 border rounded"
+                  className={`w-full p-2 border rounded ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-black'}`}
                   value={boardSize}
                   onChange={(e) => {
                     const newSize = parseInt(e.target.value);
@@ -455,7 +460,7 @@ const FeralTicTacToe = () => {
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Win Condition:</label>
                 <select 
-                  className="w-full p-2 border rounded"
+                  className={`w-full p-2 border rounded ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-black'}`}
                   value={winLength}
                   onChange={(e) => setWinLength(parseInt(e.target.value))}
                 >
@@ -471,7 +476,7 @@ const FeralTicTacToe = () => {
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Player X:</label>
                 <select 
-                  className="w-full p-2 border rounded"
+                  className={`w-full p-2 border rounded ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-black'}`}
                   value={player1Type}
                   onChange={(e) => setPlayer1Type(e.target.value)}
                 >
@@ -483,7 +488,7 @@ const FeralTicTacToe = () => {
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Player O:</label>
                 <select 
-                  className="w-full p-2 border rounded"
+                  className={`w-full p-2 border rounded ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-black'}`}
                   value={player2Type}
                   onChange={(e) => setPlayer2Type(e.target.value)}
                 >
@@ -501,7 +506,7 @@ const FeralTicTacToe = () => {
                   <div>
                     <label className="block text-sm font-medium mb-1">Computer Difficulty:</label>
                     <select 
-                      className="w-full p-2 border rounded"
+                      className={`w-full p-2 border rounded ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-black'}`}
                       value={difficulty}
                       onChange={(e) => setDifficulty(e.target.value)}
                     >
@@ -533,6 +538,7 @@ const FeralTicTacToe = () => {
             <button 
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded text-lg"
               onClick={startGame}
+              type="button"
             >
               Start Game
             </button>
@@ -555,7 +561,7 @@ const FeralTicTacToe = () => {
             </div>
             
             <div className="text-center mb-4">
-              <div className="text-lg font-semibold">
+              <div className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
                 {gameStatus === 'Game in progress' 
                   ? `Current Turn: Player ${currentPlayer}` 
                   : gameStatus}
@@ -566,14 +572,16 @@ const FeralTicTacToe = () => {
             
             <div className="flex justify-center gap-4 mt-6">
               <button 
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold py-2 px-4 rounded"
                 onClick={resetGame}
+                type="button"
               >
                 Reset Board
               </button>
               <button 
                 className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
                 onClick={newGame}
+                type="button"
               >
                 New Game
               </button>
@@ -581,7 +589,7 @@ const FeralTicTacToe = () => {
           </div>
           
           <div className="md:w-2/5">
-            <div className="bg-gray-100 p-4 rounded-lg mb-4">
+            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'} p-4 rounded-lg mb-4`}>
               <h3 className="font-bold mb-2">Current Settings</h3>
               <p><strong>Board Size:</strong> {boardSize}×{boardSize}</p>
               <p><strong>Win Condition:</strong> {winLength} in a row</p>
@@ -595,19 +603,19 @@ const FeralTicTacToe = () => {
               )}
             </div>
             
-            <div className="bg-gray-100 p-4 rounded-lg mb-4">
+            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'} p-4 rounded-lg mb-4`}>
               <h3 className="font-bold mb-2">Overwrite Stats</h3>
               <p><strong>Player X overwrites:</strong> {overwriteCount.X}</p>
               <p><strong>Player O overwrites:</strong> {overwriteCount.O}</p>
             </div>
             
-            <div className="bg-gray-100 p-4 rounded-lg">
+            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'} p-4 rounded-lg`}>
               <h3 className="font-bold mb-2">Game History</h3>
-              <div className="h-48 overflow-y-auto text-sm">
+              <div className={`h-48 overflow-y-auto text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {gameHistory.map((entry, index) => (
                   <div key={index} className="mb-1">{entry}</div>
                 ))}
-                {gameHistory.length === 0 && <div className="text-gray-500">No moves yet</div>}
+                {gameHistory.length === 0 && <div className={`${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>No moves yet</div>}
               </div>
             </div>
           </div>
