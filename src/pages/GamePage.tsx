@@ -5,7 +5,6 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { getGameById } from '@/utils/games';
-import { useTheme } from '@/contexts/ThemeContext';
 
 // Import game components
 import TicTacToeConfig from '../../Games/tictactoe';
@@ -21,7 +20,6 @@ import UnrestrictedTicTacToe from '../../Games/unrestricted';
 const GamePage = () => {
   const { id } = useParams<{ id: string }>();
   const game = getGameById(id || '');
-  const { isDarkMode } = useTheme();
   
   const renderGame = () => {
     switch(id) {
@@ -58,7 +56,7 @@ const GamePage = () => {
   };
   
   return (
-    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'bg-background text-foreground' : ''}`}>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       
       <main className="flex-grow pt-24">

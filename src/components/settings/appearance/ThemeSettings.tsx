@@ -3,14 +3,10 @@ import React from 'react';
 import { Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 
 const ThemeSettings: React.FC = () => {
   const { 
-    isDarkMode, 
-    toggleDarkMode, 
     primaryColor, 
     setPrimaryColor 
   } = useTheme();
@@ -67,18 +63,6 @@ const ThemeSettings: React.FC = () => {
               </Button>
             ))}
           </div>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <div>
-            <Label htmlFor="dark-mode-toggle" className="font-medium cursor-pointer">Dark Mode</Label>
-            <p className="text-xs text-muted-foreground">Switch between light and dark color schemes.</p>
-          </div>
-          <Switch 
-            id="dark-mode-toggle" 
-            checked={isDarkMode}
-            onCheckedChange={toggleDarkMode}
-          />
         </div>
       </div>
     </div>

@@ -3,8 +3,6 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from "
 import { useToast } from "@/components/ui/use-toast";
 
 type ThemeContextType = {
-  isDarkMode: boolean;
-  toggleDarkMode: () => void;
   primaryColor: string;
   setPrimaryColor: (color: string) => void;
   boardSize: 'small' | 'medium' | 'large';
@@ -26,7 +24,6 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 // Track if toast was recently shown to prevent spamming
 let toastDebounceTimers = {
-  darkMode: 0,
   primaryColor: 0,
   boardSize: 0,
   boardStyle: 0,
@@ -41,7 +38,6 @@ const DEBOUNCE_TIME = 1000;
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { toast } = useToast();
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [primaryColor, setPrimaryColor] = useState("#7C3AED"); // Default primary color
   const [boardSize, setBoardSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [boardStyle, setBoardStyle] = useState<'classic' | 'minimal' | 'modern'>('modern');
@@ -55,16 +51,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const loadSettings = () => {
       try {
-        // Dark mode
-        const storedIsDarkMode = localStorage.getItem('isDarkMode');
-        if (storedIsDarkMode !== null) {
-          setIsDarkMode(storedIsDarkMode === 'true');
-        } else {
-          // Check system preference if no stored preference
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          setIsDarkMode(prefersDark);
-        }
-
         // Primary color
         const storedPrimaryColor = localStorage.getItem('primaryColor');
         if (storedPrimaryColor) {
@@ -159,13 +145,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Apply CSS variable for primary color
     document.documentElement.style.setProperty('--primary', hexToHSL(primaryColor));
     
-    // Apply dark mode
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode, primaryColor, initialLoadComplete]);
+    // Remove dark mode class if it was previously applied
+    document.documentElement.classList.remove('dark');
+  }, [primaryColor, initialLoadComplete]);
 
   // Helper function to show toast with debounce
   const showToastWithDebounce = (
@@ -181,18 +163,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
       toastDebounceTimers[key] = now;
     }
-  };
-
-  const toggleDarkMode = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    localStorage.setItem('isDarkMode', String(newMode));
-    
-    showToastWithDebounce(
-      'darkMode',
-      `${newMode ? 'Dark' : 'Light'} mode enabled`,
-      `The app theme has been changed to ${newMode ? 'dark' : 'light'} mode.`
-    );
   };
 
   const handleSetPrimaryColor = (color: string) => {
@@ -291,8 +261,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Combine context value with memoization for better performance
   const contextValue = useMemo(() => ({
-    isDarkMode,
-    toggleDarkMode,
     primaryColor,
     setPrimaryColor: handleSetPrimaryColor,
     boardSize,
@@ -309,7 +277,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPlayer2Symbol: handleSetPlayer2Symbol,
     setQuickSymbols: handleSetQuickSymbols
   }), [
-    isDarkMode, 
     primaryColor, 
     boardSize, 
     boardStyle, 
