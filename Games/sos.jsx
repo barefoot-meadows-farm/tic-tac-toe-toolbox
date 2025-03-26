@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
-const SOS = () => {
+const SOS = ({ settings }) => {
   // Get theme context
   const { isDarkMode } = useTheme();
   
@@ -12,7 +12,8 @@ const SOS = () => {
   const pieces = ['S', 'O'];
   
   // Initial state
-  const [board, setBoard] = useState(Array(9).fill(null));
+  const [boardSize, setBoardSize] = useState(settings?.boardSize || 3);
+  const [board, setBoard] = useState(Array(boardSize * boardSize).fill(null));
   const [isPlayer1Turn, setIsPlayer1Turn] = useState(true);
   const [player1UsesFirst, setPlayer1UsesFirst] = useState(true); // Player 1 starts with 'S'
   const [player2UsesFirst, setPlayer2UsesFirst] = useState(false); // Player 2 starts with 'O'
@@ -104,7 +105,7 @@ const SOS = () => {
   
   // Reset game
   const resetGame = () => {
-    setBoard(Array(9).fill(null));
+    setBoard(Array(boardSize * boardSize).fill(null));
     setIsPlayer1Turn(true);
     setPlayer1UsesFirst(true); // Player 1 starts with 'S' again
     setPlayer2UsesFirst(false); // Player 2 starts with 'O' again
@@ -173,7 +174,7 @@ const SOS = () => {
             className="board-grid bg-muted/30 p-4 rounded-lg shadow-sm"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
+              gridTemplateColumns: `repeat(${boardSize}, 1fr)`,
               gap: '0.5rem'
             }}
           >

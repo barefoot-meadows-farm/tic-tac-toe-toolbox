@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-const SOSExtended = () => {
+const SOSExtended = ({ settings }) => {
   // Game configuration state
   const [gameStarted, setGameStarted] = useState(false);
-  const [boardSize, setBoardSize] = useState(5);
-  const [player1Type, setPlayer1Type] = useState('human');
+  const [boardSize, setBoardSize] = useState(settings?.boardSize || 5);
+  const [player1Type, setPlayer1Type] = useState(settings?.opponent === 'ai' ? 'computer' : 'human');
   const [player2Type, setPlayer2Type] = useState('human');
   const [player1Symbol, setPlayer1Symbol] = useState('both');
   const [player2Symbol, setPlayer2Symbol] = useState('both');
   const [gameMode, setGameMode] = useState('points');
   const [targetScore, setTargetScore] = useState(5);
-  const [difficulty, setDifficulty] = useState('medium');
+  const [difficulty, setDifficulty] = useState(settings?.difficulty || 'medium');
   const [cpuDelay, setCpuDelay] = useState(800);
   
   // Game state
@@ -378,43 +380,32 @@ const SOSExtended = () => {
 
   // Rendering functions
   const renderBoard = () => {
-    // Calculate cell size based on board size
-    const cellSize = Math.max(30, Math.min(50, 400 / boardSize));
-    
     return (
       <div 
-        className="grid gap-1 bg-gray-300 p-1 mx-auto" 
-        style={{ 
+        className="board-grid bg-muted/30 p-4 rounded-lg shadow-sm w-full max-w-sm mx-auto"
+        style={{
+          display: 'grid',
           gridTemplateColumns: `repeat(${boardSize}, 1fr)`,
-          width: `${boardSize * cellSize + (boardSize - 1) * 4 + 8}px`
+          gap: boardSize > 3 ? '0.25rem' : '0.5rem'
         }}
       >
-        {board.map((cell, index) => renderCell(index, cellSize))}
-      </div>
-    );
-  };
-
-  const renderCell = (index, cellSize) => {
-    const isHighlighted = lastMove === index;
-    const isPartOfWinningSequence = highlightedSequence && highlightedSequence.includes(index);
-    
-    const cellClasses = `
-      flex items-center justify-center font-bold bg-white cursor-pointer
-      ${board[index] ? '' : 'hover:bg-gray-100'}
-      ${isHighlighted && isAnimating ? 'scale-110 transform transition-transform duration-200' : ''}
-      ${isPartOfWinningSequence ? 'bg-green-200' : ''}
-    `;
-    
-    return (
-      <div
-        key={index}
-        className={cellClasses}
-        style={{ height: `${cellSize}px`, width: `${cellSize}px` }}
-        onClick={() => handleCellClick(index)}
-      >
-        <span className={`text-xl ${board[index] === 'S' ? 'text-blue-600' : 'text-red-600'}`}>
-          {board[index]}
-        </span>
+        {board.map((cell, index) => (
+          <button
+            key={index}
+            className={cn(
+              "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center font-bold transition-all duration-300",
+              gameStarted && !gameStatus.includes('Game over') && !cell ? "hover:border-primary/50" : "",
+              highlightedSequence && highlightedSequence.includes(index) ? "bg-green-100 border-green-400" : "",
+              lastMove === index && isAnimating ? "bg-accent/20" : "",
+              boardSize > 5 ? "text-sm" : boardSize > 3 ? "text-xl" : "text-3xl"
+            )}
+            onClick={() => handleCellClick(index)}
+            disabled={!gameStarted || gameStatus !== 'Game in progress' || cell !== ''}
+          >
+            {cell === 'S' && <span className="text-primary">{cell}</span>}
+            {cell === 'O' && <span className="text-accent-foreground">{cell}</span>}
+          </button>
+        ))}
       </div>
     );
   };
@@ -424,7 +415,7 @@ const SOSExtended = () => {
     <div className="mb-4">
       <label className="block text-sm font-medium mb-1">{label}:</label>
       <select 
-        className="w-full p-2 border rounded"
+        className="w-full p-2 border rounded bg-background border-border"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -472,7 +463,7 @@ const SOSExtended = () => {
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Game Mode:</label>
                 <select 
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded bg-background border-border"
                   value={gameMode}
                   onChange={(e) => setGameMode(e.target.value)}
                 >
@@ -502,7 +493,7 @@ const SOSExtended = () => {
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Player 1:</label>
                 <select 
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded bg-background border-border"
                   value={player1Type}
                   onChange={(e) => setPlayer1Type(e.target.value)}
                 >
@@ -521,7 +512,7 @@ const SOSExtended = () => {
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Player 2:</label>
                 <select 
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded bg-background border-border"
                   value={player2Type}
                   onChange={(e) => setPlayer2Type(e.target.value)}
                 >
@@ -546,7 +537,7 @@ const SOSExtended = () => {
                   <div>
                     <label className="block text-sm font-medium mb-1">Computer Difficulty:</label>
                     <select 
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border rounded bg-background border-border"
                       value={difficulty}
                       onChange={(e) => setDifficulty(e.target.value)}
                     >
@@ -575,12 +566,12 @@ const SOSExtended = () => {
           </div>
           
           <div className="flex justify-center mt-6">
-            <button 
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded text-lg"
+            <Button 
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold py-2 px-6 rounded text-lg"
               onClick={startGame}
             >
               Start Game
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
@@ -627,23 +618,23 @@ const SOSExtended = () => {
             {renderBoard()}
             
             <div className="flex justify-center gap-4 mt-6">
-              <button 
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              <Button 
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={resetGame}
               >
                 Reset Board
-              </button>
-              <button 
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              </Button>
+              <Button 
+                variant="outline"
                 onClick={newGame}
               >
                 New Game
-              </button>
+              </Button>
             </div>
           </div>
           
           <div className="md:w-2/5">
-            <div className="bg-gray-100 p-4 rounded-lg mb-4">
+            <div className="bg-muted/30 p-4 rounded-lg mb-4">
               <h3 className="font-bold mb-2">Current Settings</h3>
               <p><strong>Board Size:</strong> {boardSize}×{boardSize}</p>
               <p><strong>Game Mode:</strong> {gameMode === 'points' ? 'Most Points' : 'First to ' + targetScore}</p>
@@ -659,7 +650,7 @@ const SOSExtended = () => {
               )}
             </div>
             
-            <div className="bg-gray-100 p-4 rounded-lg mb-4">
+            <div className="bg-muted/30 p-4 rounded-lg mb-4">
               <h3 className="font-bold mb-2">Game Guide</h3>
               <div className="text-sm">
                 <p className="mb-1">• Create "SOS" sequences to earn points</p>
@@ -671,7 +662,7 @@ const SOSExtended = () => {
               </div>
             </div>
             
-            <div className="bg-gray-100 p-4 rounded-lg">
+            <div className="bg-muted/30 p-4 rounded-lg">
               <h3 className="font-bold mb-2">Game History</h3>
               <div className="h-48 overflow-y-auto text-sm">
                 {gameHistory.map((entry, index) => (
