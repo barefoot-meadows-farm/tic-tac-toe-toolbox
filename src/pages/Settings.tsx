@@ -3,13 +3,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import SettingsSidebar from '@/components/settings/SettingsSidebar';
 import GameplaySettings from '@/components/settings/gameplay/GameplaySettings';
 import AppearanceSettings from '@/components/settings/appearance/AppearanceSettings';
-import AudioSettings from '@/components/settings/audio/AudioSettings';
-import AccessibilitySettings from '@/components/settings/accessibility/AccessibilitySettings';
-import AccountSettings from '@/components/settings/account/AccountSettings';
-import DeveloperSettings from '@/components/settings/DeveloperSettings';
 import Navbar from "@/components/Navbar.tsx";
 import Footer from "@/components/Footer.tsx";
 
@@ -38,17 +33,28 @@ const Settings = () => {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-6">
-                          {/* Sidebar/Navigation */}
-                          <SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab}/>
+                          {/* Simplified Sidebar/Navigation */}
+                          <div className="flex flex-col space-y-4">
+                              <Button
+                                variant={activeTab === "gameplay" ? "default" : "ghost"}
+                                className="justify-start"
+                                onClick={() => setActiveTab("gameplay")}
+                              >
+                                Gameplay
+                              </Button>
+                              <Button
+                                variant={activeTab === "appearance" ? "default" : "ghost"}
+                                className="justify-start"
+                                onClick={() => setActiveTab("appearance")}
+                              >
+                                Appearance
+                              </Button>
+                          </div>
 
                           {/* Content Area */}
                           <div className="bg-card rounded-lg border p-6">
                               {activeTab === "gameplay" && <GameplaySettings/>}
                               {activeTab === "appearance" && <AppearanceSettings/>}
-                              {activeTab === "audio" && <AudioSettings/>}
-                              {activeTab === "accessibility" && <AccessibilitySettings/>}
-                              {activeTab === "account" && <AccountSettings/>}
-                              {activeTab === "developer" && <DeveloperSettings/>}
                           </div>
                       </div>
                   </div>
