@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Lock, Gamepad } from 'lucide-react';
+import { ArrowLeft, Gamepad } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import TicTacToeGame from '@/components/TicTacToeGame';
@@ -10,32 +10,21 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getGameById } from '@/utils/games';
 import { cn } from '@/lib/utils';
-import { usePaywall } from '@/contexts/PaywallContext';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useGameSettings } from '@/contexts/GameSettingsContext';
 
 const GameDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const game = getGameById(id || '');
-  const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   const [showGameStart, setShowGameStart] = useState(true);
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
-  const { paywallEnabled } = usePaywall();
+  const { applyGameSettings } = useGameSettings();
   
   useEffect(() => {
     if (!id || !game) {
       navigate('/collection');
-    } else if (game.premium && paywallEnabled) {
-      setShowPremiumDialog(true);
     }
-  }, [id, game, navigate, paywallEnabled]);
+  }, [id, game, navigate]);
   
   if (!game) {
     return null;
@@ -44,6 +33,7 @@ const GameDetails = () => {
   const handleStartGame = (settings: GameSettings) => {
     setGameSettings(settings);
     setShowGameStart(false);
+    applyGameSettings(game.id, settings);
   };
   
   const difficultyColor = {
@@ -51,9 +41,6 @@ const GameDetails = () => {
     medium: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
     hard: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
   };
-  
-  // Check if the game is premium and paywall is enabled
-  const isPremiumLocked = game.premium && paywallEnabled;
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -73,12 +60,6 @@ const GameDetails = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-3xl md:text-4xl font-bold">{game.name}</h1>
-                  {game.premium && (
-                    <Badge className="bg-primary/90 text-primary-foreground flex items-center">
-                      <Lock className="h-3 w-3 mr-1" />
-                      Premium
-                    </Badge>
-                  )}
                 </div>
                 <p className="text-lg text-muted-foreground mt-2">{game.description}</p>
               </div>
@@ -98,7 +79,6 @@ const GameDetails = () => {
                 asChild 
                 size="sm" 
                 className="gap-2"
-                disabled={isPremiumLocked}
               >
                 <Link to={`/play/${game.id}`}>
                   <Gamepad className="h-4 w-4" />
@@ -163,45 +143,27 @@ const GameDetails = () => {
             <div className="animate-scale-in [animation-delay:400ms] order-1 lg:order-2">
               <div className="bg-background rounded-lg p-6 shadow-md border border-border/50">
                 <h2 className="text-xl font-bold mb-6 text-center">Play {game.name}</h2>
-                {isPremiumLocked ? (
-                  <div className="p-8 text-center">
-                    <Lock className="h-12 w-12 mx-auto mb-4 text-primary/70" />
-                    <h3 className="text-xl font-bold mb-2">Premium Game</h3>
-                    <p className="text-muted-foreground mb-6">
-                      This game variant is only available to premium subscribers.
-                    </p>
-                    <Button 
-                      onClick={() => setShowPremiumDialog(true)}
-                      className="w-full max-w-xs mx-auto"
-                    >
-                      Unlock Premium
-                    </Button>
-                  </div>
+                {showGameStart ? (
+                  <GameStart 
+                    game={game}
+                    onStart={handleStartGame}
+                    onCancel={() => navigate('/collection')}
+                  />
                 ) : (
                   <>
-                    {showGameStart ? (
-                      <GameStart 
-                        game={game}
-                        onStart={handleStartGame}
-                        onCancel={() => navigate('/collection')}
-                      />
-                    ) : (
-                      <>
-                        <TicTacToeGame 
-                          variant={game.id} 
-                          settings={gameSettings}
-                        />
-                        <div className="mt-4 text-center">
-                          <Button 
-                            variant="outline" 
-                            onClick={() => setShowGameStart(true)}
-                            size="sm"
-                          >
-                            Change Settings
-                          </Button>
-                        </div>
-                      </>
-                    )}
+                    <TicTacToeGame 
+                      variant={game.id} 
+                      settings={gameSettings}
+                    />
+                    <div className="mt-4 text-center">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setShowGameStart(true)}
+                        size="sm"
+                      >
+                        Change Settings
+                      </Button>
+                    </div>
                   </>
                 )}
               </div>
@@ -209,32 +171,6 @@ const GameDetails = () => {
           </div>
         </div>
       </main>
-      
-      <Dialog open={showPremiumDialog} onOpenChange={setShowPremiumDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Unlock Premium Games</DialogTitle>
-            <DialogDescription>
-              Upgrade to Tic Tac Toolbox Premium to access all premium game variants, including {game.name}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <div className="rounded-lg bg-muted/50 p-4 mb-4">
-              <h3 className="font-semibold mb-2">Premium features include:</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Access to all premium game variants</li>
-                <li>Ad-free experience</li>
-                <li>Custom themes and board designs</li>
-                <li>Early access to new game modes</li>
-              </ul>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" className="w-full sm:w-auto">Subscribe Monthly - $2.99</Button>
-            <Button className="w-full sm:w-auto">Subscribe Yearly - $24.99</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       
       <Footer />
     </div>

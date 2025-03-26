@@ -14,9 +14,9 @@ import GamePage from "./pages/GamePage";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import { AuthProvider } from "./contexts/AuthContext";
-import { PaywallProvider } from "./contexts/PaywallContext";
 import { ErrorBoundary } from 'react-error-boundary';
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { GameSettingsProvider } from "./contexts/GameSettingsContext";
 
 const queryClient = new QueryClient();
 
@@ -33,8 +33,8 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <PaywallProvider>
-          <ThemeProvider>
+        <ThemeProvider>
+          <GameSettingsProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -113,8 +113,8 @@ const App = () => (
                 />
               </Routes>
             </BrowserRouter>
-          </ThemeProvider>
-        </PaywallProvider>
+          </GameSettingsProvider>
+        </ThemeProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

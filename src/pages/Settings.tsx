@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar.tsx";
 import Footer from "@/components/Footer.tsx";
 import { useTheme } from '@/contexts/ThemeContext';
 import GameplaySettings from '@/components/settings/gameplay/GameplaySettings';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import StandardGameSettings from '@/components/StandardGameSettings';
 
 const Settings = () => {
   const { 
@@ -84,10 +84,10 @@ const Settings = () => {
                           <div className="space-y-4">
                               <div className="flex items-center space-x-2">
                                 <Gamepad className="h-5 w-5" />
-                                <h2 className="text-2xl font-semibold">Gameplay</h2>
+                                <h2 className="text-2xl font-semibold">Game Settings</h2>
                               </div>
                               <div className="pl-7">
-                                <GameplaySettings />
+                                <StandardGameSettings gameId="traditional" />
                               </div>
                           </div>
                           
