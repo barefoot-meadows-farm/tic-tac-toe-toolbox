@@ -27,6 +27,9 @@ const SOSExtended = ({ settings }) => {
   const [lastMove, setLastMove] = useState(null);
   const [winningSequences, setWinningSequences] = useState([]);
   const [highlightedSequence, setHighlightedSequence] = useState(null);
+  // Added tracking for current symbol for each player
+  const [player1CurrentSymbol, setPlayer1CurrentSymbol] = useState('S');
+  const [player2CurrentSymbol, setPlayer2CurrentSymbol] = useState('S');
 
   // Initialize board based on size
   useEffect(() => {
@@ -72,6 +75,9 @@ const SOSExtended = ({ settings }) => {
   const startGame = () => {
     resetBoard();
     setCurrentPlayer(1);
+    // Reset player symbols on game start
+    setPlayer1CurrentSymbol('S');
+    setPlayer2CurrentSymbol('S');
     setCurrentSymbol('S');
     setPlayer1Score(0);
     setPlayer2Score(0);
@@ -84,6 +90,9 @@ const SOSExtended = ({ settings }) => {
   const resetGame = () => {
     resetBoard();
     setCurrentPlayer(1);
+    // Reset player symbols on game reset
+    setPlayer1CurrentSymbol('S');
+    setPlayer2CurrentSymbol('S');
     setCurrentSymbol('S');
     setGameStatus('Game in progress');
     addToHistory("Game reset");
@@ -103,11 +112,21 @@ const SOSExtended = ({ settings }) => {
       return;
     }
 
-    // If player can only use specific symbol, enforce it
-    let symbolToPlace = currentSymbol;
-    if ((currentPlayer === 1 && player1Symbol !== 'both') || 
-        (currentPlayer === 2 && player2Symbol !== 'both')) {
-      symbolToPlace = currentPlayer === 1 ? player1Symbol : player2Symbol;
+    // Determine which symbol to place based on player settings and current symbol
+    let symbolToPlace;
+    
+    if (currentPlayer === 1) {
+      if (player1Symbol === 'both') {
+        symbolToPlace = player1CurrentSymbol;
+      } else {
+        symbolToPlace = player1Symbol;
+      }
+    } else {
+      if (player2Symbol === 'both') {
+        symbolToPlace = player2CurrentSymbol;
+      } else {
+        symbolToPlace = player2Symbol;
+      }
     }
 
     makeMove(index, symbolToPlace);
@@ -176,6 +195,20 @@ const SOSExtended = ({ settings }) => {
       
       // Player gets another turn after making an SOS
       addToHistory(`Player ${currentPlayer} scored ${newSequences.length} point(s)! Gets another turn.`);
+      
+      // When player gets another turn, we still need to alternate their symbol if they're using 'both'
+      if (currentPlayer === 1 && player1Symbol === 'both') {
+        // Toggle player 1's symbol for their next turn
+        const nextSymbol = player1CurrentSymbol === 'S' ? 'O' : 'S';
+        setPlayer1CurrentSymbol(nextSymbol);
+        setCurrentSymbol(nextSymbol);
+      } else if (currentPlayer === 2 && player2Symbol === 'both') {
+        // Toggle player 2's symbol for their next turn
+        const nextSymbol = player2CurrentSymbol === 'S' ? 'O' : 'S';
+        setPlayer2CurrentSymbol(nextSymbol);
+        setCurrentSymbol(nextSymbol);
+      }
+      
       return;
     }
     
@@ -193,20 +226,43 @@ const SOSExtended = ({ settings }) => {
     }
     
     // Switch to next player
-    setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
+    const nextPlayer = currentPlayer === 1 ? 2 : 1;
+    setCurrentPlayer(nextPlayer);
     
-    // Update the current symbol for next move
-    // Only if both players are set to 'both' symbols
-    if ((currentPlayer === 1 && player2Symbol === 'both') || 
-        (currentPlayer === 2 && player1Symbol === 'both')) {
-      setCurrentSymbol(currentSymbol === 'S' ? 'O' : 'S');
+    // Update the current symbol for the next player
+    if (nextPlayer === 1) {
+      // If player 1 is next and uses both symbols, toggle their current symbol
+      if (player1Symbol === 'both') {
+        const nextSymbol = player1CurrentSymbol === 'S' ? 'O' : 'S';
+        setPlayer1CurrentSymbol(nextSymbol);
+        setCurrentSymbol(nextSymbol);
+      } else {
+        // Otherwise use their fixed symbol
+        setCurrentSymbol(player1Symbol);
+      }
+    } else {
+      // If player 2 is next and uses both symbols, toggle their current symbol
+      if (player2Symbol === 'both') {
+        const nextSymbol = player2CurrentSymbol === 'S' ? 'O' : 'S';
+        setPlayer2CurrentSymbol(nextSymbol);
+        setCurrentSymbol(nextSymbol);
+      } else {
+        // Otherwise use their fixed symbol
+        setCurrentSymbol(player2Symbol);
+      }
     }
   };
 
   // Computer player move
   const makeComputerMove = () => {
-    const playerSymbol = currentPlayer === 1 ? player1Symbol : player2Symbol;
-    const symbolToUse = playerSymbol === 'both' ? currentSymbol : playerSymbol;
+    // Determine which symbol to use for the computer
+    let symbolToUse;
+    
+    if (currentPlayer === 1) {
+      symbolToUse = player1Symbol === 'both' ? player1CurrentSymbol : player1Symbol;
+    } else {
+      symbolToUse = player2Symbol === 'both' ? player2CurrentSymbol : player2Symbol;
+    }
     
     // Get all empty cells
     const emptyCells = board.map((cell, index) => cell === '' ? index : null).filter(cell => cell !== null);
@@ -599,11 +655,19 @@ const SOSExtended = ({ settings }) => {
               {gameStatus === 'Game in progress' && (
                 <div className="text-md mt-1">
                   {(() => {
-                    const playerSymbol = currentPlayer === 1 ? player1Symbol : player2Symbol;
-                    if (playerSymbol === 'both') {
-                      return `Current Symbol: ${currentSymbol}`;
+                    // Display the current symbol based on the current player and their settings
+                    if (currentPlayer === 1) {
+                      if (player1Symbol === 'both') {
+                        return `Current Symbol: ${player1CurrentSymbol}`;
+                      } else {
+                        return `Using Symbol: ${player1Symbol}`;
+                      }
                     } else {
-                      return `Using Symbol: ${playerSymbol}`;
+                      if (player2Symbol === 'both') {
+                        return `Current Symbol: ${player2CurrentSymbol}`;
+                      } else {
+                        return `Using Symbol: ${player2Symbol}`;
+                      }
                     }
                   })()}
                 </div>

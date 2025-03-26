@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -15,8 +14,8 @@ const SOS = ({ settings }) => {
   const [boardSize, setBoardSize] = useState(settings?.boardSize || 3);
   const [board, setBoard] = useState(Array(boardSize * boardSize).fill(null));
   const [isPlayer1Turn, setIsPlayer1Turn] = useState(true);
-  const [player1UsesFirst, setPlayer1UsesFirst] = useState(true); // Player 1 starts with 'S'
-  const [player2UsesFirst, setPlayer2UsesFirst] = useState(false); // Player 2 starts with 'O'
+  const [player1Piece, setPlayer1Piece] = useState('S'); // Start with 'S'
+  const [player2Piece, setPlayer2Piece] = useState('O'); // Start with 'O'
   const [winner, setWinner] = useState(null);
   const [gameHistory, setGameHistory] = useState([]);
   const [lastMove, setLastMove] = useState(null);
@@ -24,11 +23,7 @@ const SOS = ({ settings }) => {
   
   // Get the current piece for the current player
   const getCurrentPiece = () => {
-    if (isPlayer1Turn) {
-      return player1UsesFirst ? pieces[0] : pieces[1];
-    } else {
-      return player2UsesFirst ? pieces[0] : pieces[1];
-    }
+    return isPlayer1Turn ? player1Piece : player2Piece;
   };
   
   // Function to check for winner
@@ -84,9 +79,11 @@ const SOS = ({ settings }) => {
     
     // Alternate the piece for the current player
     if (isPlayer1Turn) {
-      setPlayer1UsesFirst(!player1UsesFirst);
+      // Toggle player 1's piece
+      setPlayer1Piece(player1Piece === 'S' ? 'O' : 'S');
     } else {
-      setPlayer2UsesFirst(!player2UsesFirst);
+      // Toggle player 2's piece
+      setPlayer2Piece(player2Piece === 'S' ? 'O' : 'S');
     }
     
     // Set last move for highlighting
@@ -107,8 +104,8 @@ const SOS = ({ settings }) => {
   const resetGame = () => {
     setBoard(Array(boardSize * boardSize).fill(null));
     setIsPlayer1Turn(true);
-    setPlayer1UsesFirst(true); // Player 1 starts with 'S' again
-    setPlayer2UsesFirst(false); // Player 2 starts with 'O' again
+    setPlayer1Piece('S'); // Reset player 1's piece to 'S'
+    setPlayer2Piece('O'); // Reset player 2's piece to 'O'
     setWinner(null);
     setGameHistory([]);
     setLastMove(null);
@@ -146,10 +143,10 @@ const SOS = ({ settings }) => {
   const getNextPiece = () => {
     if (isPlayer1Turn) {
       // What piece will Player 2 use next?
-      return player2UsesFirst ? pieces[0] : pieces[1];
+      return player2Piece;
     } else {
       // What piece will Player 1 use next?
-      return player1UsesFirst ? pieces[0] : pieces[1];
+      return player1Piece;
     }
   };
   
