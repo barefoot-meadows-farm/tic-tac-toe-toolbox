@@ -8,6 +8,7 @@ import { useGameSettings } from '@/contexts/GameSettingsContext';
 import GameStart, { GameSettings } from '@/components/GameStart';
 import TicTacToeGame from '@/components/TicTacToeGame';
 import { useAuth } from '@/contexts/AuthContext';
+import NumericalTicTacToe from '@/Games/numerical';
 
 const GamePage = () => {
   const { id } = useParams<{ id: string }>();
@@ -91,11 +92,16 @@ const GamePage = () => {
             />
           </div>
         ) : (
-          <TicTacToeGame 
-            variant={id || 'traditional'} 
-            settings={settings}
-            isFullscreen={true}
-          />
+          // Use NumericalTicTacToe component for numerical variant
+          id === 'numerical' ? (
+            <NumericalTicTacToe />
+          ) : (
+            <TicTacToeGame 
+              variant={id || 'traditional'} 
+              settings={settings}
+              isFullscreen={true}
+            />
+          )
         )}
       </div>
     </div>

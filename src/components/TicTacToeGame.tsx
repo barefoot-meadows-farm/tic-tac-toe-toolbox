@@ -9,7 +9,9 @@ import { trackGameComplete } from '@/utils/analytics';
 import { getAIMove } from '@/utils/gameAI';
 
 type Player = 'X' | 'O' | null;
+type NumericalValue = number | null;
 type Board = (Player)[][];
+type NumericalBoard = (NumericalValue)[][];
 
 interface TicTacToeGameProps {
   variant?: string;
@@ -31,6 +33,26 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
   const [board, setBoard] = useState<Board>(
     Array(boardSize).fill(null).map(() => Array(boardSize).fill(null))
   );
+  
+  // For numerical mode, track the numbers placed and available numbers
+  const [numericalBoard, setNumericalBoard] = useState<NumericalBoard>(
+    Array(boardSize).fill(null).map(() => Array(boardSize).fill(null))
+  );
+  const [usedNumbers, setUsedNumbers] = useState<{
+    player1: number[];
+    player2: number[];
+  }>({
+    player1: [],
+    player2: []
+  });
+  
+  // Available numbers for numerical mode
+  const player1Numbers = [1, 3, 5, 7, 9].filter(n => !usedNumbers.player1.includes(n));
+  const player2Numbers = [2, 4, 6, 8].filter(n => !usedNumbers.player2.includes(n));
+  
+  // Track currently selected number for placement
+  const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
+  const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null);
   
   // Determine first player based on settings
   const getInitialPlayer = (): 'X' | 'O' => {
@@ -80,8 +102,18 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         );
         
         if (aiMove) {
-          const [row, col] = aiMove;
-          handleClick(row, col);
+          if (variant === 'numerical') {
+            // For numerical mode, AI needs to choose a number and place it
+            const [row, col] = aiMove;
+            const availableNumbers = player2Numbers; // AI is player 2
+            if (availableNumbers.length > 0) {
+              const aiNumber = availableNumbers[Math.floor(Math.random() * availableNumbers.length)];
+              handleNumericalMove(row, col, aiNumber);
+            }
+          } else {
+            const [row, col] = aiMove;
+            handleClick(row, col);
+          }
         }
         
         setWaitingForAI(false);
@@ -89,7 +121,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
       
       return () => clearTimeout(aiMoveTimer);
     }
-  }, [gameStarted, winner, isDraw, settings?.opponent, currentPlayer, board, variant]);
+  }, [gameStarted, winner, isDraw, settings?.opponent, currentPlayer, board, variant, player2Numbers]);
   
   // Timer logic
   useEffect(() => {
@@ -202,7 +234,203 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
     return null;
   };
 
+  // Check for numerical win (sum of 15)
+  const checkNumericalWinner = (board: NumericalBoard) => {
+    const size = board.length;
+    
+    // Check rows
+    for (let i = 0; i < size; i++) {
+      const rowSum = board[i].reduce((sum, cell) => sum + (cell || 0), 0);
+      if (rowSum === 15 && !board[i].includes(null)) {
+        setWinningLine(Array.from({length: size}, (_, k) => [i, k]));
+        // Determine which player won based on the numbers in this row
+        const isPlayer1Win = board[i].some(cell => cell !== null && cell % 2 === 1);
+        return isPlayer1Win ? 'X' : 'O';
+      }
+    }
+    
+    // Check columns
+    for (let j = 0; j < size; j++) {
+      let colSum = 0;
+      let hasNull = false;
+      const colNumbers: number[] = [];
+      
+      for (let i = 0; i < size; i++) {
+        if (board[i][j] === null) {
+          hasNull = true;
+          break;
+        }
+        colSum += board[i][j]!;
+        colNumbers.push(board[i][j]!);
+      }
+      
+      if (!hasNull && colSum === 15) {
+        setWinningLine(Array.from({length: size}, (_, k) => [k, j]));
+        // Determine which player won
+        const isPlayer1Win = colNumbers.some(num => num % 2 === 1);
+        return isPlayer1Win ? 'X' : 'O';
+      }
+    }
+    
+    // Check main diagonal
+    let diagSum = 0;
+    let hasDiagNull = false;
+    const diagNumbers: number[] = [];
+    
+    for (let i = 0; i < size; i++) {
+      if (board[i][i] === null) {
+        hasDiagNull = true;
+        break;
+      }
+      diagSum += board[i][i]!;
+      diagNumbers.push(board[i][i]!);
+    }
+    
+    if (!hasDiagNull && diagSum === 15) {
+      setWinningLine(Array.from({length: size}, (_, k) => [k, k]));
+      // Determine which player won
+      const isPlayer1Win = diagNumbers.some(num => num % 2 === 1);
+      return isPlayer1Win ? 'X' : 'O';
+    }
+    
+    // Check other diagonal
+    let otherDiagSum = 0;
+    let hasOtherDiagNull = false;
+    const otherDiagNumbers: number[] = [];
+    
+    for (let i = 0; i < size; i++) {
+      if (board[i][size - 1 - i] === null) {
+        hasOtherDiagNull = true;
+        break;
+      }
+      otherDiagSum += board[i][size - 1 - i]!;
+      otherDiagNumbers.push(board[i][size - 1 - i]!);
+    }
+    
+    if (!hasOtherDiagNull && otherDiagSum === 15) {
+      setWinningLine(Array.from({length: size}, (_, k) => [k, size - 1 - k]));
+      // Determine which player won
+      const isPlayer1Win = otherDiagNumbers.some(num => num % 2 === 1);
+      return isPlayer1Win ? 'X' : 'O';
+    }
+    
+    // Check for draw - either board is full or players have used all their numbers
+    const isNumericalDraw = board.every(row => row.every(cell => cell !== null)) || 
+                            (player1Numbers.length === 0 || player2Numbers.length === 0);
+    
+    if (isNumericalDraw) {
+      setIsDraw(true);
+    }
+    
+    return null;
+  };
+
+  // Handle number selection for numerical mode
+  const handleNumberSelect = (number: number) => {
+    if (!selectedCell || winner || isDraw || waitingForAI) return;
+    
+    setSelectedNumber(number);
+    
+    // Place the number on the board
+    if (selectedCell) {
+      const [row, col] = selectedCell;
+      handleNumericalMove(row, col, number);
+    }
+  };
+
+  // Handle numerical move
+  const handleNumericalMove = (row: number, col: number, number: number) => {
+    if (winner || isDraw || waitingForAI) return;
+    
+    // Create a new board with the move
+    const newNumericalBoard = numericalBoard.map(r => [...r]);
+    newNumericalBoard[row][col] = number;
+    setNumericalBoard(newNumericalBoard);
+    
+    // Update used numbers
+    const newUsedNumbers = {...usedNumbers};
+    if (currentPlayer === 'X') {
+      newUsedNumbers.player1 = [...newUsedNumbers.player1, number];
+    } else {
+      newUsedNumbers.player2 = [...newUsedNumbers.player2, number];
+    }
+    setUsedNumbers(newUsedNumbers);
+    
+    // Update the regular board too (for AI logic)
+    const newBoard = board.map(r => [...r]);
+    newBoard[row][col] = currentPlayer;
+    setBoard(newBoard);
+    
+    // Reset selected cell and number
+    setSelectedCell(null);
+    setSelectedNumber(null);
+    
+    // Check for winner
+    const winner = checkNumericalWinner(newNumericalBoard);
+    if (winner) {
+      setWinner(winner);
+      
+      // Track the game completion
+      if (user) {
+        trackGameComplete(
+          {
+            gameId: variant || 'numerical',
+            variant: variant || 'numerical',
+            opponent: settings?.opponent || 'ai',
+            difficulty: settings?.difficulty,
+            result: winner === 'X' ? 'win' : 'loss'
+          }, 
+          user
+        );
+      }
+      
+      return;
+    }
+    
+    // Check for draw
+    if (isDraw) {
+      // Track the game completion as a draw
+      if (user) {
+        trackGameComplete(
+          {
+            gameId: variant || 'numerical',
+            variant: variant || 'numerical',
+            opponent: settings?.opponent || 'ai',
+            difficulty: settings?.difficulty,
+            result: 'draw'
+          }, 
+          user
+        );
+      }
+      return;
+    }
+    
+    // Reset the timer when a move is made
+    if (settings?.timeLimit) {
+      setTimeLeft(settings.timeLimit);
+    }
+    
+    // Switch player
+    setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
+  };
+
   const handleClick = (row: number, col: number) => {
+    // For numerical mode, handle cell selection differently
+    if (variant === 'numerical') {
+      if (winner || isDraw || waitingForAI || numericalBoard[row][col] !== null) return;
+      
+      if (!gameStarted) {
+        setGameStarted(true);
+        if (settings?.timeLimit) {
+          setTimeLeft(settings.timeLimit);
+        }
+      }
+      
+      // Select the cell (for numerical, we'll place the number after selecting it)
+      setSelectedCell([row, col]);
+      return;
+    }
+    
     // Handle special case for Feral variant
     const canOverwrite = variant === 'feral';
     
@@ -305,6 +533,10 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
 
   const resetGame = () => {
     setBoard(Array(boardSize).fill(null).map(() => Array(boardSize).fill(null)));
+    setNumericalBoard(Array(boardSize).fill(null).map(() => Array(boardSize).fill(null)));
+    setUsedNumbers({ player1: [], player2: [] });
+    setSelectedCell(null);
+    setSelectedNumber(null);
     setCurrentPlayer(getInitialPlayer());
     setWinner(null);
     setIsDraw(false);
@@ -317,6 +549,32 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
 
   const isWinningCell = (row: number, col: number) => {
     return winningLine.some(([r, c]) => r === row && c === col);
+  };
+
+  // Render the number options for the numerical mode
+  const renderNumberOptions = () => {
+    const availableNumbers = currentPlayer === 'X' ? player1Numbers : player2Numbers;
+    
+    return (
+      <div className="flex justify-center space-x-2 mb-4">
+        {availableNumbers.map(number => (
+          <button
+            key={number}
+            className={cn(
+              "w-10 h-10 flex items-center justify-center font-bold text-lg rounded-full",
+              currentPlayer === 'X' 
+                ? "bg-red-200 hover:bg-red-300 text-red-800" 
+                : "bg-blue-200 hover:bg-blue-300 text-blue-800",
+              selectedNumber === number ? "ring-2 ring-primary" : ""
+            )}
+            onClick={() => handleNumberSelect(number)}
+            disabled={!selectedCell || winner || isDraw || waitingForAI}
+          >
+            {number}
+          </button>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -339,22 +597,43 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         {!gameStarted && (
           <div className="animate-fade-in">
             <p className="text-lg text-muted-foreground mb-4">
-              Click on a cell to begin
+              {variant === 'numerical' 
+                ? "Select a cell, then choose a number to place" 
+                : "Click on a cell to begin"}
             </p>
+            {variant === 'numerical' && (
+              <div className="text-sm text-muted-foreground mb-4">
+                <p className="font-medium">Game Rules:</p>
+                <p>Player 1 uses odd numbers (1, 3, 5, 7, 9)</p>
+                <p>Player 2 uses even numbers (2, 4, 6, 8)</p>
+                <p>Win by creating a sum of 15 in any line</p>
+              </div>
+            )}
           </div>
         )}
         
         {gameStarted && !winner && !isDraw && (
           <div className="animate-fade-in">
             <p className="text-xl font-medium mb-2">Current player</p>
-            <div 
-              className={cn(
-                "w-12 h-12 mx-auto border-2 rounded-md flex items-center justify-center font-bold text-2xl",
-                currentPlayer === 'X' ? "border-primary text-primary" : "border-accent-foreground text-accent-foreground"
-              )}
-            >
-              {currentPlayer}
-            </div>
+            {variant === 'numerical' ? (
+              <div 
+                className={cn(
+                  "mx-auto font-bold text-lg",
+                  currentPlayer === 'X' ? "text-primary" : "text-accent-foreground"
+                )}
+              >
+                Player {currentPlayer === 'X' ? '1 (Odd)' : '2 (Even)'}
+              </div>
+            ) : (
+              <div 
+                className={cn(
+                  "w-12 h-12 mx-auto border-2 rounded-md flex items-center justify-center font-bold text-2xl",
+                  currentPlayer === 'X' ? "border-primary text-primary" : "border-accent-foreground text-accent-foreground"
+                )}
+              >
+                {currentPlayer}
+              </div>
+            )}
             {waitingForAI && (
               <p className="text-sm text-muted-foreground mt-2">AI is thinking...</p>
             )}
@@ -364,14 +643,25 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         {winner && (
           <div className="animate-scale-in">
             <p className="text-xl font-medium mb-2">Winner</p>
-            <div 
-              className={cn(
-                "w-14 h-14 mx-auto border-2 rounded-md flex items-center justify-center font-bold text-3xl",
-                winner === 'X' ? "border-primary text-primary" : "border-accent-foreground text-accent-foreground"
-              )}
-            >
-              {winner}
-            </div>
+            {variant === 'numerical' ? (
+              <div 
+                className={cn(
+                  "mx-auto font-bold text-xl",
+                  winner === 'X' ? "text-primary" : "text-accent-foreground"
+                )}
+              >
+                Player {winner === 'X' ? '1 (Odd)' : '2 (Even)'}
+              </div>
+            ) : (
+              <div 
+                className={cn(
+                  "w-14 h-14 mx-auto border-2 rounded-md flex items-center justify-center font-bold text-3xl",
+                  winner === 'X' ? "border-primary text-primary" : "border-accent-foreground text-accent-foreground"
+                )}
+              >
+                {winner}
+              </div>
+            )}
           </div>
         )}
         
@@ -380,10 +670,18 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
             <p className="text-xl font-medium mb-2">
               Draw!
             </p>
-            <p className="text-muted-foreground">No more moves available</p>
+            <p className="text-muted-foreground">
+              {variant === 'numerical' 
+                ? "No more numbers available or no winning combinations possible" 
+                : "No more moves available"}
+            </p>
           </div>
         )}
       </div>
+      
+      {variant === 'numerical' && gameStarted && !winner && !isDraw && (
+        renderNumberOptions()
+      )}
       
       <div 
         className={cn(
@@ -397,29 +695,80 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
           gap: boardSize > 3 ? '0.25rem' : '0.5rem'
         }}
       >
-        {board.map((row, rowIndex) => (
-          row.map((cell, colIndex) => (
-            <button
-              key={`${rowIndex}-${colIndex}`}
-              className={cn(
-                "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-300",
-                gameStarted && !cell && !winner && !isDraw && !waitingForAI ? "hover:border-primary/50" : "",
-                isWinningCell(rowIndex, colIndex) ? "bg-primary/10 border-primary" : "",
-                boardSize > 3 ? "text-xl" : "text-3xl"
-              )}
-              onClick={() => handleClick(rowIndex, colIndex)}
-              disabled={!!winner || isDraw || waitingForAI || (settings?.opponent === 'ai' && currentPlayer === 'O')}
-              aria-label={`Cell ${rowIndex}-${colIndex}`}
-            >
-              {cell === 'X' && (
-                <span className="text-primary animate-x-mark">X</span>
-              )}
-              {cell === 'O' && (
-                <span className="text-accent-foreground animate-o-mark">O</span>
-              )}
-            </button>
-          ))
-        ))}
+        {/* Render cells based on game mode */}
+        {variant === 'numerical' ? (
+          Array.from({ length: boardSize }, (_, rowIndex) => (
+            Array.from({ length: boardSize }, (_, colIndex) => {
+              const cellValue = numericalBoard[rowIndex][colIndex];
+              const isSelected = selectedCell && selectedCell[0] === rowIndex && selectedCell[1] === colIndex;
+              
+              return (
+                <button
+                  key={`${rowIndex}-${colIndex}`}
+                  className={cn(
+                    "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center font-bold transition-all duration-300",
+                    gameStarted && cellValue === null && !winner && !isDraw && !waitingForAI 
+                      ? "hover:border-primary/50" : "",
+                    isWinningCell(rowIndex, colIndex) ? "bg-primary/10 border-primary" : "",
+                    isSelected ? "bg-primary/5 border-primary/70" : "",
+                    boardSize > 3 ? "text-xl" : "text-3xl"
+                  )}
+                  onClick={() => {
+                    if (!gameStarted) {
+                      setGameStarted(true);
+                      if (settings?.timeLimit) {
+                        setTimeLeft(settings.timeLimit);
+                      }
+                    }
+                    
+                    if (cellValue === null && !winner && !isDraw && !waitingForAI && 
+                        !(settings?.opponent === 'ai' && currentPlayer === 'O')) {
+                      setSelectedCell([rowIndex, colIndex]);
+                    }
+                  }}
+                  disabled={cellValue !== null || winner || isDraw || waitingForAI || 
+                            (settings?.opponent === 'ai' && currentPlayer === 'O')}
+                  aria-label={`Cell ${rowIndex}-${colIndex}`}
+                >
+                  {cellValue !== null && (
+                    <span 
+                      className={cn(
+                        "animate-scale-in",
+                        cellValue % 2 === 1 ? "text-red-600" : "text-blue-600"
+                      )}
+                    >
+                      {cellValue}
+                    </span>
+                  )}
+                </button>
+              );
+            })
+          )).flat()
+        ) : (
+          board.map((row, rowIndex) => (
+            row.map((cell, colIndex) => (
+              <button
+                key={`${rowIndex}-${colIndex}`}
+                className={cn(
+                  "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-300",
+                  gameStarted && !cell && !winner && !isDraw && !waitingForAI ? "hover:border-primary/50" : "",
+                  isWinningCell(rowIndex, colIndex) ? "bg-primary/10 border-primary" : "",
+                  boardSize > 3 ? "text-xl" : "text-3xl"
+                )}
+                onClick={() => handleClick(rowIndex, colIndex)}
+                disabled={!!winner || isDraw || waitingForAI || (settings?.opponent === 'ai' && currentPlayer === 'O')}
+                aria-label={`Cell ${rowIndex}-${colIndex}`}
+              >
+                {cell === 'X' && (
+                  <span className="text-primary animate-x-mark">X</span>
+                )}
+                {cell === 'O' && (
+                  <span className="text-accent-foreground animate-o-mark">O</span>
+                )}
+              </button>
+            ))
+          )).flat()
+        )}
       </div>
       
       <div className="mt-6 text-center">
