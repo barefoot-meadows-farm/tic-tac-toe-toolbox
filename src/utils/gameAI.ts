@@ -565,7 +565,7 @@ class MediumAI extends AIStrategy {
       [0, board.size - 1], 
       [board.size - 1, 0], 
       [board.size - 1, board.size - 1]
-    ];
+    ] as [number, number][];
     
     // Try to take center by overwriting if needed
     if (board.cells[center][center] === opponent) {
