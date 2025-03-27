@@ -366,9 +366,9 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
     setSelectedNumber(null);
     
     // Check for winner
-    const winner = checkNumericalWinner(newNumericalBoard);
-    if (winner) {
-      setWinner(winner);
+    const winnerPlayer = checkNumericalWinner(newNumericalBoard);
+    if (winnerPlayer) {
+      setWinner(winnerPlayer);
       
       // Track the game completion
       if (user) {
@@ -378,7 +378,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
             variant: variant || 'numerical',
             opponent: settings?.opponent || 'ai',
             difficulty: settings?.difficulty,
-            result: winner === 'X' ? 'win' : 'loss'
+            result: winnerPlayer === 'X' ? 'win' : 'loss'
           }, 
           user
         );
@@ -568,7 +568,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
               selectedNumber === number ? "ring-2 ring-primary" : ""
             )}
             onClick={() => handleNumberSelect(number)}
-            disabled={!selectedCell || winner || isDraw || waitingForAI}
+            disabled={!selectedCell || winner !== null || isDraw || waitingForAI}
           >
             {number}
           </button>
@@ -726,7 +726,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
                       setSelectedCell([rowIndex, colIndex]);
                     }
                   }}
-                  disabled={cellValue !== null || winner || isDraw || waitingForAI || 
+                  disabled={cellValue !== null || winner !== null || isDraw || waitingForAI || 
                             (settings?.opponent === 'ai' && currentPlayer === 'O')}
                   aria-label={`Cell ${rowIndex}-${colIndex}`}
                 >
