@@ -477,7 +477,7 @@ class MediumAI extends AIStrategy {
       [0, board.size - 1], 
       [board.size - 1, 0], 
       [board.size - 1, board.size - 1]
-    ];
+    ] as [number, number][];
     
     const availableCorners = corners.filter(
       ([r, c]) => board.isValidMove(r, c)
