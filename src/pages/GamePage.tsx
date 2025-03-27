@@ -16,7 +16,7 @@ const GamePage = () => {
   const navigate = useNavigate();
   const { getGameSettings, applyGameSettings, defaultGameSettings } = useGameSettings();
   const [settings, setSettings] = useState<GameSettings | null>(null);
-  const [showSettings, setShowSettings] = useState(true); // Always show settings first
+  const [showSettings, setShowSettings] = useState(true);
   const { isPremium } = useAuth();
   
   const game = getGameById(id || '');
@@ -37,17 +37,18 @@ const GamePage = () => {
     const savedSettings = getGameSettings(id);
     if (savedSettings) {
       setSettings(savedSettings);
+      // Only show settings if no applied settings exist yet
+      // This fixes the loop issue - we don't automatically show settings if they exist
     } else {
       setSettings(defaultGameSettings);
+      // Always show settings if none exist yet
+      setShowSettings(true);
     }
-    
-    // Always show settings screen first when navigating to the game
-    setShowSettings(true);
   }, [id, game, navigate, getGameSettings, defaultGameSettings, isPremium]);
   
   const handleSettingsApplied = (newSettings: GameSettings) => {
     setSettings(newSettings);
-    setShowSettings(false);
+    setShowSettings(false); // Hide settings after they're applied
     applyGameSettings(id || '', newSettings);
   };
   
