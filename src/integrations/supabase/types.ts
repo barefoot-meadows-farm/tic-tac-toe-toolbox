@@ -115,12 +115,59 @@ export type Database = {
           },
         ]
       }
+      user_stories: {
+        Row: {
+          additional_details: string | null
+          api_required: boolean | null
+          context: string | null
+          created_at: string
+          id: string
+          requirement: string
+          result: Json
+          stakeholders: string[] | null
+          user_id: string
+        }
+        Insert: {
+          additional_details?: string | null
+          api_required?: boolean | null
+          context?: string | null
+          created_at?: string
+          id?: string
+          requirement: string
+          result: Json
+          stakeholders?: string[] | null
+          user_id: string
+        }
+        Update: {
+          additional_details?: string | null
+          api_required?: boolean | null
+          context?: string | null
+          created_at?: string
+          id?: string
+          requirement?: string
+          result?: Json
+          stakeholders?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      save_user_story: {
+        Args: {
+          p_user_id: string
+          p_requirement: string
+          p_context: string
+          p_stakeholders: string[]
+          p_api_required: boolean
+          p_additional_details: string
+          p_result: Json
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

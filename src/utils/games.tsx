@@ -17,6 +17,7 @@ export const gameVariants: GameVariant[] = [
     description: 'The classic game of X\'s and O\'s that everyone knows and loves.',
     difficulty: 'easy',
     featured: true,
+    premium: false,
     rules: [
       'Players take turns placing their mark (X or O) on the board',
       'First player to get 3 of their marks in a row (horizontally, vertically, or diagonally) wins',
@@ -29,6 +30,7 @@ export const gameVariants: GameVariant[] = [
     description: 'The reverse version where getting three in a row loses the game.',
     difficulty: 'medium',
     featured: true,
+    premium: false,
     rules: [
       'Same as traditional, but the goal is to avoid making a line of three',
       'First player to get 3 of their marks in a row loses',
@@ -41,6 +43,7 @@ export const gameVariants: GameVariant[] = [
     description: 'Use S\'s and O\'s instead of X\'s and O\'s, with pieces alternating each turn.',
     difficulty: 'medium',
     featured: true,
+    premium: true,
     rules: [
       'Players place either an S or O on the board',
       'Each turn, the player\'s piece alternates between S and O',
@@ -79,7 +82,7 @@ export const gameVariants: GameVariant[] = [
     name: 'Feral',
     description: 'Like Traditional Tic-Tac-Toe but players can overwrite an opponent\'s placement.',
     difficulty: 'medium',
-    premium: true,
+    premium: false,
     rules: [
       'Similar to traditional, but players can place their mark over an opponent\'s mark',
       'This adds a new layer of strategy as no placement is permanent',
@@ -91,7 +94,7 @@ export const gameVariants: GameVariant[] = [
     name: 'Numerical',
     description: 'Use numbers instead of X\'s and O\'s. Sum of three numbers must equal 15 to win.',
     difficulty: 'medium',
-    premium: true,
+    premium: false,
     rules: [
       'Player 1 uses odd numbers (1, 3, 5, 7, 9) and Player 2 uses even numbers (2, 4, 6, 8)',
       'Each number can only be used once',

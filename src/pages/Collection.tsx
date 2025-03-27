@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import GameCard from '@/components/GameCard';
-import { gameVariants } from '@/utils/games';
+import { gameVariants, getFreeGames } from '@/utils/games';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Info, Gamepad } from 'lucide-react';
@@ -16,7 +16,8 @@ const Collection = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>('all');
   
   const filterGames = () => {
-    let filtered = [...gameVariants];
+    // Only get free games
+    let filtered = getFreeGames();
     
     if (difficulty !== 'all') {
       filtered = filtered.filter(game => game.difficulty === difficulty);
@@ -37,7 +38,7 @@ const Collection = () => {
             <div className="text-center mb-12 animate-fade-in">
               <h1 className="text-3xl md:text-5xl font-bold mb-4">Game Collection</h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Explore our complete collection of Tic-Tac-Toe variants, 
+                Explore our collection of free Tic-Tac-Toe variants, 
                 each offering a unique twist on the classic game.
               </p>
             </div>

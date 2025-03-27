@@ -6,11 +6,12 @@ import Hero from '@/components/Hero';
 import GameCard from '@/components/GameCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { getFeaturedGames } from '@/utils/games';
+import { getFeaturedGames, getFreeGames } from '@/utils/games';
 import TicTacToeGame from '@/components/TicTacToeGame';
 
 const Index = () => {
-  const featuredGames = getFeaturedGames();
+  // Get featured games that are free
+  const featuredGames = getFeaturedGames().filter(game => !game.premium);
   
   return (
     <div className="min-h-screen flex flex-col">

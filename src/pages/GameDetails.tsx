@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Gamepad } from 'lucide-react';
+import { ArrowLeft, Gamepad, Lock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import TicTacToeGame from '@/components/TicTacToeGame';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { getGameById } from '@/utils/games';
 import { cn } from '@/lib/utils';
 import { useGameSettings } from '@/contexts/GameSettingsContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const GameDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,12 +20,19 @@ const GameDetails = () => {
   const [showGameStart, setShowGameStart] = useState(true);
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
   const { applyGameSettings } = useGameSettings();
+  const { isPremium } = useAuth();
   
   useEffect(() => {
     if (!id || !game) {
       navigate('/collection');
+      return;
     }
-  }, [id, game, navigate]);
+    
+    // Redirect to collection if the game is premium and user doesn't have premium access
+    if (game.premium && !isPremium) {
+      navigate('/collection');
+    }
+  }, [id, game, navigate, isPremium]);
   
   if (!game) {
     return null;
@@ -60,6 +68,12 @@ const GameDetails = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-3xl md:text-4xl font-bold">{game.name}</h1>
+                  {game.premium && (
+                    <Badge variant="secondary" className="bg-amber-500/10 text-amber-500">
+                      <Lock className="h-3 w-3 mr-1" />
+                      Premium
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-lg text-muted-foreground mt-2">{game.description}</p>
               </div>
