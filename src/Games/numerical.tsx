@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 
 const NumericalTicTacToe = () => {
@@ -8,15 +9,15 @@ const NumericalTicTacToe = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   
   // Game state
-  const [board, setBoard] = useState(Array(9).fill(null));
+  const [board, setBoard] = useState<Array<number | null>>(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState(1); // 1 for odd player, 2 for even player
-  const [winner, setWinner] = useState(null);
+  const [winner, setWinner] = useState<number | string | null>(null);
   const [timeLeft, setTimeLeft] = useState(timeLimit);
-  const [lastMove, setLastMove] = useState(null);
-  const [winningLine, setWinningLine] = useState([]);
+  const [lastMove, setLastMove] = useState<number | null>(null);
+  const [winningLine, setWinningLine] = useState<number[]>([]);
   const [usedNumbers, setUsedNumbers] = useState({
-    odd: [],    // Numbers used by player 1 (1, 3, 5, 7, 9)
-    even: []    // Numbers used by player 2 (2, 4, 6, 8)
+    odd: [] as number[],    // Numbers used by player 1 (1, 3, 5, 7, 9)
+    even: [] as number[]    // Numbers used by player 2 (2, 4, 6, 8)
   });
   
   // Available numbers for each player
@@ -24,7 +25,7 @@ const NumericalTicTacToe = () => {
   const evenNumbers = [2, 4, 6, 8].filter(num => !usedNumbers.even.includes(num));
   
   // Target sum (traditionally 15 for all board sizes)
-  const getTargetSum = (size) => {
+  const getTargetSum = (size: number): number => {
     return 15; // Standard target sum
   };
   
@@ -37,7 +38,7 @@ const NumericalTicTacToe = () => {
 
   // Timer effect
   useEffect(() => {
-    let timer;
+    let timer: NodeJS.Timeout | undefined;
     if (isPlaying && timeLimit > 0 && !winner) {
       setTimeLeft(timeLimit);
       
@@ -81,13 +82,13 @@ const NumericalTicTacToe = () => {
   };
 
   // Check for winner
-  const checkWinner = (boardState, index, number) => {
+  const checkWinner = (boardState: Array<number | null>, index: number, number: number): boolean => {
     // Position to check
     const row = Math.floor(index / boardSize);
     const col = index % boardSize;
     
     // Arrays to hold lines to check
-    const lines = [];
+    const lines: number[][] = [];
     
     // Add horizontal line
     const horizontalLine = Array(boardSize).fill(0).map((_, i) => row * boardSize + i);
@@ -112,7 +113,7 @@ const NumericalTicTacToe = () => {
     
     // Check each line for a win
     for (const line of lines) {
-      const values = line.map(idx => boardState[idx]).filter(val => val !== null);
+      const values = line.map(idx => boardState[idx]).filter(val => val !== null) as number[];
       
       // Skip lines that don't have enough numbers yet
       if (values.length < boardSize) continue;
@@ -129,7 +130,7 @@ const NumericalTicTacToe = () => {
   };
 
   // Check for a draw
-  const checkDraw = (boardState) => {
+  const checkDraw = (boardState: Array<number | null>): boolean => {
     // Draw if all cells are filled
     const allCellsFilled = boardState.every(cell => cell !== null);
     
@@ -142,7 +143,7 @@ const NumericalTicTacToe = () => {
   };
 
   // Handle number selection
-  const handleNumberSelect = (number) => {
+  const handleNumberSelect = (number: number) => {
     if (!isPlaying || winner || lastMove === null) return;
     
     const newBoard = [...board];
@@ -190,7 +191,7 @@ const NumericalTicTacToe = () => {
   };
 
   // Handle cell click
-  const handleCellClick = (index) => {
+  const handleCellClick = (index: number) => {
     if (!isPlaying || board[index] !== null || winner) return;
     
     // Just select the cell, don't place a number yet
@@ -220,7 +221,7 @@ const NumericalTicTacToe = () => {
   };
 
   // Render the game cell
-  const renderCell = (index) => {
+  const renderCell = (index: number) => {
     const isLastMoveCell = lastMove === index && showLastMove;
     const isWinningCell = winningLine.includes(index);
     
