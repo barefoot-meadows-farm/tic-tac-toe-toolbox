@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { GameSettings } from '@/components/GameStart';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 
 interface NumericalTicTacToeProps {
   settings?: GameSettings;
@@ -190,7 +192,7 @@ const NumericalTicTacToe: React.FC<NumericalTicTacToeProps> = ({ settings }) => 
 
   // Handle cell click
   const handleCellClick = (index: number) => {
-    if (board[index] !== null || winner) return;
+    if (board[index] !== null || winner !== null) return;
     
     // Just select the cell, don't place a number yet
     setLastMove(index);
@@ -213,7 +215,7 @@ const NumericalTicTacToe: React.FC<NumericalTicTacToeProps> = ({ settings }) => 
               lastMove === null && "opacity-50 cursor-not-allowed"
             )}
             onClick={() => handleNumberSelect(number)}
-            disabled={lastMove === null}
+            disabled={lastMove === null || winner !== null}
           >
             {number}
           </button>
@@ -247,7 +249,7 @@ const NumericalTicTacToe: React.FC<NumericalTicTacToeProps> = ({ settings }) => 
         key={index}
         variant="outline"
         className={cn(
-          "flex items-center justify-center text-2xl font-bold aspect-square p-0",
+          "flex items-center justify-center text-2xl font-bold aspect-square p-0 h-full w-full",
           bgColor,
           textColor,
           cellValue === null && !isLastMoveCell && "hover:bg-muted/50"
@@ -264,7 +266,7 @@ const NumericalTicTacToe: React.FC<NumericalTicTacToeProps> = ({ settings }) => 
   const renderBoard = () => {
     return (
       <div 
-        className="grid gap-2 w-full max-w-xs mx-auto"
+        className="grid gap-2 w-full max-w-[320px] mx-auto aspect-square"
         style={{
           gridTemplateColumns: `repeat(${boardSize}, 1fr)`
         }}
@@ -275,12 +277,14 @@ const NumericalTicTacToe: React.FC<NumericalTicTacToeProps> = ({ settings }) => 
   };
 
   return (
-    <div className="flex flex-col items-center p-6">
-      <h1 className="text-3xl font-bold mb-1">Numerical Tic-Tac-Toe</h1>
-      <p className="text-muted-foreground mb-6">Get numbers that sum to {targetSum} in a line!</p>
+    <Card className="w-full max-w-md mx-auto shadow-md">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-xl font-bold text-center">Numerical Tic-Tac-Toe</CardTitle>
+        <p className="text-center text-muted-foreground text-sm">Get numbers that sum to {targetSum} in a line!</p>
+      </CardHeader>
       
-      <div className="mb-6 w-full max-w-md">
-        <div className="flex justify-between items-center mb-3">
+      <CardContent className="space-y-4">
+        <div className="flex justify-between items-center mb-2">
           <div className="text-lg font-medium">
             {winner ? (
               winner === 'Draw' ? 'Game Draw!' : `Player ${winner} Wins!`
@@ -308,27 +312,29 @@ const NumericalTicTacToe: React.FC<NumericalTicTacToeProps> = ({ settings }) => 
         
         {renderBoard()}
         
-        <div className="mt-6">
-          <div className="bg-muted/30 p-3 rounded-md mb-4">
-            <h3 className="font-medium mb-2">Game Rules:</h3>
-            <ul className="space-y-1 text-sm text-muted-foreground">
-              <li>• Player 1 uses odd numbers (1, 3, 5, 7, 9)</li>
-              <li>• Player 2 uses even numbers (2, 4, 6, 8)</li>
-              <li>• Each number can only be used once</li>
-              <li>• Create a line of numbers that sum to {targetSum} to win</li>
-              <li>• First select a cell, then choose a number to place</li>
-            </ul>
-          </div>
-          
-          <Button
-            className="w-full"
-            onClick={resetGame}
-          >
-            Reset Game
-          </Button>
+        <div className="bg-muted/30 p-3 rounded-md mt-4">
+          <h3 className="font-medium mb-2">Game Rules:</h3>
+          <ul className="space-y-1 text-sm text-muted-foreground">
+            <li>• Player 1 uses odd numbers (1, 3, 5, 7, 9)</li>
+            <li>• Player 2 uses even numbers (2, 4, 6, 8)</li>
+            <li>• Each number can only be used once</li>
+            <li>• Create a line of numbers that sum to {targetSum} to win</li>
+            <li>• First select a cell, then choose a number to place</li>
+          </ul>
         </div>
-      </div>
-    </div>
+      </CardContent>
+      
+      <CardFooter className="flex justify-center">
+        <Button
+          variant="outline"
+          onClick={resetGame}
+          className="flex items-center"
+        >
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Reset Game
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

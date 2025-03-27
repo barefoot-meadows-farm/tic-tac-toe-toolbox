@@ -16,7 +16,7 @@ const GamePage = () => {
   const navigate = useNavigate();
   const { getGameSettings, applyGameSettings, defaultGameSettings } = useGameSettings();
   const [settings, setSettings] = useState<GameSettings | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(true); // Always show settings first
   const { isPremium } = useAuth();
   
   const game = getGameById(id || '');
@@ -39,8 +39,10 @@ const GamePage = () => {
       setSettings(savedSettings);
     } else {
       setSettings(defaultGameSettings);
-      setShowSettings(true);
     }
+    
+    // Always show settings screen first when navigating to the game
+    setShowSettings(true);
   }, [id, game, navigate, getGameSettings, defaultGameSettings, isPremium]);
   
   const handleSettingsApplied = (newSettings: GameSettings) => {
@@ -67,13 +69,15 @@ const GamePage = () => {
           </Link>
         </Button>
         
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => setShowSettings(true)}
-        >
-          Game Settings
-        </Button>
+        {!showSettings && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowSettings(true)}
+          >
+            Game Settings
+          </Button>
+        )}
       </div>
       
       <div className="flex-grow flex items-center justify-center">
@@ -95,7 +99,9 @@ const GamePage = () => {
         ) : (
           // Use NumericalTicTacToe component for numerical variant
           id === 'numerical' ? (
-            <NumericalTicTacToe settings={settings} />
+            <NumericalTicTacToe 
+              settings={settings} 
+            />
           ) : (
             <TicTacToeGame 
               variant={id || 'traditional'} 
