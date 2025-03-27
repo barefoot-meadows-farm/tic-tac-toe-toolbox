@@ -1,34 +1,33 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { RotateCcw } from 'lucide-react';
+import { GameSettings } from '@/components/GameStart';
 
-const MisereTicTacToe = () => {
-  // Game configuration options
-  const [boardSize, setBoardSize] = useState(3);
-  const [timeLimit, setTimeLimit] = useState(0); // 0 means no time limit
-  const [currentPlayer, setCurrentPlayer] = useState('X');
-  const [winCondition, setWinCondition] = useState(3); // Number in a row needed to lose
-  
-  // Update win condition if it's greater than board size
-  useEffect(() => {
-    if (winCondition > boardSize) {
-      setWinCondition(boardSize);
-    }
-  }, [boardSize, winCondition]);
-  const [showLastMove, setShowLastMove] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
+const MisereTicTacToe = ({ settings }) => {
+  // Game configuration options derived from settings
+  const boardSize = settings?.boardSize || 3;
+  const timeLimit = settings?.timeLimit || 0; // 0 means no time limit
+  const aiEnabled = settings?.opponent === 'ai';
+  const aiDifficulty = settings?.difficulty || 'medium';
+  const showLastMove = true;
   
   // Game state
-  const [board, setBoard] = useState(Array(9).fill(''));
+  const [board, setBoard] = useState(Array(boardSize * boardSize).fill(''));
+  const [currentPlayer, setCurrentPlayer] = useState('X');
+  const [winCondition, setWinCondition] = useState(boardSize >= 3 ? 3 : boardSize); // Number in a row needed to lose
   const [loser, setLoser] = useState(null); // In Misère, we track the loser instead of winner
   const [timeLeft, setTimeLeft] = useState(timeLimit);
   const [lastMove, setLastMove] = useState(null);
   const [losingLine, setLosingLine] = useState([]);
+  const [isPlaying, setIsPlaying] = useState(true); // Start the game immediately
+  const [isAiThinking, setIsAiThinking] = useState(false);
 
   // Initialize or reset the game board when configuration changes
   useEffect(() => {
     resetGame();
+    setIsPlaying(true); // Auto-start game
   }, [boardSize, winCondition]);
 
   // Timer effect
@@ -55,6 +54,21 @@ const MisereTicTacToe = () => {
     };
   }, [isPlaying, timeLimit, currentPlayer, loser]);
 
+  // AI move effect - trigger when it's AI's turn
+  useEffect(() => {
+    if (isPlaying && aiEnabled && currentPlayer === 'O' && !loser && !isAiThinking) {
+      setIsAiThinking(true);
+      
+      // Add a delay to simulate thinking
+      const thinkingTime = aiDifficulty === 'hard' ? 1200 : aiDifficulty === 'medium' ? 800 : 500;
+      
+      setTimeout(() => {
+        makeAiMove();
+        setIsAiThinking(false);
+      }, thinkingTime);
+    }
+  }, [currentPlayer, loser, isPlaying, aiEnabled]);
+
   // Reset the game
   const resetGame = () => {
     // Create empty board with current board size
@@ -64,13 +78,97 @@ const MisereTicTacToe = () => {
     setLastMove(null);
     setLosingLine([]);
     setTimeLeft(timeLimit);
-    setIsPlaying(false);
+    setIsAiThinking(false);
   };
 
-  // Start the game
-  const startGame = () => {
-    resetGame();
-    setIsPlaying(true);
+  // Make AI move - with MISERE RULES (try to force opponent to form lines)
+  const makeAiMove = () => {
+    // Find empty cells
+    const emptyCells = [];
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === '') {
+        emptyCells.push(i);
+      }
+    }
+    
+    if (emptyCells.length === 0) return;
+    
+    let bestMove = -1;
+    
+    // IMPORTANT: In Misere, the goal is to NOT form lines
+    if (aiDifficulty === 'easy') {
+      // Easy: Choose random
+      bestMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    } else if (aiDifficulty === 'medium' || aiDifficulty === 'hard') {
+      // First priority: Don't create a line that makes me lose
+      const nonLosingMoves = emptyCells.filter(index => {
+        const tempBoard = [...board];
+        tempBoard[index] = 'O';
+        return !checkLineFormed(tempBoard, index, 'O');
+      });
+      
+      if (nonLosingMoves.length > 0) {
+        // If I have moves that don't make me lose, check for forcing moves
+        if (aiDifficulty === 'hard') {
+          // Try to find a move that forces the opponent to create a line
+          const forcingMoves = nonLosingMoves.filter(index => {
+            const tempBoard = [...board];
+            tempBoard[index] = 'O';
+            
+            // Check if all opponent's possible next moves would create a line
+            return emptyCells
+              .filter(cell => cell !== index)
+              .every(opponentMove => {
+                const tempBoard2 = [...tempBoard];
+                tempBoard2[opponentMove] = 'X';
+                return checkLineFormed(tempBoard2, opponentMove, 'X');
+              });
+          });
+          
+          if (forcingMoves.length > 0) {
+            bestMove = forcingMoves[Math.floor(Math.random() * forcingMoves.length)];
+          } else {
+            // Check for moves that MIGHT lead to forcing the opponent
+            const strategicMoves = nonLosingMoves.filter(index => {
+              // For hard difficulty, prefer center and corners
+              const row = Math.floor(index / boardSize);
+              const col = index % boardSize;
+              return (row === 0 || row === boardSize - 1) && 
+                     (col === 0 || col === boardSize - 1) ||
+                     (row === Math.floor(boardSize / 2) && col === Math.floor(boardSize / 2));
+            });
+            
+            if (strategicMoves.length > 0) {
+              bestMove = strategicMoves[Math.floor(Math.random() * strategicMoves.length)];
+            } else {
+              bestMove = nonLosingMoves[Math.floor(Math.random() * nonLosingMoves.length)];
+            }
+          }
+        } else {
+          // Medium: Just don't lose, prefer center/corners
+          const preferredMoves = nonLosingMoves.filter(index => {
+            const row = Math.floor(index / boardSize);
+            const col = index % boardSize;
+            return (row === 0 || row === boardSize - 1) && 
+                   (col === 0 || col === boardSize - 1) ||
+                   (row === Math.floor(boardSize / 2) && col === Math.floor(boardSize / 2));
+          });
+          
+          if (preferredMoves.length > 0) {
+            bestMove = preferredMoves[Math.floor(Math.random() * preferredMoves.length)];
+          } else {
+            bestMove = nonLosingMoves[Math.floor(Math.random() * nonLosingMoves.length)];
+          }
+        }
+      } else {
+        // All moves lead to me losing - pick any move
+        bestMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      }
+    }
+    
+    if (bestMove >= 0) {
+      handleCellClick(bestMove);
+    }
   };
 
   // Check for line formation (which in Misère means you lose)
@@ -172,6 +270,9 @@ const MisereTicTacToe = () => {
   const handleCellClick = (index) => {
     if (!isPlaying || board[index] !== '' || loser) return;
     
+    // If it's AI's turn and human tries to play, ignore
+    if (aiEnabled && currentPlayer === 'O') return;
+    
     const newBoard = [...board];
     newBoard[index] = currentPlayer;
     setBoard(newBoard);
@@ -220,10 +321,11 @@ const MisereTicTacToe = () => {
               isPlaying && !loser && !cell ? "hover:border-primary/50" : "",
               isLosingCell(index) ? "bg-red-100 border-red-400" : "",
               lastMove === index && showLastMove ? "bg-accent/20" : "",
-              boardSize > 3 ? "text-xl" : "text-3xl"
+              boardSize > 3 ? "text-xl" : "text-3xl",
+              isAiThinking && "pointer-events-none"
             )}
             onClick={() => handleCellClick(index)}
-            disabled={!isPlaying || loser || cell !== ''}
+            disabled={!isPlaying || loser || cell !== '' || (aiEnabled && currentPlayer === 'O') || isAiThinking}
           >
             {cell === 'X' && <span className="text-primary">{cell}</span>}
             {cell === 'O' && <span className="text-accent-foreground">{cell}</span>}
@@ -240,6 +342,10 @@ const MisereTicTacToe = () => {
     } else if (loser) {
       // In Misère, the non-loser is the winner
       return `Player ${loser === 'X' ? 'O' : 'X'} Wins!`;
+    } else if (isAiThinking) {
+      return 'AI is thinking...';
+    } else if (aiEnabled && currentPlayer === 'O') {
+      return "AI's Turn";
     } else {
       return `Player ${currentPlayer}'s Turn`;
     }
@@ -247,74 +353,13 @@ const MisereTicTacToe = () => {
 
   return (
     <div className="flex flex-col items-center p-6">
-      <h1 className="text-3xl font-bold mb-4">Misère Tic Tac Toe</h1>
-      <p className="text-muted-foreground mb-4">Avoid getting {winCondition} in a row to win!</p>
-      
-      {!isPlaying && !loser ? (
-        <div className="w-full max-w-md p-4 bg-background/80 rounded-lg border border-border mb-6">
-          <h2 className="text-xl font-semibold mb-3">Game Configuration</h2>
-          
-          <div className="mb-3">
-            <label className="block text-foreground mb-1">Board Size:</label>
-            <select 
-              className="w-full p-2 border rounded bg-background border-border"
-              value={boardSize}
-              onChange={(e) => setBoardSize(parseInt(e.target.value))}
-            >
-              <option value={3}>3x3</option>
-              <option value={4}>4x4</option>
-              <option value={5}>5x5</option>
-            </select>
-          </div>
-          
-          <div className="mb-3">
-            <label className="block text-foreground mb-1">Lose Condition (in a row):</label>
-            <select 
-              className="w-full p-2 border rounded bg-background border-border"
-              value={winCondition}
-              onChange={(e) => setWinCondition(parseInt(e.target.value))}
-            >
-              <option value={3}>3 in a row</option>
-              {boardSize >= 4 && <option value={4}>4 in a row</option>}
-              {boardSize >= 5 && <option value={5}>5 in a row</option>}
-            </select>
-          </div>
-          
-          <div className="mb-3">
-            <label className="block text-foreground mb-1">Time Limit (seconds per move):</label>
-            <select 
-              className="w-full p-2 border rounded bg-background border-border"
-              value={timeLimit}
-              onChange={(e) => setTimeLimit(parseInt(e.target.value))}
-            >
-              <option value="0">No time limit</option>
-              <option value="10">10 seconds</option>
-              <option value="30">30 seconds</option>
-              <option value="60">60 seconds</option>
-            </select>
-          </div>
-          
-          <div className="flex items-center mb-3">
-            <input
-              type="checkbox"
-              id="showLastMove"
-              className="mr-2"
-              checked={showLastMove}
-              onChange={(e) => setShowLastMove(e.target.checked)}
-            />
-            <label htmlFor="showLastMove" className="text-foreground">Highlight last move</label>
-          </div>
-          
-          <Button
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold py-2 px-4 rounded"
-            onClick={startGame}
-            type="button"
-          >
-            Start Game
-          </Button>
-        </div>
-      ) : (
-        <div className="mb-4 w-full max-w-md">
+      <Card className="w-full max-w-md mx-auto shadow-md">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xl font-bold text-center">Misère Tic Tac Toe</CardTitle>
+          <p className="text-center text-muted-foreground text-sm">Avoid getting {winCondition} in a row to win!</p>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
           <div className="flex justify-between items-center mb-3">
             <div className="text-lg font-semibold">
               {getGameStatusMessage()}
@@ -337,24 +382,27 @@ const MisereTicTacToe = () => {
           
           {renderBoard()}
           
-          <div className="mt-4 flex justify-between">
-            <Button
-              variant="outline"
-              className="py-2 px-4 rounded mr-2"
-              onClick={resetGame}
-            >
-              Reset Game
-            </Button>
-            
-            <Button
-              className="bg-primary text-primary-foreground hover:bg-primary/90 py-2 px-4 rounded"
-              onClick={() => setIsPlaying(false)}
-            >
-              Change Settings
-            </Button>
+          <div className="bg-muted/30 p-3 rounded-md mt-4">
+            <h3 className="font-medium mb-2">Game Rules:</h3>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              <li>• Unlike traditional Tic-Tac-Toe, the player who makes {winCondition} in a row LOSES</li>
+              <li>• You must make a move on your turn, even if it forces you to lose</li>
+              <li>• Plan ahead to force your opponent into making the losing line</li>
+            </ul>
           </div>
-        </div>
-      )}
+        </CardContent>
+        
+        <CardFooter className="flex justify-center">
+          <Button
+            variant="outline"
+            onClick={resetGame}
+            className="flex items-center"
+          >
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Reset Game
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 };
