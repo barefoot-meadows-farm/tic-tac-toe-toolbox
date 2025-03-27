@@ -95,7 +95,7 @@ const GamePage = () => {
         ) : (
           // Use NumericalTicTacToe component for numerical variant
           id === 'numerical' ? (
-            <NumericalTicTacToe />
+            <NumericalTicTacToe settings={settings} />
           ) : (
             <TicTacToeGame 
               variant={id || 'traditional'} 
