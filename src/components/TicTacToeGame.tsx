@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { GameSettings } from './GameStart';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackGameComplete } from '@/utils/analytics';
+import { getAIMove } from '@/utils/gameAI';
 
 type Player = 'X' | 'O' | null;
 type Board = (Player)[][];
@@ -44,6 +45,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
   const [isDraw, setIsDraw] = useState(false);
   const [winningLine, setWinningLine] = useState<number[][]>([]);
   const [gameStarted, setGameStarted] = useState(false);
+  const [waitingForAI, setWaitingForAI] = useState(false);
   
   // Reset the timer when it's used
   const [timeLeft, setTimeLeft] = useState(settings?.timeLimit || null);
@@ -55,6 +57,39 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
   useEffect(() => {
     resetGame();
   }, [settings, boardSize]);
+  
+  // AI move handling
+  useEffect(() => {
+    // When it's AI's turn and game is in progress
+    if (gameStarted && 
+        !winner && 
+        !isDraw && 
+        settings?.opponent === 'ai' && 
+        currentPlayer === 'O') {
+      
+      // Add a small delay to make the AI move seem more natural
+      const aiMoveTimer = setTimeout(() => {
+        setWaitingForAI(true);
+        
+        // Get the AI move based on the current board state and settings
+        const aiMove = getAIMove(
+          board, 
+          currentPlayer, 
+          settings, 
+          variant
+        );
+        
+        if (aiMove) {
+          const [row, col] = aiMove;
+          handleClick(row, col);
+        }
+        
+        setWaitingForAI(false);
+      }, 500);
+      
+      return () => clearTimeout(aiMoveTimer);
+    }
+  }, [gameStarted, winner, isDraw, settings?.opponent, currentPlayer, board, variant]);
   
   // Timer logic
   useEffect(() => {
@@ -171,7 +206,14 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
     // Handle special case for Feral variant
     const canOverwrite = variant === 'feral';
     
-    if ((board[row][col] && !canOverwrite) || winner || isDraw) return;
+    // For feral mode, can overwrite opponent's moves but not your own
+    if ((!canOverwrite && board[row][col]) || 
+        (canOverwrite && board[row][col] === currentPlayer) || 
+        winner || 
+        isDraw || 
+        waitingForAI) {
+      return;
+    }
 
     if (!gameStarted) {
       setGameStarted(true);
@@ -313,6 +355,9 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
             >
               {currentPlayer}
             </div>
+            {waitingForAI && (
+              <p className="text-sm text-muted-foreground mt-2">AI is thinking...</p>
+            )}
           </div>
         )}
         
@@ -358,12 +403,12 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
               key={`${rowIndex}-${colIndex}`}
               className={cn(
                 "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-300",
-                gameStarted && !cell && !winner && !isDraw ? "hover:border-primary/50" : "",
+                gameStarted && !cell && !winner && !isDraw && !waitingForAI ? "hover:border-primary/50" : "",
                 isWinningCell(rowIndex, colIndex) ? "bg-primary/10 border-primary" : "",
                 boardSize > 3 ? "text-xl" : "text-3xl"
               )}
               onClick={() => handleClick(rowIndex, colIndex)}
-              disabled={!!winner || isDraw}
+              disabled={!!winner || isDraw || waitingForAI || (settings?.opponent === 'ai' && currentPlayer === 'O')}
               aria-label={`Cell ${rowIndex}-${colIndex}`}
             >
               {cell === 'X' && (
