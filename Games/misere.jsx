@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -81,7 +82,7 @@ const MisereTicTacToe = ({ settings }) => {
     setIsAiThinking(false);
   };
 
-  // Make AI move - with MISERE RULES (try to force opponent to form lines)
+  // Make AI move - properly implementing MISERE RULES (avoid forming lines)
   const makeAiMove = () => {
     // Find empty cells
     const emptyCells = [];
@@ -95,10 +96,22 @@ const MisereTicTacToe = ({ settings }) => {
     
     let bestMove = -1;
     
-    // IMPORTANT: In Misere, the goal is to NOT form lines
+    // CRUCIAL FIX: In Misere, the goal is to NOT form lines and force opponent to do so
     if (aiDifficulty === 'easy') {
-      // Easy: Choose random
-      bestMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      // Easy: Choose random but avoid immediate loss if possible
+      const nonLosingMoves = emptyCells.filter(index => {
+        const tempBoard = [...board];
+        tempBoard[index] = 'O';
+        return !checkLineFormed(tempBoard, index, 'O');
+      });
+      
+      // If there are non-losing moves, choose one of them randomly
+      if (nonLosingMoves.length > 0) {
+        bestMove = nonLosingMoves[Math.floor(Math.random() * nonLosingMoves.length)];
+      } else {
+        // All moves lead to loss, just pick random
+        bestMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      }
     } else if (aiDifficulty === 'medium' || aiDifficulty === 'hard') {
       // First priority: Don't create a line that makes me lose
       const nonLosingMoves = emptyCells.filter(index => {
@@ -108,29 +121,46 @@ const MisereTicTacToe = ({ settings }) => {
       });
       
       if (nonLosingMoves.length > 0) {
-        // If I have moves that don't make me lose, check for forcing moves
+        // If I have moves that don't make me lose
         if (aiDifficulty === 'hard') {
-          // Try to find a move that forces the opponent to create a line
+          // Hard: Try to force opponent to form a line (make them lose)
           const forcingMoves = nonLosingMoves.filter(index => {
             const tempBoard = [...board];
             tempBoard[index] = 'O';
             
-            // Check if all opponent's possible next moves would create a line
+            // See if there's a cell where the opponent MUST play and would form a line
             return emptyCells
               .filter(cell => cell !== index)
-              .every(opponentMove => {
+              .some(nextCell => {
+                // For each possible next move by the opponent
                 const tempBoard2 = [...tempBoard];
-                tempBoard2[opponentMove] = 'X';
-                return checkLineFormed(tempBoard2, opponentMove, 'X');
+                tempBoard2[nextCell] = 'X';
+                
+                // Check if this forces them into a line
+                if (checkLineFormed(tempBoard2, nextCell, 'X')) {
+                  // Check if they have any alternative moves that don't form a line
+                  const remainingCells = emptyCells.filter(cell => 
+                    cell !== index && cell !== nextCell
+                  );
+                  
+                  // If all remaining moves would also form a line, this is a forcing move
+                  return remainingCells.every(alternativeCell => {
+                    const alternativeBoard = [...tempBoard];
+                    alternativeBoard[alternativeCell] = 'X';
+                    return checkLineFormed(alternativeBoard, alternativeCell, 'X');
+                  });
+                }
+                return false;
               });
           });
           
           if (forcingMoves.length > 0) {
+            // We found moves that force opponent to lose
             bestMove = forcingMoves[Math.floor(Math.random() * forcingMoves.length)];
           } else {
-            // Check for moves that MIGHT lead to forcing the opponent
+            // No immediate forcing moves, try to create traps
+            // Prefer center and corners for strategic advantage
             const strategicMoves = nonLosingMoves.filter(index => {
-              // For hard difficulty, prefer center and corners
               const row = Math.floor(index / boardSize);
               const col = index % boardSize;
               return (row === 0 || row === boardSize - 1) && 
