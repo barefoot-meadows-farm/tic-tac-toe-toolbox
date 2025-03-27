@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
@@ -13,12 +14,14 @@ interface TicTacToeGameProps {
   variant?: string;
   className?: string;
   settings?: GameSettings | null;
+  isFullscreen?: boolean;
 }
 
 const TicTacToeGame: React.FC<TicTacToeGameProps> = ({ 
   variant = 'classic',
   className,
-  settings
+  settings,
+  isFullscreen
 }) => {
   // Use settings?.boardSize or default to 3
   const boardSize = settings?.boardSize || 3;

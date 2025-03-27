@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 
 interface GameStartProps {
   game: GameVariant;
+  initialSettings?: GameSettings;
   onStart: (settings: GameSettings) => void;
   onCancel: () => void;
 }
@@ -25,9 +26,9 @@ export interface GameSettings {
   customRules: Record<string, any>;
 }
 
-const GameStart: React.FC<GameStartProps> = ({ game, onStart, onCancel }) => {
+const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, onCancel }) => {
   const { toast } = useToast();
-  const [settings, setSettings] = useState<GameSettings>({
+  const [settings, setSettings] = useState<GameSettings>(initialSettings || {
     opponent: 'ai',
     difficulty: 'medium',
     boardSize: 3,
