@@ -12,9 +12,9 @@ import { Input } from '@/components/ui/input';
 // Donation amounts with their corresponding Stripe URLs
 // Note: These URLs should be replaced with actual Stripe payment links for each amount
 const DONATION_OPTIONS = [
-  { amount: 5, url: "https://buy.stripe.com/test_bIYcODbOF8Rx0Za5kk?price=500" },
-  { amount: 10, url: "https://buy.stripe.com/test_bIYcODbOF8Rx0Za5kk?price=1000" },
-  { amount: 20, url: "https://buy.stripe.com/test_bIYcODbOF8Rx0Za5kk?price=2000" },
+  { amount: 5, url: "https://buy.stripe.com/eVa3cc9CN99H2AgeUU" },
+  { amount: 10, url: "https://buy.stripe.com/eVa9AA6qB2Ljgr6eUV" },
+  { amount: 20, url: "https://buy.stripe.com/bIY6oobKV3Pn3Ek002" },
 ];
 
 // Base URL for custom donations
