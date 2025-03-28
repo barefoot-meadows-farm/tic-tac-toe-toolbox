@@ -12,7 +12,7 @@ import Footer from '@/components/Footer';
 const DONATION_OPTIONS = [
   { amount: 5, url: "https://buy.stripe.com/eVa3cc9CN99H2AgeUU" },
   { amount: 10, url: "https://buy.stripe.com/eVa9AA6qB2Ljgr6eUV" },
-  { amount: 15, url: "https://buy.stripe.com/test_bIYcODbOF8Rx0Za5kl" },
+  { amount: 15, url: "https://buy.stripe.com/aEU4gg7uFeu14IoaEH" },
   { amount: 20, url: "https://buy.stripe.com/bIY6oobKV3Pn3Ek002" },
 ];
 
