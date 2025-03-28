@@ -6,13 +6,9 @@ import { Heart } from 'lucide-react';
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   
-  // Stripe payment link - replace this with your actual Stripe hosted checkout URL
-  const stripePaymentLink = "https://buy.stripe.com/test_bIYcODbOF8Rx0Za5kk";
-  
   const handleDonateClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // You can add analytics tracking here if needed
-    console.log('Donate button clicked');
-    // The href attribute will handle the redirect
+    console.log('Donate button clicked in footer');
   };
   
   return (
@@ -56,16 +52,14 @@ const Footer = () => {
               className="my-2 md:my-0 text-primary border-primary hover:bg-primary/10 group"
               asChild
             >
-              <a 
-                href={stripePaymentLink}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link 
+                to="/donate"
                 onClick={handleDonateClick}
                 className="flex items-center space-x-1"
               >
                 <Heart className="h-4 w-4 group-hover:text-primary fill-primary/20 group-hover:fill-primary/40 transition-all" />
                 <span>Donate</span>
-              </a>
+              </Link>
             </Button>
           </div>
           

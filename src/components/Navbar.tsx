@@ -14,13 +14,9 @@ const Navbar = () => {
   const isMobile = useIsMobile();
   const { isLoading } = useAuth();
   
-  // Stripe payment link - using the same URL as in the footer
-  const stripePaymentLink = "https://buy.stripe.com/test_bIYcODbOF8Rx0Za5kk";
-  
   const handleDonateClick = () => {
     // You can add analytics tracking here if needed
     console.log('Donate button clicked in navbar');
-    // The href attribute will handle the redirect
   };
   
   useEffect(() => {
@@ -88,16 +84,14 @@ const Navbar = () => {
               className="ml-2 text-primary border-primary hover:bg-primary/10 group"
               asChild
             >
-              <a 
-                href={stripePaymentLink}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link 
+                to="/donate"
                 onClick={handleDonateClick}
                 className="flex items-center space-x-1"
               >
                 <Heart className="h-4 w-4 group-hover:text-primary fill-primary/20 group-hover:fill-primary/40 transition-all" />
                 <span>Donate</span>
-              </a>
+              </Link>
             </Button>
             
             <div className="ml-2">
@@ -119,14 +113,12 @@ const Navbar = () => {
               className="text-primary border-primary hover:bg-primary/10 group"
               asChild
             >
-              <a 
-                href={stripePaymentLink}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link 
+                to="/donate"
                 onClick={handleDonateClick}
               >
                 <Heart className="h-4 w-4 group-hover:text-primary fill-primary/20 group-hover:fill-primary/40 transition-all" />
-              </a>
+              </Link>
             </Button>
             
             {isLoading ? (
@@ -185,6 +177,18 @@ const Navbar = () => {
               >
                 <Settings className="h-4 w-4" />
                 <span>Settings</span>
+              </Link>
+              <Link 
+                to="/donate" 
+                className={cn(
+                  "flex items-center space-x-2 rounded-md px-3 py-2 transition-colors",
+                  location.pathname === "/donate" 
+                    ? "bg-primary/10 text-primary" 
+                    : "text-muted-foreground hover:bg-accent"
+                )}
+              >
+                <Heart className="h-4 w-4" />
+                <span>Donate</span>
               </Link>
             </div>
           </nav>
