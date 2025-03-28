@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, X, Home, Grid3X3, Gamepad2, Settings, Loader2 } from 'lucide-react';
+import { Menu, X, Home, Grid3X3, Gamepad2, Settings, Loader2, Heart } from 'lucide-react';
 import { AuthButton } from './AuthButton';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -13,6 +13,15 @@ const Navbar = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { isLoading } = useAuth();
+  
+  // Stripe payment link - using the same URL as in the footer
+  const stripePaymentLink = "https://buy.stripe.com/test_bIYcODbOF8Rx0Za5kk";
+  
+  const handleDonateClick = () => {
+    // You can add analytics tracking here if needed
+    console.log('Donate button clicked in navbar');
+    // The href attribute will handle the redirect
+  };
   
   useEffect(() => {
     setIsMenuOpen(false);
@@ -73,6 +82,24 @@ const Navbar = () => {
               </Link>
             </Button>
             
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-2 text-primary border-primary hover:bg-primary/10 group"
+              asChild
+            >
+              <a 
+                href={stripePaymentLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleDonateClick}
+                className="flex items-center space-x-1"
+              >
+                <Heart className="h-4 w-4 group-hover:text-primary fill-primary/20 group-hover:fill-primary/40 transition-all" />
+                <span>Donate</span>
+              </a>
+            </Button>
+            
             <div className="ml-2">
               {isLoading ? (
                 <Button variant="ghost" size="sm" disabled>
@@ -86,6 +113,22 @@ const Navbar = () => {
           </nav>
           
           <div className="flex items-center md:hidden space-x-2">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="text-primary border-primary hover:bg-primary/10 group"
+              asChild
+            >
+              <a 
+                href={stripePaymentLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleDonateClick}
+              >
+                <Heart className="h-4 w-4 group-hover:text-primary fill-primary/20 group-hover:fill-primary/40 transition-all" />
+              </a>
+            </Button>
+            
             {isLoading ? (
               <Button variant="ghost" size="icon" disabled>
                 <Loader2 className="h-4 w-4 animate-spin" />
