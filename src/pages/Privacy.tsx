@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const Privacy = () => {
-  const lastUpdated = "October 15, 2023";
+  const lastUpdated = "March 30th, 2025";
   
   return (
     <div className="flex min-h-screen flex-col">
