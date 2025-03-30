@@ -79,6 +79,10 @@ const Footer = () => {
             &copy; {currentYear} Tic Tac Toolbox
           </div>
         </div>
+        
+        <div className="text-center text-xs text-muted-foreground mt-6 pt-4 border-t border-border/30">
+          Powered by Binary Bloom
+        </div>
       </div>
     </footer>
   );
