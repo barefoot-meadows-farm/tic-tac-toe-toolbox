@@ -14,6 +14,9 @@ import GamePage from "./pages/GamePage";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Donate from "./pages/Donate";
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Contact from "./pages/Contact";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ErrorBoundary } from 'react-error-boundary';
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -110,6 +113,36 @@ const App = () => (
                         <ErrorBoundary FallbackComponent={ErrorFallback}>
                             <AnimatedTransition>
                                 <Donate />
+                            </AnimatedTransition>
+                        </ErrorBoundary>
+                    }
+                />
+                <Route
+                    path="/about"
+                    element={
+                        <ErrorBoundary FallbackComponent={ErrorFallback}>
+                            <AnimatedTransition>
+                                <About />
+                            </AnimatedTransition>
+                        </ErrorBoundary>
+                    }
+                />
+                <Route
+                    path="/privacy"
+                    element={
+                        <ErrorBoundary FallbackComponent={ErrorFallback}>
+                            <AnimatedTransition>
+                                <Privacy />
+                            </AnimatedTransition>
+                        </ErrorBoundary>
+                    }
+                />
+                <Route
+                    path="/contact"
+                    element={
+                        <ErrorBoundary FallbackComponent={ErrorFallback}>
+                            <AnimatedTransition>
+                                <Contact />
                             </AnimatedTransition>
                         </ErrorBoundary>
                     }

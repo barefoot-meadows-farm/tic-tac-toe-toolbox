@@ -40,10 +40,22 @@ const Footer = () => {
               Collection
             </Link>
             <Link 
-              to="/settings" 
+              to="/about" 
               className="text-sm text-muted-foreground hover:text-foreground transition-colors my-1 md:my-0"
             >
-              Settings
+              About
+            </Link>
+            <Link 
+              to="/contact" 
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors my-1 md:my-0"
+            >
+              Contact
+            </Link>
+            <Link 
+              to="/privacy" 
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors my-1 md:my-0"
+            >
+              Privacy
             </Link>
             
             <Button 
