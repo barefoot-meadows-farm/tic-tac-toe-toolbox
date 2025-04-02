@@ -159,11 +159,20 @@ class TraditionalRules(GameRules):
         return winner == player
 
 # Misere Rules: Win by avoiding three in a row
-class MisereRules(TraditionalRules):
-    def evaluate_board(self, board: Board, player: Player) -> int:
-        """In Misere, the evaluation is flipped - you want the opponent to get 3 in a row."""
-        traditional_eval = super().evaluate_board(board, player)
-        return -traditional_eval  # Flip the evaluation
+class MisereRules extends TraditionalRules {
+  evaluateBoard(board: GameBoard, player: Player): number {
+    // In Misere, the evaluation is flipped - you want the opponent to get 3 in a row
+    const traditionalEval = super.evaluateBoard(board, player);
+    return -traditionalEval;  // Flip the evaluation
+  }
+  
+  isWinningMove(board: GameBoard, row: number, col: number, player: Player): boolean {
+    // In Misere, a "winning" move is actually one that would make you lose in traditional rules
+    // So we need to invert the result of the traditional check
+    const wouldFormLine = super.isWinningMove(board, row, col, player);
+    return !wouldFormLine; // In Misere, NOT forming a line is a "winning" move
+  }
+}
 
 # Numerical Rules: Uses numbers (1-9) instead of X/O
 class NumericalRules(GameRules):
