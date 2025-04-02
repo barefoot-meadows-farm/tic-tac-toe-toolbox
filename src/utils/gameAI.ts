@@ -186,6 +186,13 @@ class MisereRules extends TraditionalRules {
     const traditionalEval = super.evaluateBoard(board, player);
     return -traditionalEval;  // Flip the evaluation
   }
+
+  isWinningMove(board: GameBoard, row: number, col: number, player: Player): boolean {
+    // In Misere, a "winning" move is actually one that would make you lose in traditional rules
+    // So we need to invert the result of the traditional check
+    const wouldFormLine = super.isWinningMove(board, row, col, player);
+    return !wouldFormLine; // In Misere, NOT forming a line is a "winning" move
+  }
 }
 
 // Numerical Rules: Uses numbers instead of X/O
