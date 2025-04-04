@@ -128,6 +128,19 @@ export const gameVariants: GameVariant[] = [
       'This allows for more complex strategies and longer games',
       'No draw condition unless players agree to end the game'
     ]
+  },
+  {
+    id: 'chaos',
+    name: 'Chaos',
+    description: 'A chaotic version where tiles randomly swap positions after each round.',
+    difficulty: 'medium',
+    premium: false,
+    rules: [
+      'Standard tic-tac-toe rules with a twist',
+      'After both players have moved, two random tiles swap their contents',
+      'This random element adds unpredictability to each game',
+      'First player to get 3 of their marks in a row still wins'
+    ]
   }
 ];
 

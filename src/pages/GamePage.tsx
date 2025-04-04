@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import PageLayout from '@/components/PageLayout';
 // Fix import path to use relative path instead of alias for Games directory
 import NumericalTicTacToe from '../Games/numerical';
+import ChaosTicTacToe from '../Games/chaos';
 
 const GamePage = () => {
   const { id } = useParams<{ id: string }>();
@@ -100,10 +101,14 @@ const GamePage = () => {
               />
             </div>
           ) : (
-            // Use NumericalTicTacToe component for numerical variant
+            // Determine which game component to render based on game id
             id === 'numerical' ? (
               <NumericalTicTacToe 
                 settings={settings} 
+              />
+            ) : id === 'chaos' ? (
+              <ChaosTicTacToe 
+                settings={settings}
               />
             ) : (
               <TicTacToeGame 
