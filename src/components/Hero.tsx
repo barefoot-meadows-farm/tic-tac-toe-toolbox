@@ -1,11 +1,9 @@
 
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 
 const Hero = () => {
   return (
-    <div className="relative overflow-hidden pt-20 pb-12 md:pt-28 md:pb-16 bg-gradient-to-br from-primary/10 to-background">
+    <div className="relative overflow-hidden pt-20 pb-6 md:pt-28 md:pb-10 bg-gradient-to-br from-primary/10 to-background">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex flex-col items-center text-center">
           <div className="animate-fade-in [animation-delay:200ms]">
@@ -19,28 +17,14 @@ const Hero = () => {
           </div>
           
           <div className="max-w-2xl mx-auto animate-fade-in [animation-delay:400ms]">
-            <p className="text-lg md:text-xl text-foreground/80 mb-8">
+            <p className="text-lg md:text-xl text-foreground/80 mb-6">
               Explore beautiful, modern variations of the classic Tic Tac Toe game.
               Challenge yourself with new rules and gameplay mechanics.
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 animate-fade-in [animation-delay:600ms]">
-            <Button asChild size="lg" className="group">
-              <Link to="/collection">
-                Play Now
-                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link to="/settings">
-                Customize
-              </Link>
-            </Button>
-          </div>
-          
           {/* Feature badges */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-3xl mx-auto animate-fade-in [animation-delay:800ms]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 max-w-3xl mx-auto animate-fade-in [animation-delay:800ms]">
             <div className="bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-border/40 shadow-sm">
               <p className="font-medium">9+ Game Variants</p>
             </div>

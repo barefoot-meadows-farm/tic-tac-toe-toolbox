@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, X, Home, Grid3X3, Gamepad2, Settings, Loader2, Heart } from 'lucide-react';
+import { Menu, X, Home, Settings, Loader2, Heart, Gamepad2 } from 'lucide-react';
 import { AuthButton } from './AuthButton';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -51,18 +51,6 @@ const Navbar = () => {
               >
                 <Home className="h-4 w-4" />
                 <span>Home</span>
-              </Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link 
-                to="/collection" 
-                className={cn(
-                  "flex items-center space-x-1",
-                  location.pathname === "/collection" ? "text-primary font-medium" : "text-muted-foreground"
-                )}
-              >
-                <Grid3X3 className="h-4 w-4" />
-                <span>Games</span>
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
@@ -153,18 +141,6 @@ const Navbar = () => {
               >
                 <Home className="h-4 w-4" />
                 <span>Home</span>
-              </Link>
-              <Link 
-                to="/collection" 
-                className={cn(
-                  "flex items-center space-x-2 rounded-md px-3 py-2 transition-colors",
-                  location.pathname === "/collection" 
-                    ? "bg-primary/10 text-primary" 
-                    : "text-muted-foreground hover:bg-accent"
-                )}
-              >
-                <Grid3X3 className="h-4 w-4" />
-                <span>Games</span>
               </Link>
               <Link 
                 to="/settings" 
