@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { GameSettings } from '@/components/GameStart';
 import { getAIMove } from '@/utils/gameAI';
@@ -38,21 +39,43 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
   // Check for a winner
   const calculateWinner = (squares: Board): Player | 'draw' => {
     const size = squares.length;
-    const lines = [
-      // Rows
-      ...Array(size).fill(null).map((_, i) => 
-        Array(size).fill(null).map((_, j) => [i, j])
-      ),
-      // Columns
-      ...Array(size).fill(null).map((_, i) => 
-        Array(size).fill(null).map((_, j) => [j, i])
-      ),
-      // Main diagonal
-      [Array(size).fill(null).map((_, i) => [i, i])],
-      // Other diagonal
-      [Array(size).fill(null).map((_, i) => [i, size - 1 - i])]
-    ].flat();
+    
+    // Define winning lines (rows, columns, and diagonals)
+    const lines: Array<Array<[number, number]>> = [];
+    
+    // Add rows
+    for (let i = 0; i < size; i++) {
+      const row: Array<[number, number]> = [];
+      for (let j = 0; j < size; j++) {
+        row.push([i, j]);
+      }
+      lines.push(row);
+    }
+    
+    // Add columns
+    for (let i = 0; i < size; i++) {
+      const col: Array<[number, number]> = [];
+      for (let j = 0; j < size; j++) {
+        col.push([j, i]);
+      }
+      lines.push(col);
+    }
+    
+    // Add main diagonal
+    const mainDiag: Array<[number, number]> = [];
+    for (let i = 0; i < size; i++) {
+      mainDiag.push([i, i]);
+    }
+    lines.push(mainDiag);
+    
+    // Add other diagonal
+    const otherDiag: Array<[number, number]> = [];
+    for (let i = 0; i < size; i++) {
+      otherDiag.push([i, size - 1 - i]);
+    }
+    lines.push(otherDiag);
 
+    // Check all possible winning lines
     for (const line of lines) {
       const firstCell = squares[line[0][0]][line[0][1]];
       if (firstCell && line.every(([r, c]) => squares[r][c] === firstCell)) {
