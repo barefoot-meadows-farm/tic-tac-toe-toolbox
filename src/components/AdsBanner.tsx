@@ -8,10 +8,10 @@ interface AdsBannerProps {
 }
 
 const AdsBanner: React.FC<AdsBannerProps> = ({ adSlot, format = 'auto', className }) => {
-  const adRef = useRef<HTMLDivElement>(null);
+  const adContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (adRef.current && window.adsbygoogle) {
+    if (adContainerRef.current && window.adsbygoogle) {
       try {
         // @ts-ignore - adsbygoogle is loaded from the script in index.html
         (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -22,7 +22,7 @@ const AdsBanner: React.FC<AdsBannerProps> = ({ adSlot, format = 'auto', classNam
   }, []);
 
   return (
-    <div className={className}>
+    <div className={className} ref={adContainerRef}>
       <ins
         className="adsbygoogle"
         style={{
@@ -33,7 +33,6 @@ const AdsBanner: React.FC<AdsBannerProps> = ({ adSlot, format = 'auto', classNam
         data-ad-client="ca-pub-2109736348329514"
         data-ad-slot={adSlot}
         data-ad-format={format}
-        ref={adRef}
       />
     </div>
   );
