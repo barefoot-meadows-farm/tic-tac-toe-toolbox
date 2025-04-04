@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,9 +8,8 @@ import GameStart, { GameSettings } from '@/components/GameStart';
 import TicTacToeGame from '@/components/TicTacToeGame';
 import { useAuth } from '@/contexts/AuthContext';
 import PageLayout from '@/components/PageLayout';
-// Fix import paths to match actual file locations
 import NumericalTicTacToe from '@/Games/numerical';
-import ChaosTicTacToe from '../../Games/chaos';
+import ChaosTicTacToe from '@/Games/chaos';
 
 const GamePage = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,32 +23,27 @@ const GamePage = () => {
   
   useEffect(() => {
     if (!id || !game) {
-      navigate('/'); // Navigate to home instead of collection
+      navigate('/');
       return;
     }
     
-    // Redirect to home if the game is premium and user doesn't have premium access
     if (game.premium && !isPremium) {
       navigate('/');
       return;
     }
     
-    // Check if there are settings saved for this game
     const savedSettings = getGameSettings(id);
     if (savedSettings) {
       setSettings(savedSettings);
-      // Only show settings if no applied settings exist yet
-      // This fixes the loop issue - we don't automatically show settings if they exist
     } else {
       setSettings(defaultGameSettings);
-      // Always show settings if none exist yet
       setShowSettings(true);
     }
   }, [id, game, navigate, getGameSettings, defaultGameSettings, isPremium]);
   
   const handleSettingsApplied = (newSettings: GameSettings) => {
     setSettings(newSettings);
-    setShowSettings(false); // Hide settings after they're applied
+    setShowSettings(false);
     applyGameSettings(id || '', newSettings);
   };
   
@@ -101,7 +94,6 @@ const GamePage = () => {
               />
             </div>
           ) : (
-            // Determine which game component to render based on game id
             id === 'numerical' ? (
               <NumericalTicTacToe 
                 settings={settings} 
