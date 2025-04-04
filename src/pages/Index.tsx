@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { Gamepad2 } from 'lucide-react';
 import Hero from '@/components/Hero';
 import GameCard from '@/components/GameCard';
 import Navbar from '@/components/Navbar';
@@ -10,6 +10,11 @@ import TicTacToeGame from '@/components/TicTacToeGame';
 import PageLayout from '@/components/PageLayout';
 
 const Index = () => {
+  // Filter out the games we want to remove
+  const filteredGames = gameVariants.filter(game => 
+    !['3d', 'ultimate', 'sos', 'sos-extended'].includes(game.id)
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -43,18 +48,18 @@ const Index = () => {
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {gameVariants.map((game, index) => (
+                {filteredGames.map((game, index) => (
                   <div key={game.id} className="animate-fade-in" style={{ animationDelay: `${300 + (index * 100)}ms` }}>
                     <GameCard 
                       game={game} 
                       renderFooter={() => (
                         <div className="p-6 mt-4">
                           <Link 
-                            to={`/game/${game.id}`}
+                            to={`/play/${game.id}`}
                             className="flex items-center justify-center w-full bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors group"
                           >
+                            <Gamepad2 className="mr-2 w-4 h-4" />
                             Play {game.name}
-                            <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
                           </Link>
                         </div>
                       )}

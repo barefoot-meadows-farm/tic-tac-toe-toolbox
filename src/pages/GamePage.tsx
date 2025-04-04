@@ -24,13 +24,13 @@ const GamePage = () => {
   
   useEffect(() => {
     if (!id || !game) {
-      navigate('/collection');
+      navigate('/'); // Navigate to home instead of collection
       return;
     }
     
-    // Redirect to collection if the game is premium and user doesn't have premium access
+    // Redirect to home if the game is premium and user doesn't have premium access
     if (game.premium && !isPremium) {
-      navigate('/collection');
+      navigate('/');
       return;
     }
     
@@ -66,9 +66,9 @@ const GamePage = () => {
       <PageLayout>
         <div className="flex items-center justify-between mb-6">
           <Button asChild variant="ghost" size="sm" className="group">
-            <Link to="/collection">
+            <Link to="/">
               <ArrowLeft className="mr-2 w-4 h-4 transition-transform group-hover:-translate-x-1" />
-              Back to Games
+              Back to Home
             </Link>
           </Button>
           
@@ -94,7 +94,7 @@ const GamePage = () => {
                   if (getGameSettings(id || '')) {
                     setShowSettings(false);
                   } else {
-                    navigate('/collection');
+                    navigate('/');
                   }
                 }}
               />
