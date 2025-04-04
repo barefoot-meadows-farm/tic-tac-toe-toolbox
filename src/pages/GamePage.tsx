@@ -9,9 +9,9 @@ import GameStart, { GameSettings } from '@/components/GameStart';
 import TicTacToeGame from '@/components/TicTacToeGame';
 import { useAuth } from '@/contexts/AuthContext';
 import PageLayout from '@/components/PageLayout';
-// Fix import path to use relative path instead of alias for Games directory
-import NumericalTicTacToe from '../Games/numerical';
-import ChaosTicTacToe from '../Games/chaos';
+// Fix import paths to match actual file locations
+import NumericalTicTacToe from '@/Games/numerical';
+import ChaosTicTacToe from '../../Games/chaos';
 
 const GamePage = () => {
   const { id } = useParams<{ id: string }>();
