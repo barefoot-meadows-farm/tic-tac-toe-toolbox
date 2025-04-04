@@ -8,6 +8,7 @@ import { useGameSettings } from '@/contexts/GameSettingsContext';
 import GameStart, { GameSettings } from '@/components/GameStart';
 import TicTacToeGame from '@/components/TicTacToeGame';
 import { useAuth } from '@/contexts/AuthContext';
+import PageLayout from '@/components/PageLayout';
 // Fix import path to use relative path instead of alias for Games directory
 import NumericalTicTacToe from '../Games/numerical';
 
@@ -62,56 +63,58 @@ const GamePage = () => {
   
   return (
     <div className="min-h-screen flex flex-col p-4 md:p-8">
-      <div className="flex items-center justify-between mb-6">
-        <Button asChild variant="ghost" size="sm" className="group">
-          <Link to="/collection">
-            <ArrowLeft className="mr-2 w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            Back to Games
-          </Link>
-        </Button>
-        
-        {!showSettings && (
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowSettings(true)}
-          >
-            Game Settings
+      <PageLayout>
+        <div className="flex items-center justify-between mb-6">
+          <Button asChild variant="ghost" size="sm" className="group">
+            <Link to="/collection">
+              <ArrowLeft className="mr-2 w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              Back to Games
+            </Link>
           </Button>
-        )}
-      </div>
-      
-      <div className="flex-grow flex items-center justify-center">
-        {showSettings ? (
-          <div className="w-full max-w-md mx-auto">
-            <GameStart 
-              game={game}
-              initialSettings={settings}
-              onStart={handleSettingsApplied}
-              onCancel={() => {
-                if (getGameSettings(id || '')) {
-                  setShowSettings(false);
-                } else {
-                  navigate('/collection');
-                }
-              }}
-            />
-          </div>
-        ) : (
-          // Use NumericalTicTacToe component for numerical variant
-          id === 'numerical' ? (
-            <NumericalTicTacToe 
-              settings={settings} 
-            />
+          
+          {!showSettings && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowSettings(true)}
+            >
+              Game Settings
+            </Button>
+          )}
+        </div>
+        
+        <div className="flex-grow flex items-center justify-center">
+          {showSettings ? (
+            <div className="w-full max-w-md mx-auto">
+              <GameStart 
+                game={game}
+                initialSettings={settings}
+                onStart={handleSettingsApplied}
+                onCancel={() => {
+                  if (getGameSettings(id || '')) {
+                    setShowSettings(false);
+                  } else {
+                    navigate('/collection');
+                  }
+                }}
+              />
+            </div>
           ) : (
-            <TicTacToeGame 
-              variant={id || 'traditional'} 
-              settings={settings}
-              isFullscreen={true}
-            />
-          )
-        )}
-      </div>
+            // Use NumericalTicTacToe component for numerical variant
+            id === 'numerical' ? (
+              <NumericalTicTacToe 
+                settings={settings} 
+              />
+            ) : (
+              <TicTacToeGame 
+                variant={id || 'traditional'} 
+                settings={settings}
+                isFullscreen={true}
+              />
+            )
+          )}
+        </div>
+      </PageLayout>
     </div>
   );
 };
