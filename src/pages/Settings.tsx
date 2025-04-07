@@ -41,8 +41,8 @@ const Settings = () => {
                           <div className="flex items-center justify-between">
                               <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
                               <Button variant="outline" size="sm" asChild>
-                                  <Link to="/" className="flex items-center gap-2">
-                                      <ArrowLeft className="h-4 w-4"/>
+                                  <Link to="/" className="flex items-center gap-2 group" replace>
+                                      <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1"/>
                                       Return to Main Page
                                   </Link>
                               </Button>
