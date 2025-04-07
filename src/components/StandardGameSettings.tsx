@@ -286,15 +286,13 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
       {renderSettingsForm()}
       
       <div className="mt-8 flex justify-between gap-4">
-        {onSettingsChanged && (
-          <Button
-            variant="outline"
-            onClick={() => onSettingsChanged(defaultGameSettings)}
-            className="flex-1"
-          >
-            Reset to Defaults
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          onClick={() => handleSettingsChange(defaultGameSettings)}
+          className="flex-1"
+        >
+          Reset to Defaults
+        </Button>
         
         <Button
           onClick={handleSaveSettings}

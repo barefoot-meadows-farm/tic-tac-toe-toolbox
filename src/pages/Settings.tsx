@@ -41,7 +41,7 @@ const Settings = () => {
                           <div className="flex items-center justify-between">
                               <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
                               <Button variant="outline" size="sm" asChild>
-                                  <Link to="/" className="flex items-center gap-2 group" replace>
+                                  <Link to="/" className="flex items-center gap-2 group">
                                       <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1"/>
                                       Return to Main Page
                                   </Link>
@@ -63,7 +63,14 @@ const Settings = () => {
                                 </div>
                               </div>
                               <div className="pl-7">
-                                <StandardGameSettings gameId="traditional" />
+                                <StandardGameSettings 
+                                  gameId="traditional" 
+                                  onSettingsChanged={(newSettings) => {
+                                    // This callback will be triggered when settings are changed
+                                    // We don't need to do anything special here as the component
+                                    // will handle saving the settings to the context
+                                  }}
+                                />
                               </div>
                           </div>
                           
