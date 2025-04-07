@@ -10,10 +10,8 @@ import TicTacToeGame from '@/components/TicTacToeGame';
 import PageLayout from '@/components/PageLayout';
 
 const Index = () => {
-  // Filter out the games we want to remove
-  const filteredGames = gameVariants.filter(game => 
-    !['3d', 'ultimate', 'sos', 'sos-extended'].includes(game.id)
-  );
+  // Use all game variants since we've already filtered them in games.tsx
+  const filteredGames = gameVariants;
 
   return (
     <div className="min-h-screen flex flex-col">

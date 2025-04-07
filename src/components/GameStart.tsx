@@ -39,13 +39,13 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
   });
 
   // Determine if the game has customizable board size
-  const hasCustomBoardSize = ['ultimate', 'sos-extended', 'unrestricted'].includes(game.id);
+  const hasCustomBoardSize = ['unrestricted'].includes(game.id);
   
   // Determine if the game has customizable win length
   const hasCustomWinLength = ['unrestricted'].includes(game.id);
   
   // Determine max board size based on game
-  const maxBoardSize = game.id === 'ultimate' ? 4 : 9;
+  const maxBoardSize = 9;
   
   // Custom rules per game
   const gameSpecificSettings = () => {
@@ -58,43 +58,7 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
           </div>
         );
         
-      case 'sos':
-        return (
-          <div className="mb-6 bg-muted/40 p-3 rounded-md">
-            <p className="text-sm text-accent-foreground font-medium mb-2">SOS Mode</p>
-            <p className="text-xs text-muted-foreground">Players place S's and O's. Each turn, the player's piece alternates between the two.</p>
-          </div>
-        );
-        
-      case 'sos-extended':
-        return (
-          <div className="space-y-4 mb-6">
-            <div className="bg-muted/40 p-3 rounded-md">
-              <p className="text-sm text-accent-foreground font-medium mb-2">SOS Extended Mode</p>
-              <p className="text-xs text-muted-foreground">Score points by forming SOS sequences. First to reach the target score wins.</p>
-            </div>
-            
-            <div>
-              <Label htmlFor="target-score" className="text-sm font-medium">Target Score</Label>
-              <div className="flex items-center gap-4 mt-1">
-                <Slider
-                  id="target-score"
-                  defaultValue={[5]}
-                  max={10}
-                  min={1}
-                  step={1}
-                  onValueChange={(value) => setSettings(prev => ({
-                    ...prev, 
-                    customRules: { ...prev.customRules, targetScore: value[0] }
-                  }))}
-                />
-                <span className="min-w-8 text-center">
-                  {settings.customRules.targetScore || 5}
-                </span>
-              </div>
-            </div>
-          </div>
-        );
+
         
       case 'feral':
         return (
@@ -112,13 +76,7 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
           </div>
         );
         
-      case '3d':
-        return (
-          <div className="mb-6 bg-muted/40 p-3 rounded-md">
-            <p className="text-sm text-accent-foreground font-medium mb-2">3D Mode</p>
-            <p className="text-xs text-muted-foreground">Play on a 3×3×3 cube. Win by getting 3 in a row in any direction, including diagonals through the cube.</p>
-          </div>
-        );
+
         
       case 'unrestricted':
         return (

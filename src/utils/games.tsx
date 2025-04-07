@@ -38,46 +38,6 @@ export const gameVariants: GameVariant[] = [
     ]
   },
   {
-    id: 'sos',
-    name: 'SOS',
-    description: 'Use S\'s and O\'s instead of X\'s and O\'s, with pieces alternating each turn.',
-    difficulty: 'medium',
-    featured: true,
-    premium: true,
-    rules: [
-      'Players place either an S or O on the board',
-      'Each turn, the player\'s piece alternates between S and O',
-      'First player to form the sequence "SOS" (horizontally, vertically, or diagonally) wins',
-      'If the board fills up with no SOS sequence, the game is a draw'
-    ]
-  },
-  {
-    id: 'ultimate',
-    name: 'Ultimate',
-    description: 'Play on 9 different boards simultaneously in this strategic variant.',
-    difficulty: 'hard',
-    featured: true,
-    premium: true,
-    rules: [
-      'The board consists of 9 smaller tic-tac-toe boards arranged in a 3×3 grid',
-      'Win a small board to claim it with your mark',
-      'Win three small boards in a row to win the game',
-      'Your opponent must play in the board corresponding to the cell you played in'
-    ]
-  },
-  {
-    id: '3d',
-    name: '3D',
-    description: 'Play in three dimensions with 27 cells arranged in a 3×3×3 cube.',
-    difficulty: 'hard',
-    premium: true,
-    rules: [
-      'Similar to traditional, but played on a 3×3×3 cube',
-      'Win by getting 3 in a row in any direction (including diagonals through the cube)',
-      'There are 49 possible winning lines'
-    ]
-  },
-  {
     id: 'feral',
     name: 'Feral',
     description: 'Like Traditional Tic-Tac-Toe but players can overwrite an opponent\'s placement.',
@@ -103,20 +63,6 @@ export const gameVariants: GameVariant[] = [
     ]
   },
   {
-    id: 'sos-extended',
-    name: 'SOS Extended',
-    description: 'A variant of SOS with expanded customization and scoring mechanics.',
-    difficulty: 'medium',
-    premium: true,
-    rules: [
-      'Players place either an S or O on the board',
-      'When a player forms an "SOS" sequence, they score a point and get another turn',
-      'Play continues until the board is full',
-      'The player with the highest score wins',
-      'Customizable board size and winning score threshold'
-    ]
-  },
-  {
     id: 'unrestricted',
     name: 'Unrestricted',
     description: 'Play on a seemingly infinite board where players decide the winning line length.',
@@ -127,19 +73,6 @@ export const gameVariants: GameVariant[] = [
       'Players vote before the match starts to determine how many marks in a row are needed to win',
       'This allows for more complex strategies and longer games',
       'No draw condition unless players agree to end the game'
-    ]
-  },
-  {
-    id: 'chaos',
-    name: 'Chaos',
-    description: 'A chaotic version where tiles randomly swap positions after each round.',
-    difficulty: 'medium',
-    premium: false,
-    rules: [
-      'Standard tic-tac-toe rules with a twist',
-      'After both players have moved, two random tiles swap their contents',
-      'This random element adds unpredictability to each game',
-      'First player to get 3 of their marks in a row still wins'
     ]
   }
 ];

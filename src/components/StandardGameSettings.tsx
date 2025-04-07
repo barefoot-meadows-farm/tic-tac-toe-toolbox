@@ -39,13 +39,13 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   // Determine if the game has customizable board size
-  const hasCustomBoardSize = ['ultimate', 'sos-extended', 'unrestricted'].includes(gameId);
+  const hasCustomBoardSize = ['unrestricted'].includes(gameId);
   
   // Determine if the game has customizable win length
   const hasCustomWinLength = ['unrestricted'].includes(gameId);
   
   // Determine max board size based on game
-  const maxBoardSize = gameId === 'ultimate' ? 4 : 9;
+  const maxBoardSize = 9;
 
   const handleSettingsChange = (newSettings: Partial<GameSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };

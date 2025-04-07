@@ -126,25 +126,25 @@ const GameDetails = () => {
                         The classic Tic-Tac-Toe game has been played for centuries. It's a simple yet engaging game
                         that helps develop strategic thinking and pattern recognition.
                       </>
-                    ) : game.id === 'ultimate' ? (
-                      <>
-                        Ultimate Tic-Tac-Toe adds a layer of strategy to the classic game by turning it into a 
-                        game of nested boards. This variant requires deeper thinking and planning several moves ahead.
-                      </>
                     ) : game.id === 'misere' ? (
                       <>
                         Misère Tic-Tac-Toe flips the objective, creating an interesting twist where players must
                         avoid making three in a row. This reversal changes the entire strategy of the game.
                       </>
-                    ) : game.id === 'sos' ? (
-                      <>
-                        The SOS variant changes the pieces from X's and O's to S's and O's. Each turn, the player's
-                        piece alternates, adding a unique rhythm to the game and changing the winning patterns.
-                      </>
                     ) : game.id === 'feral' ? (
                       <>
                         Feral Tic-Tac-Toe introduces the ability to overwrite an opponent's placement with your own,
                         meaning no placement is permanent and requiring players to think even more strategically.
+                      </>
+                    ) : game.id === 'numerical' ? (
+                      <>
+                        Numerical Tic-Tac-Toe uses numbers instead of X's and O's. Players must strategically place
+                        numbers to create a sum of 15 in a row, adding a mathematical dimension to the game.
+                      </>
+                    ) : game.id === 'unrestricted' ? (
+                      <>
+                        Unrestricted Tic-Tac-Toe expands the playing field, allowing for longer winning sequences
+                        and more complex strategies on a larger board.
                       </>
                     ) : (
                       <>
