@@ -285,7 +285,7 @@ const Profile = () => {
                       <div className="text-center py-6">
                         <p className="text-muted-foreground">You haven't played any games yet.</p>
                         <Button className="mt-4" asChild>
-                          <a href="/collection">Play Now</a>
+                          <a href="/">Play Now</a>
                         </Button>
                       </div>
                     )}

@@ -34,12 +34,6 @@ const Footer = () => {
               Home
             </Link>
             <Link 
-              to="/collection" 
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors my-1 md:my-0"
-            >
-              Collection
-            </Link>
-            <Link 
               to="/about" 
               className="text-sm text-muted-foreground hover:text-foreground transition-colors my-1 md:my-0"
             >

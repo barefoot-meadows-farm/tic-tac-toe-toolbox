@@ -25,13 +25,13 @@ const GameDetails = () => {
   
   useEffect(() => {
     if (!id || !game) {
-      navigate('/collection');
+      navigate('/');
       return;
     }
     
-    // Redirect to collection if the game is premium and user doesn't have premium access
+    // Redirect to home if the game is premium and user doesn't have premium access
     if (game.premium && !isPremium) {
-      navigate('/collection');
+      navigate('/');
     }
   }, [id, game, navigate, isPremium]);
   
@@ -60,9 +60,9 @@ const GameDetails = () => {
           <div className="container mx-auto px-4 md:px-6 py-12 md:py-16">
             <div className="mb-6 animate-fade-in">
               <Button asChild variant="ghost" size="sm" className="group mb-4">
-                <Link to="/collection">
+                <Link to="/">
                   <ArrowLeft className="mr-2 w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                  Back to Collection
+                  Back to Home
                 </Link>
               </Button>
               
@@ -163,7 +163,7 @@ const GameDetails = () => {
                     <GameStart 
                       game={game}
                       onStart={handleStartGame}
-                      onCancel={() => navigate('/collection')}
+                      onCancel={() => navigate('/')}
                     />
                   ) : (
                     <>

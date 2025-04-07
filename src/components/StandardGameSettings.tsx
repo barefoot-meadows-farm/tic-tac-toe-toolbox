@@ -280,7 +280,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
 
   // Full version shows all settings inline
   return (
-    <div className="bg-card border border-border rounded-lg shadow-sm p-6 max-w-md mx-auto animate-fade-in">
+    <div className="bg-card border border-border rounded-lg shadow-sm p-6 max-w-md mx-auto animate-fade-in pointer-events-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">Game Settings</h2>
       
       {renderSettingsForm()}

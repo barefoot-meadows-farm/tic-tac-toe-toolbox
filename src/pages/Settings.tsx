@@ -62,7 +62,7 @@ const Settings = () => {
                                   <p className="text-sm text-muted-foreground">Sets universal game rules, which can be tweaked individually on each game</p>
                                 </div>
                               </div>
-                              <div className="pl-7">
+                              <div className="pl-7 pointer-events-auto">
                                 <StandardGameSettings 
                                   gameId="traditional" 
                                   onSettingsChanged={(newSettings) => {
