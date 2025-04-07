@@ -24,12 +24,9 @@ const Hero = () => {
           </div>
           
           {/* Feature badges */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 max-w-3xl mx-auto animate-fade-in [animation-delay:800ms]">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 max-w-3xl mx-auto animate-fade-in [animation-delay:800ms]">
             <div className="bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-border/40 shadow-sm">
-              <p className="font-medium">9+ Game Variants</p>
-            </div>
-            <div className="bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-border/40 shadow-sm">
-              <p className="font-medium">Custom Rules</p>
+              <p className="font-medium">5 Game Variants</p>
             </div>
             <div className="bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-border/40 shadow-sm">
               <p className="font-medium">Modern UI</p>
