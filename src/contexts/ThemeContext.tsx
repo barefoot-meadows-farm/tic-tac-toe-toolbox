@@ -18,6 +18,8 @@ type ThemeContextType = {
   player2Symbol: string;
   setPlayer2Symbol: (symbol: string) => void;
   setQuickSymbols: (symbols: [string, string]) => void;
+  darkMode: boolean;
+  toggleDarkMode: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -30,7 +32,8 @@ let toastDebounceTimers = {
   boardColor: 0,
   animationSpeed: 0,
   player1Symbol: 0,
-  player2Symbol: 0
+  player2Symbol: 0,
+  darkMode: 0
 };
 
 // Debounce time in milliseconds
@@ -45,6 +48,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [animationSpeed, setAnimationSpeed] = useState(75);
   const [player1Symbol, setPlayer1Symbol] = useState('X');
   const [player2Symbol, setPlayer2Symbol] = useState('O');
+  const [darkMode, setDarkMode] = useState(false); // Default to light mode
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   // Load settings from localStorage on mount
@@ -87,6 +91,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const storedPlayer2Symbol = localStorage.getItem('player2Symbol');
         if (storedPlayer2Symbol) {
           setPlayer2Symbol(storedPlayer2Symbol);
+        }
+
+        // Load dark mode preference
+        const storedDarkMode = localStorage.getItem('darkMode');
+        if (storedDarkMode) {
+          setDarkMode(storedDarkMode === 'true');
         }
         
         setInitialLoadComplete(true);
@@ -145,9 +155,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Apply CSS variable for primary color
     document.documentElement.style.setProperty('--primary', hexToHSL(primaryColor));
     
-    // Remove dark mode class if it was previously applied
-    document.documentElement.classList.remove('dark');
-  }, [primaryColor, initialLoadComplete]);
+    // Apply or remove dark mode class based on state
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [primaryColor, darkMode, initialLoadComplete]);
 
   // Helper function to show toast with debounce
   const showToastWithDebounce = (
@@ -259,6 +273,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     );
   };
 
+  const handleToggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', String(newDarkMode));
+    
+    showToastWithDebounce(
+      'darkMode',
+      newDarkMode ? "Dark mode enabled" : "Light mode enabled",
+      newDarkMode ? "Dark mode has been applied to the app." : "Light mode has been applied to the app."
+    );
+  };
+
   // Combine context value with memoization for better performance
   const contextValue = useMemo(() => ({
     primaryColor,
@@ -275,7 +301,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPlayer1Symbol: handleSetPlayer1Symbol,
     player2Symbol,
     setPlayer2Symbol: handleSetPlayer2Symbol,
-    setQuickSymbols: handleSetQuickSymbols
+    setQuickSymbols: handleSetQuickSymbols,
+    darkMode,
+    toggleDarkMode: handleToggleDarkMode
   }), [
     primaryColor, 
     boardSize, 
@@ -283,7 +311,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     boardColor, 
     animationSpeed, 
     player1Symbol, 
-    player2Symbol
+    player2Symbol,
+    darkMode
   ]);
 
   return (

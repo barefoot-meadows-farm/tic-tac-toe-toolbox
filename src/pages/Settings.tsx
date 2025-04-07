@@ -1,16 +1,20 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Gamepad, Palette } from 'lucide-react';
+import { ArrowLeft, Gamepad, Palette, Moon, Sun } from 'lucide-react';
 import Navbar from "@/components/Navbar.tsx";
 import Footer from "@/components/Footer.tsx";
 import { useTheme } from '@/contexts/ThemeContext';
 import StandardGameSettings from '@/components/StandardGameSettings';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const Settings = () => {
   const { 
     primaryColor, 
-    setPrimaryColor
+    setPrimaryColor,
+    darkMode,
+    toggleDarkMode
   } = useTheme();
 
   const colorOptions = [
@@ -96,7 +100,33 @@ const Settings = () => {
                                       </div>
                                   </div>
                                   
-                                  {/* Game Symbols section removed */}
+                                  {/* Dark Mode Toggle */}
+                                  <div className="space-y-2">
+                                      <h3 className="text-lg font-medium">Dark Mode</h3>
+                                      <div className="flex items-center space-x-2">
+                                          <Switch 
+                                              id="dark-mode" 
+                                              checked={darkMode}
+                                              onCheckedChange={toggleDarkMode}
+                                          />
+                                          <Label htmlFor="dark-mode" className="flex items-center gap-2">
+                                              {darkMode ? (
+                                                  <>
+                                                      <Moon className="h-4 w-4" />
+                                                      <span>Dark Mode</span>
+                                                  </>
+                                              ) : (
+                                                  <>
+                                                      <Sun className="h-4 w-4" />
+                                                      <span>Light Mode</span>
+                                                  </>
+                                              )}
+                                          </Label>
+                                      </div>
+                                      <p className="text-xs text-muted-foreground">
+                                          Toggle between light and dark mode for the entire application.
+                                      </p>
+                                  </div>
                               </div>
                           </div>
                       </div>
