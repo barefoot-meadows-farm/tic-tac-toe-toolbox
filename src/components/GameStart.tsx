@@ -39,10 +39,11 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
   });
 
   // Determine if the game has customizable board size
-  const hasCustomBoardSize = ['unrestricted'].includes(game.id);
+  // Unrestricted mode should not have customizable board size
+  const hasCustomBoardSize = false;
   
   // Determine if the game has customizable win length
-  const hasCustomWinLength = ['unrestricted'].includes(game.id);
+  const hasCustomWinLength = false; // No games currently have customizable win length
   
   // Determine max board size based on game
   const maxBoardSize = 9;
@@ -82,15 +83,7 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
           </div>
         );
         
-      case 'unrestricted':
-        return (
-          <div className="space-y-4 mb-6">
-            <div className="bg-muted/40 p-3 rounded-md">
-              <p className="text-sm text-accent-foreground font-medium mb-2">Unrestricted Mode</p>
-              <p className="text-xs text-muted-foreground">Play on a large board with customizable win length.</p>
-            </div>
-          </div>
-        );
+
         
       default:
         return null;

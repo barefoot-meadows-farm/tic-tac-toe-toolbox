@@ -75,19 +75,6 @@ export const gameVariants: GameVariant[] = [
       'Win by getting three numbers that sum to 15',
       'This is equivalent to traditional tic-tac-toe on a magic square'
     ]
-  },
-  {
-    id: 'unrestricted',
-    name: 'Unrestricted',
-    description: 'Play on a seemingly infinite board where players decide the winning line length.',
-    difficulty: 'hard',
-    premium: false,
-    rules: [
-      'Similar to traditional but on a much larger board',
-      'Players vote before the match starts to determine how many marks in a row are needed to win',
-      'This allows for more complex strategies and longer games',
-      'No draw condition unless players agree to end the game'
-    ]
   }
 ];
 
