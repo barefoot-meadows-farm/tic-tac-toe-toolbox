@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import PageLayout from '@/components/PageLayout';
 import NumericalTicTacToe from '@/Games/numerical';
 import UnrestrictedNInARow from '../../Games/unrestricted';
-import ChaosTicTacToe from '@/Games/chaos';
+import ChaosTicTacToe from '../../Games/chaos';
 
 const GamePage = () => {
   const { id } = useParams<{ id: string }>();
