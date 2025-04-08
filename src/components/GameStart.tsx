@@ -58,7 +58,13 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
           </div>
         );
         
-
+      case 'chaos':
+        return (
+          <div className="mb-6 bg-muted/40 p-3 rounded-md">
+            <p className="text-sm text-accent-foreground font-medium mb-2">Chaos Mode</p>
+            <p className="text-xs text-muted-foreground">After both players have completed their turns, two random tiles on the board swap positions. This can dramatically change the game state!</p>
+          </div>
+        );
         
       case 'feral':
         return (
@@ -75,8 +81,6 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
             <p className="text-xs text-muted-foreground">Player 1 uses odd numbers (1,3,5,7,9) and Player 2 uses even numbers (2,4,6,8). Win by getting three numbers that sum to 15.</p>
           </div>
         );
-        
-
         
       case 'unrestricted':
         return (

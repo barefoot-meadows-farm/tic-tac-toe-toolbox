@@ -38,6 +38,20 @@ export const gameVariants: GameVariant[] = [
     ]
   },
   {
+    id: 'chaos',
+    name: 'Chaos',
+    description: 'Standard Tic-Tac-Toe with a twist: after each round, two random tiles swap positions!',
+    difficulty: 'medium',
+    featured: true,
+    premium: false,
+    rules: [
+      'Standard 3x3 grid with normal win conditions',
+      'After both players have completed their turns, two random tiles on the board swap contents',
+      'Empty tiles may swap with filled tiles, changing the board state unpredictably',
+      'The game continues until a player wins or the board is full'
+    ]
+  },
+  {
     id: 'feral',
     name: 'Feral',
     description: 'Like Traditional Tic-Tac-Toe but players can overwrite an opponent\'s placement.',
@@ -67,7 +81,7 @@ export const gameVariants: GameVariant[] = [
     name: 'Unrestricted',
     description: 'Play on a seemingly infinite board where players decide the winning line length.',
     difficulty: 'hard',
-    premium: true,
+    premium: false,
     rules: [
       'Similar to traditional but on a much larger board',
       'Players vote before the match starts to determine how many marks in a row are needed to win',
