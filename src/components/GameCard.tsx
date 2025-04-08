@@ -31,7 +31,7 @@ const GameCard: React.FC<GameCardProps> = ({
   return (
     <Card 
       className={cn(
-        "overflow-hidden group transition-all duration-300 hover:shadow-lg border-border/50",
+        "overflow-hidden group transition-all duration-300 hover:shadow-lg border-border/50 h-full flex flex-col",
         featured ? "md:h-full" : "",
         className
       )}
@@ -52,7 +52,7 @@ const GameCard: React.FC<GameCardProps> = ({
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="px-6 pb-0">
+      <CardContent className="px-6 pb-0 flex-grow">
         <p className="text-muted-foreground mb-4">
           {game.description}
         </p>

@@ -6,7 +6,7 @@ import GameCard from '@/components/GameCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { gameVariants } from '@/utils/games';
-import TicTacToeGame from '@/components/TicTacToeGame';
+import Leaderboard from '@/components/Leaderboard';
 import PageLayout from '@/components/PageLayout';
 
 const Index = () => {
@@ -24,14 +24,14 @@ const Index = () => {
           <section className="py-12 md:py-16">
             <div className="container mx-auto px-4 md:px-6">
               <div className="text-center mb-8 md:mb-12 animate-fade-in [animation-delay:300ms]">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">Play the Classic</h2>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">Leaderboard</h2>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  The timeless game of X's and O's with beautiful animations.
+                  Track your scores and see how you rank against other players.
                 </p>
               </div>
               
               <div className="animate-scale-in [animation-delay:500ms]">
-                <TicTacToeGame className="mb-8" />
+                <Leaderboard className="mb-8" />
               </div>
             </div>
           </section>
