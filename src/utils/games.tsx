@@ -75,6 +75,21 @@ export const gameVariants: GameVariant[] = [
       'Win by getting three numbers that sum to 15',
       'This is equivalent to traditional tic-tac-toe on a magic square'
     ]
+  },
+  {
+    id: 'unrestricted',
+    name: 'Unrestricted',
+    description: 'Play on an expandable board that grows as you place moves near the edges.',
+    difficulty: 'medium',
+    featured: true,
+    premium: false,
+    rules: [
+      'Board dynamically expands as players place moves near the edges',
+      'Maximum board size is 50x50',
+      'Customize win condition from 3 to 10 in a row',
+      'Navigate the board with pinch-to-zoom and drag-to-pan controls',
+      'Resignation option allows players to forfeit the game'
+    ]
   }
 ];
 

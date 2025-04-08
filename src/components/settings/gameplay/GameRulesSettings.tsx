@@ -1,8 +1,37 @@
 
-import { Dice1, Check, Play } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
+import { Switch } from "@/components/ui/switch";
+import { Dice1 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useGameSettings } from "@/contexts/GameSettingsContext";
+import UnrestrictedGameSettings from "./UnrestrictedGameSettings";
 
 const GameRulesSettings = () => {
+  const { gameSettings, applyGameSettings } = useGameSettings();
+  const [selectedGameMode, setSelectedGameMode] = useState<string>("traditional");
+  const [unrestrictedSettings, setUnrestrictedSettings] = useState({
+    winLength: 3,
+    moveLimit: null as number | null
+  });
+
+  // Apply unrestricted settings when they change
+  useEffect(() => {
+    if (selectedGameMode === "unrestricted") {
+      const currentSettings = gameSettings["unrestricted"] || {};
+      applyGameSettings("unrestricted", {
+        ...currentSettings,
+        customRules: {
+          ...currentSettings.customRules,
+          winLength: unrestrictedSettings.winLength,
+          moveLimit: unrestrictedSettings.moveLimit
+        }
+      });
+    }
+  }, [unrestrictedSettings, selectedGameMode]);
+
+  const handleGameModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedGameMode(e.target.value);
+  };
+
   return (
     <div className="border rounded-lg p-4">
       <div className="mb-4">
@@ -14,6 +43,34 @@ const GameRulesSettings = () => {
       </div>
       
       <div className="space-y-4">
+        <div className="grid gap-2">
+          <label htmlFor="gameMode" className="font-medium">Game Mode</label>
+          <p className="text-xs text-muted-foreground">Select the game mode to configure specific settings.</p>
+          <select 
+            id="gameMode"
+            className="w-full p-2 rounded-md border border-input bg-background"
+            value={selectedGameMode}
+            onChange={handleGameModeChange}
+          >
+            <option value="traditional">Traditional</option>
+            <option value="misere">Misère</option>
+            <option value="chaos">Chaos</option>
+            <option value="feral">Feral</option>
+            <option value="numerical">Numerical</option>
+            <option value="unrestricted">Unrestricted</option>
+          </select>
+        </div>
+
+        {selectedGameMode === "unrestricted" && (
+          <div className="mt-4 pt-4 border-t">
+            <h4 className="text-sm font-medium mb-3">Unrestricted Mode Settings</h4>
+            <UnrestrictedGameSettings 
+              initialSettings={unrestrictedSettings}
+              onSettingsChange={setUnrestrictedSettings}
+            />
+          </div>
+        )}
+        
         <div className="grid gap-2">
           <label htmlFor="difficulty" className="font-medium">Default Difficulty</label>
           <p className="text-xs text-muted-foreground">Sets the AI opponent difficulty level for single player games.</p>

@@ -98,6 +98,28 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
       }, 1000);
     }
   }, [roundComplete]);
+  
+  // Debug effect to monitor game state (can be removed after fixing)
+  useEffect(() => {
+    console.log('Game state update:', { 
+      currentPlayer, 
+      roundInProgress: roundInProgressRef.current,
+      roundComplete,
+      aiEnabled,
+      isAiThinking
+    });
+  }, [currentPlayer, roundComplete, aiEnabled, isAiThinking]);
+  
+  // Debug effect to log state changes
+  useEffect(() => {
+    console.log('Game state update:', { 
+      currentPlayer, 
+      roundInProgress: roundInProgressRef.current,
+      roundComplete,
+      aiEnabled,
+      moveCount
+    });
+  }, [currentPlayer, roundComplete, aiEnabled, moveCount]);
 
   // Reset the game
   const resetGame = () => {
@@ -122,8 +144,10 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
 
   // AI move logic
   const makeAiMove = () => {
-    if (winner || roundInProgressRef.current) return;
+    // Only check for winner, not roundInProgressRef
+    if (winner) return;
     
+    // Set the flag to prevent multiple moves
     roundInProgressRef.current = true;
     
     // Find empty cells
@@ -250,9 +274,8 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
       // The AI will move in the next effect cycle
       setCurrentPlayer('O');
       // Important: We need to set roundInProgressRef to false to allow AI to make its move
-      setTimeout(() => {
-        roundInProgressRef.current = false;
-      }, 100);
+      // Reset immediately to ensure AI can make its move
+      roundInProgressRef.current = false;
     } 
     // If it's a player vs player game
     else if (!aiEnabled) {

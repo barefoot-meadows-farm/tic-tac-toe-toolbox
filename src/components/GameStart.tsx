@@ -43,7 +43,7 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
   const hasCustomBoardSize = false;
   
   // Determine if the game has customizable win length
-  const hasCustomWinLength = false; // No games currently have customizable win length
+  const hasCustomWinLength = game.id === 'unrestricted'; // Only Unrestricted mode has customizable win length
   
   // Determine max board size based on game
   const maxBoardSize = 9;
