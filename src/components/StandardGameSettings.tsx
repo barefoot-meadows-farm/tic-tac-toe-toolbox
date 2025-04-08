@@ -1,13 +1,11 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { GameVariant } from '@/utils/games';
 import { Gamepad, User, Bot, Grid3X3, Trophy, Clock } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { GameSettings } from './GameStart';
 import { useGameSettings } from '@/contexts/GameSettingsContext';
 import { 
@@ -18,6 +16,13 @@ import {
   SheetTitle,
   SheetTrigger, 
 } from '@/components/ui/sheet';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface StandardGameSettingsProps {
   gameId: string;
@@ -38,18 +43,42 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
   const [settings, setSettings] = useState<GameSettings>(storedSettings || defaultGameSettings);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Determine if the game has customizable board size
-  // Unrestricted mode should not have customizable board size
-  const hasCustomBoardSize = false;
+  // All games now have customizable board size
+  const hasCustomBoardSize = true;
   
-  // Determine if the game has customizable win length
-  const hasCustomWinLength = gameId === 'unrestricted'; // Only Unrestricted mode has customizable win length
+  // All games now have customizable win length
+  const hasCustomWinLength = true;
   
-  // Determine max board size based on game
-  const maxBoardSize = 9;
+  // Board size options as per requirements
+  const boardSizeOptions = [3, 4, 5];
+  
+  // Time limit options in seconds as per requirements
+  const timeLimitOptions = [
+    { value: 10, label: '10 seconds' },
+    { value: 15, label: '15 seconds' },
+    { value: 30, label: '30 seconds' },
+    { value: 60, label: '1 minute' },
+    { value: 120, label: '2 minutes' },
+    { value: 300, label: '5 minutes' },
+  ];
+
+  // Get available win length options based on board size
+  const getWinLengthOptions = (boardSize: number) => {
+    const options = [];
+    for (let i = 3; i <= boardSize; i++) {
+      options.push(i);
+    }
+    return options;
+  };
 
   const handleSettingsChange = (newSettings: Partial<GameSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
+    
+    // If board size changes, ensure win length is valid
+    if (newSettings.boardSize && updatedSettings.winLength > newSettings.boardSize) {
+      updatedSettings.winLength = newSettings.boardSize;
+    }
+    
     setSettings(updatedSettings);
     
     if (onSettingsChanged) {
@@ -180,36 +209,57 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
         <div>
           <h3 className="flex items-center text-sm font-medium mb-2">
             <Grid3X3 className="w-4 h-4 mr-1" />
-            Board Size: {settings.boardSize}x{settings.boardSize}
+            Board Size
           </h3>
-          <Slider
-            value={[settings.boardSize]}
-            max={maxBoardSize}
-            min={3}
-            step={1}
-            onValueChange={(value) => handleSettingsChange({
-              boardSize: value[0],
-              // Ensure win length is not greater than board size
-              winLength: settings.winLength > value[0] ? value[0] : settings.winLength
-            })}
-          />
+          <Select
+            value={settings.boardSize.toString()}
+            onValueChange={(value) => {
+              const newBoardSize = parseInt(value);
+              handleSettingsChange({
+                boardSize: newBoardSize,
+                // Ensure win length is not greater than board size
+                winLength: settings.winLength > newBoardSize ? newBoardSize : settings.winLength
+              });
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select board size">{settings.boardSize}x{settings.boardSize}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {boardSizeOptions.map((size) => (
+                <SelectItem key={size} value={size.toString()}>
+                  {size}x{size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
       
       {hasCustomWinLength && (
         <div>
           <h3 className="flex items-center text-sm font-medium mb-2">
-            Win Length: {settings.winLength}
+            Win Length
           </h3>
-          <Slider
-            value={[settings.winLength]}
-            max={settings.boardSize}
-            min={3}
-            step={1}
-            onValueChange={(value) => handleSettingsChange({
-              winLength: value[0]
-            })}
-          />
+          <Select
+            value={settings.winLength.toString()}
+            onValueChange={(value) => {
+              handleSettingsChange({
+                winLength: parseInt(value)
+              });
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select win length">{settings.winLength}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {getWinLengthOptions(settings.boardSize).map((length) => (
+                <SelectItem key={length} value={length.toString()}>
+                  {length}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
       
@@ -231,17 +281,27 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
       {settings.timeLimit !== null && (
         <div>
           <h3 className="text-sm font-medium mb-2">
-            Time Per Move: {settings.timeLimit} seconds
+            Time Per Move
           </h3>
-          <Slider
-            value={[settings.timeLimit]}
-            max={60}
-            min={5}
-            step={5}
-            onValueChange={(value) => handleSettingsChange({
-              timeLimit: value[0]
-            })}
-          />
+          <Select
+            value={settings.timeLimit.toString()}
+            onValueChange={(value) => {
+              handleSettingsChange({
+                timeLimit: parseInt(value)
+              });
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select time limit" />
+            </SelectTrigger>
+            <SelectContent>
+              {timeLimitOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value.toString()}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
     </div>

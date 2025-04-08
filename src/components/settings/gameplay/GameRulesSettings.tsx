@@ -4,6 +4,7 @@ import { Dice1 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useGameSettings } from "@/contexts/GameSettingsContext";
 import UnrestrictedGameSettings from "./UnrestrictedGameSettings";
+import StandardGameSettings from "@/components/StandardGameSettings";
 
 const GameRulesSettings = () => {
   const { gameSettings, applyGameSettings } = useGameSettings();
@@ -30,6 +31,11 @@ const GameRulesSettings = () => {
 
   const handleGameModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedGameMode(e.target.value);
+  };
+  
+  const handleSettingsChanged = (newSettings: any) => {
+    // This callback will be triggered when settings are changed in StandardGameSettings
+    applyGameSettings(selectedGameMode, newSettings);
   };
 
   return (
@@ -71,20 +77,15 @@ const GameRulesSettings = () => {
           </div>
         )}
         
-        <div className="grid gap-2">
-          <label htmlFor="difficulty" className="font-medium">Default Difficulty</label>
-          <p className="text-xs text-muted-foreground">Sets the AI opponent difficulty level for single player games.</p>
-          <select 
-            id="difficulty"
-            className="w-full p-2 rounded-md border border-input bg-background"
-          >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
+        <div className="mt-4 pt-4 border-t">
+          <h4 className="text-sm font-medium mb-3">Universal Game Settings</h4>
+          <StandardGameSettings 
+            gameId={selectedGameMode} 
+            onSettingsChanged={handleSettingsChanged}
+          />
         </div>
         
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-4 pt-4 border-t">
           <div>
             <span className="font-medium">Move Confirmation</span>
             <p className="text-xs text-muted-foreground">Require confirmation before finalizing each move.</p>
