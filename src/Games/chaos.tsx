@@ -142,15 +142,73 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
       'traditional' // Use traditional logic for move calculation
     );
     
+    // Update the board directly instead of using handleCellClick to avoid recursion issues
     if (aiMove) {
       const [row, col] = aiMove;
-      handleCellClick(row, col);
+      // Create a new board with the AI's move
+      const newBoard = board.map(r => [...r]);
+      newBoard[row][col] = currentPlayer;
+      setBoard(newBoard);
+      setLastMove([row, col]);
+      setMoveCount(moveCount + 1);
+      
+      // Check for winner
+      const gameWinner = checkWinner(newBoard);
+      if (gameWinner) {
+        setWinner(gameWinner);
+        trackGameComplete('chaos', gameWinner === 'Draw' ? 'draw' : gameWinner === currentPlayer ? 'win' : 'loss');
+        roundInProgressRef.current = false;
+        return;
+      }
+      
+      // Check for draw
+      if (isBoardFull(newBoard)) {
+        setWinner('Draw');
+        trackGameComplete('chaos', 'draw');
+        roundInProgressRef.current = false;
+        return;
+      }
+      
+      // Switch to player's turn
+      setCurrentPlayer('X');
+      
+      // Set round complete to trigger the chaos swap
+      setRoundComplete(true);
     } else {
       // Fallback to random move if AI doesn't return a move
       const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
       const row = Math.floor(randomIndex / boardSize);
       const col = randomIndex % boardSize;
-      handleCellClick(row, col);
+      
+      // Create a new board with the AI's move
+      const newBoard = board.map(r => [...r]);
+      newBoard[row][col] = currentPlayer;
+      setBoard(newBoard);
+      setLastMove([row, col]);
+      setMoveCount(moveCount + 1);
+      
+      // Check for winner
+      const gameWinner = checkWinner(newBoard);
+      if (gameWinner) {
+        setWinner(gameWinner);
+        trackGameComplete('chaos', gameWinner === 'Draw' ? 'draw' : gameWinner === currentPlayer ? 'win' : 'loss');
+        roundInProgressRef.current = false;
+        return;
+      }
+      
+      // Check for draw
+      if (isBoardFull(newBoard)) {
+        setWinner('Draw');
+        trackGameComplete('chaos', 'draw');
+        roundInProgressRef.current = false;
+        return;
+      }
+      
+      // Switch to player's turn
+      setCurrentPlayer('X');
+      
+      // Set round complete to trigger the chaos swap
+      setRoundComplete(true);
     }
   };
 
@@ -191,7 +249,10 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
       // Mark the round as complete after player's move
       // The AI will move in the next effect cycle
       setCurrentPlayer('O');
-      roundInProgressRef.current = false;
+      // Important: We need to set roundInProgressRef to false to allow AI to make its move
+      setTimeout(() => {
+        roundInProgressRef.current = false;
+      }, 100);
     } 
     // If it's a player vs player game
     else if (!aiEnabled) {

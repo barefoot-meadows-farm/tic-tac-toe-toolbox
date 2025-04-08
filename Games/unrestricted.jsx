@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { GameSettings } from '@/components/GameStart';
 
-const UnrestrictedNInARow = () => {
-  // Game configuration
-  const [winCondition, setWinCondition] = useState(5); // Default to 5-in-a-row
-  const [timeLimit, setTimeLimit] = useState(0); // 0 means no time limit
+interface UnrestrictedNInARowProps {
+  settings?: GameSettings;
+}
+
+const UnrestrictedNInARow = ({ settings }: UnrestrictedNInARowProps) => {
+  // Game configuration from settings
+  const boardSize = settings?.boardSize || 5;
+  const winCondition = settings?.winLength || 5;
+  const timeLimit = settings?.timeLimit || 0; // 0 means no time limit
   const [showLastMove, setShowLastMove] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Auto-start the game
   const [customWinCondition, setCustomWinCondition] = useState('');
   
   // Game state
@@ -511,79 +517,7 @@ const UnrestrictedNInARow = () => {
       <h1 className="text-3xl font-bold mb-1">Unrestricted N-in-a-Row</h1>
       <p className="text-gray-600 mb-4">Get {winCondition} in a row on an infinite board!</p>
       
-      {!isPlaying && !winner ? (
-        <div className="w-full max-w-md p-4 bg-gray-100 rounded mb-6">
-          <h2 className="text-xl font-semibold mb-3">Game Configuration</h2>
-          
-          <div className="mb-3">
-            <label className="block text-gray-700 mb-1">Win Condition (N in a row):</label>
-            <div className="flex">
-              <select 
-                className="w-1/2 p-2 border rounded-l"
-                value={winCondition}
-                onChange={(e) => setWinCondition(parseInt(e.target.value))}
-              >
-                <option value="3">3 in a row</option>
-                <option value="4">4 in a row</option>
-                <option value="5">5 in a row</option>
-                <option value="6">6 in a row</option>
-                <option value="7">7 in a row</option>
-                <option value="8">8 in a row</option>
-                <option value="9">9 in a row</option>
-                <option value="10">10 in a row</option>
-              </select>
-              <input
-                type="number"
-                min="3"
-                placeholder="Custom"
-                value={customWinCondition}
-                onChange={(e) => setCustomWinCondition(e.target.value)}
-                className="w-1/3 p-2 border-t border-b border-r"
-              />
-              <button
-                onClick={handleCustomWinCondition}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r"
-              >
-                Set
-              </button>
-            </div>
-            <p className="text-sm text-gray-500 mt-1">Current: {winCondition}-in-a-row</p>
-          </div>
-          
-          <div className="mb-3">
-            <label className="block text-gray-700 mb-1">Time Limit (seconds per move):</label>
-            <select 
-              className="w-full p-2 border rounded"
-              value={timeLimit}
-              onChange={(e) => setTimeLimit(parseInt(e.target.value))}
-            >
-              <option value="0">No time limit</option>
-              <option value="10">10 seconds</option>
-              <option value="30">30 seconds</option>
-              <option value="60">60 seconds</option>
-              <option value="120">120 seconds</option>
-            </select>
-          </div>
-          
-          <div className="flex items-center mb-3">
-            <input
-              type="checkbox"
-              id="showLastMove"
-              className="mr-2"
-              checked={showLastMove}
-              onChange={(e) => setShowLastMove(e.target.checked)}
-            />
-            <label htmlFor="showLastMove">Highlight last move</label>
-          </div>
-          
-          <button
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-            onClick={startGame}
-          >
-            Start Game
-          </button>
-        </div>
-      ) : (
+      {(
         <div className="mb-4 w-full max-w-4xl">
           <div className="flex justify-between items-center mb-3">
             <div className="text-lg font-semibold">
@@ -688,19 +622,12 @@ const UnrestrictedNInARow = () => {
             </div>
           </div>
           
-          <div className="mt-4 flex justify-between">
+          <div className="mt-4 flex justify-center">
             <button
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2"
               onClick={resetGame}
             >
               Reset Game
-            </button>
-            
-            <button
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-              onClick={() => setIsPlaying(false)}
-            >
-              Change Settings
             </button>
           </div>
         </div>
