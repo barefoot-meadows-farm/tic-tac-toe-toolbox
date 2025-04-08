@@ -9,8 +9,8 @@ import TicTacToeGame from '@/components/TicTacToeGame';
 import { useAuth } from '@/contexts/AuthContext';
 import PageLayout from '@/components/PageLayout';
 import NumericalTicTacToe from '@/Games/numerical';
-import UnrestrictedNInARow from '../../Games/unrestricted';
-import ChaosTicTacToe from '../../Games/chaos';
+import UnrestrictedNInARow from '@/Games/unrestricted';
+import ChaosTicTacToe from '@/Games/chaos';
 
 const GamePage = () => {
   const { id } = useParams<{ id: string }>();
