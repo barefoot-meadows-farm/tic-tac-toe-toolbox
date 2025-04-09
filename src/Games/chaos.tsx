@@ -16,7 +16,8 @@ type Board = (Player)[][];
 
 const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
   // Game configuration options derived from settings
-  const boardSize = 3; // Chaos mode uses standard 3x3 grid
+  const boardSize = settings?.boardSize || 3; // Use board size from settings
+  const winLength = settings?.winLength || 3; // Use win length from settings
   const timeLimit = settings?.timeLimit || 0; // 0 means no time limit
   const aiEnabled = settings?.opponent === 'ai';
   const aiDifficulty = settings?.difficulty || 'medium';
@@ -348,45 +349,94 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
   const checkWinner = (board: Board): Player | null => {
     // Check rows
     for (let i = 0; i < boardSize; i++) {
-      if (board[i][0] && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
-        setWinningLine([
-          [i, 0],
-          [i, 1],
-          [i, 2]
-        ]);
-        return board[i][0];
+      for (let j = 0; j <= boardSize - winLength; j++) {
+        let match = true;
+        const firstCell = board[i][j];
+        if (!firstCell) continue;
+        
+        const line: [number, number][] = [];
+        for (let k = 0; k < winLength; k++) {
+          if (board[i][j + k] !== firstCell) {
+            match = false;
+            break;
+          }
+          line.push([i, j + k]);
+        }
+        
+        if (match) {
+          setWinningLine(line);
+          return firstCell;
+        }
       }
     }
     
     // Check columns
-    for (let i = 0; i < boardSize; i++) {
-      if (board[0][i] && board[0][i] === board[1][i] && board[1][i] === board[2][i]) {
-        setWinningLine([
-          [0, i],
-          [1, i],
-          [2, i]
-        ]);
-        return board[0][i];
+    for (let i = 0; i <= boardSize - winLength; i++) {
+      for (let j = 0; j < boardSize; j++) {
+        let match = true;
+        const firstCell = board[i][j];
+        if (!firstCell) continue;
+        
+        const line: [number, number][] = [];
+        for (let k = 0; k < winLength; k++) {
+          if (board[i + k][j] !== firstCell) {
+            match = false;
+            break;
+          }
+          line.push([i + k, j]);
+        }
+        
+        if (match) {
+          setWinningLine(line);
+          return firstCell;
+        }
       }
     }
     
-    // Check diagonals
-    if (board[0][0] && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
-      setWinningLine([
-        [0, 0],
-        [1, 1],
-        [2, 2]
-      ]);
-      return board[0][0];
+    // Check diagonals (top-left to bottom-right)
+    for (let i = 0; i <= boardSize - winLength; i++) {
+      for (let j = 0; j <= boardSize - winLength; j++) {
+        let match = true;
+        const firstCell = board[i][j];
+        if (!firstCell) continue;
+        
+        const line: [number, number][] = [];
+        for (let k = 0; k < winLength; k++) {
+          if (board[i + k][j + k] !== firstCell) {
+            match = false;
+            break;
+          }
+          line.push([i + k, j + k]);
+        }
+        
+        if (match) {
+          setWinningLine(line);
+          return firstCell;
+        }
+      }
     }
     
-    if (board[0][2] && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
-      setWinningLine([
-        [0, 2],
-        [1, 1],
-        [2, 0]
-      ]);
-      return board[0][2];
+    // Check diagonals (top-right to bottom-left)
+    for (let i = 0; i <= boardSize - winLength; i++) {
+      for (let j = winLength - 1; j < boardSize; j++) {
+        let match = true;
+        const firstCell = board[i][j];
+        if (!firstCell) continue;
+        
+        const line: [number, number][] = [];
+        for (let k = 0; k < winLength; k++) {
+          if (board[i + k][j - k] !== firstCell) {
+            match = false;
+            break;
+          }
+          line.push([i + k, j - k]);
+        }
+        
+        if (match) {
+          setWinningLine(line);
+          return firstCell;
+        }
+      }
     }
     
     return null;
@@ -432,7 +482,12 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
         </div>
         
         {/* Game board */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className={cn(
+          "grid gap-2 mb-4",
+          boardSize === 3 ? "grid-cols-3" : 
+          boardSize === 4 ? "grid-cols-4" : 
+          boardSize === 5 ? "grid-cols-5" : "grid-cols-3"
+        )}>
           {board.map((row, rowIndex) => (
             row.map((cell, colIndex) => {
               const isLastMove = lastMove && lastMove[0] === rowIndex && lastMove[1] === colIndex;

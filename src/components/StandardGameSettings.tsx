@@ -45,11 +45,13 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
   const [settings, setSettings] = useState<GameSettings>(initialSettings || storedSettings || defaultGameSettings);
   const [isOpen, setIsOpen] = useState(false);
 
-  // All games now have customizable board size
-  const hasCustomBoardSize = true;
+  // Determine if this game mode should have customizable board size
+  // Unrestricted mode doesn't use board size setting
+  const hasCustomBoardSize = gameId !== 'unrestricted';
   
-  // All games now have customizable win length
-  const hasCustomWinLength = true;
+  // Determine if this game mode should have customizable win length
+  // Numerical mode doesn't use win length setting
+  const hasCustomWinLength = gameId !== 'numerical';
   
   // Board size options as per requirements
   const boardSizeOptions = [3, 4, 5];
@@ -64,12 +66,22 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
     { value: 300, label: '5 minutes' },
   ];
 
-  // Get available win length options based on board size
+  // Get available win length options based on board size and game mode
   const getWinLengthOptions = (boardSize: number) => {
     const options = [];
-    for (let i = 3; i <= boardSize; i++) {
-      options.push(i);
+    
+    // For Unrestricted mode, allow win length values from 3 to 10 regardless of board size
+    if (gameId === 'unrestricted') {
+      for (let i = 3; i <= 10; i++) {
+        options.push(i);
+      }
+    } else {
+      // For other game modes, win length can't exceed board size
+      for (let i = 3; i <= boardSize; i++) {
+        options.push(i);
+      }
     }
+    
     return options;
   };
 
