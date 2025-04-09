@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { GameVariant } from '@/utils/games';
 import { Gamepad, User, Bot, Grid3X3, Trophy } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import StandardGameSettings from './StandardGameSettings';
 
 interface GameStartProps {
   game: GameVariant;
@@ -37,16 +38,6 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
     firstPlayer: 'random',
     customRules: {}
   });
-
-  // Determine if the game has customizable board size
-  // Unrestricted mode should not have customizable board size
-  const hasCustomBoardSize = false;
-  
-  // Determine if the game has customizable win length
-  const hasCustomWinLength = game.id === 'unrestricted'; // Only Unrestricted mode has customizable win length
-  
-  // Determine max board size based on game
-  const maxBoardSize = 9;
   
   // Custom rules per game
   const gameSpecificSettings = () => {
@@ -83,16 +74,18 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
           </div>
         );
         
-
-        
       default:
         return null;
     }
   };
 
+  const handleSettingsChanged = (newSettings: GameSettings) => {
+    setSettings(newSettings);
+  };
+
   const handleStartGame = () => {
     // Validate settings
-    if (hasCustomBoardSize && settings.boardSize < 3) {
+    if (settings.boardSize < 3) {
       toast({
         title: "Invalid settings",
         description: "Board size must be at least 3x3.",
@@ -101,7 +94,7 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
       return;
     }
     
-    if (hasCustomWinLength && settings.winLength > settings.boardSize) {
+    if (settings.winLength > settings.boardSize) {
       toast({
         title: "Invalid settings",
         description: "Win length cannot be greater than board size.",
@@ -120,161 +113,12 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
       {gameSpecificSettings()}
       
       <div className="space-y-6">
-        <div>
-          <h3 className="flex items-center text-lg font-medium mb-3">
-            <Gamepad className="w-5 h-5 mr-2" />
-            Opponent
-          </h3>
-          <RadioGroup 
-            defaultValue={settings.opponent}
-            onValueChange={(value: 'ai' | 'human') => 
-              setSettings(prev => ({ ...prev, opponent: value }))
-            }
-            className="grid grid-cols-2 gap-2"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="ai" id="ai" />
-              <Label htmlFor="ai" className="flex items-center cursor-pointer">
-                <Bot className="w-4 h-4 mr-1" /> AI
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="human" id="human" />
-              <Label htmlFor="human" className="flex items-center cursor-pointer">
-                <User className="w-4 h-4 mr-1" /> Human
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
-        
-        {settings.opponent === 'ai' && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">AI Difficulty</h3>
-            <RadioGroup 
-              defaultValue={settings.difficulty}
-              onValueChange={(value: 'easy' | 'medium' | 'hard') => 
-                setSettings(prev => ({ ...prev, difficulty: value }))
-              }
-              className="grid grid-cols-3 gap-2"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="easy" id="easy" />
-                <Label htmlFor="easy" className="cursor-pointer">Easy</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="medium" id="medium" />
-                <Label htmlFor="medium" className="cursor-pointer">Medium</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="hard" id="hard" />
-                <Label htmlFor="hard" className="cursor-pointer">Hard</Label>
-              </div>
-            </RadioGroup>
-          </div>
-        )}
-        
-        <div>
-          <h3 className="flex items-center text-sm font-medium mb-2">
-            <Trophy className="w-4 h-4 mr-1" />
-            First Player
-          </h3>
-          <RadioGroup 
-            defaultValue={settings.firstPlayer}
-            onValueChange={(value: 'player1' | 'player2' | 'random') => 
-              setSettings(prev => ({ ...prev, firstPlayer: value }))
-            }
-            className="grid grid-cols-3 gap-2"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="player1" id="player1" />
-              <Label htmlFor="player1" className="cursor-pointer">
-                Player 1
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="player2" id="player2" />
-              <Label htmlFor="player2" className="cursor-pointer">
-                Player 2
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="random" id="random" />
-              <Label htmlFor="random" className="cursor-pointer">
-                Random
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
-        
-        {hasCustomBoardSize && (
-          <div>
-            <h3 className="flex items-center text-sm font-medium mb-2">
-              <Grid3X3 className="w-4 h-4 mr-1" />
-              Board Size: {settings.boardSize}x{settings.boardSize}
-            </h3>
-            <Slider
-              defaultValue={[3]}
-              max={maxBoardSize}
-              min={3}
-              step={1}
-              onValueChange={(value) => setSettings(prev => ({
-                ...prev, 
-                boardSize: value[0],
-                // Ensure win length is not greater than board size
-                winLength: prev.winLength > value[0] ? value[0] : prev.winLength
-              }))}
-            />
-          </div>
-        )}
-        
-        {hasCustomWinLength && (
-          <div>
-            <h3 className="flex items-center text-sm font-medium mb-2">
-              Win Length: {settings.winLength}
-            </h3>
-            <Slider
-              defaultValue={[3]}
-              max={settings.boardSize}
-              min={3}
-              step={1}
-              onValueChange={(value) => setSettings(prev => ({
-                ...prev, 
-                winLength: value[0]
-              }))}
-            />
-          </div>
-        )}
-        
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">Time Limit</span>
-          <Switch 
-            checked={settings.timeLimit !== null}
-            onCheckedChange={(checked) => 
-              setSettings(prev => ({ 
-                ...prev, 
-                timeLimit: checked ? 30 : null 
-              }))
-            }
-          />
-        </div>
-        
-        {settings.timeLimit !== null && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">
-              Time Per Move: {settings.timeLimit} seconds
-            </h3>
-            <Slider
-              defaultValue={[30]}
-              max={60}
-              min={5}
-              step={5}
-              onValueChange={(value) => setSettings(prev => ({
-                ...prev, 
-                timeLimit: value[0]
-              }))}
-            />
-          </div>
-        )}
+        <StandardGameSettings 
+          gameId={game.id}
+          onSettingsChanged={handleSettingsChanged}
+          isMinimal={false}
+          initialSettings={settings}
+        />
       </div>
       
       <div className="mt-8 flex justify-between gap-4">

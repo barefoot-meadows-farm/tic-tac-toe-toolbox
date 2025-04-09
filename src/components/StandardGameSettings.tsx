@@ -28,19 +28,21 @@ interface StandardGameSettingsProps {
   gameId: string;
   onSettingsChanged?: (settings: GameSettings) => void;
   isMinimal?: boolean;
+  initialSettings?: GameSettings;
 }
 
 const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({ 
   gameId, 
   onSettingsChanged,
-  isMinimal = false 
+  isMinimal = false,
+  initialSettings
 }) => {
   const { toast } = useToast();
   const { getGameSettings, applyGameSettings, defaultGameSettings } = useGameSettings();
   
   // Get game-specific settings or use defaults
   const storedSettings = getGameSettings(gameId);
-  const [settings, setSettings] = useState<GameSettings>(storedSettings || defaultGameSettings);
+  const [settings, setSettings] = useState<GameSettings>(initialSettings || storedSettings || defaultGameSettings);
   const [isOpen, setIsOpen] = useState(false);
 
   // All games now have customizable board size
