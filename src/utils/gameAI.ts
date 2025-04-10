@@ -433,11 +433,101 @@ abstract class AIStrategy {
 // Easy AI: Random Moves
 class EasyAI extends AIStrategy {
   getMove(board: GameBoard, player: Player, rules: GameRules): [number, number] | null {
-    const emptyCells = board.getEmptyCells();
-    if (emptyCells.length === 0) {
+    // Get valid moves based on game mode
+    const validMoves = this.getValidMoves(board, player, rules);
+    if (validMoves.length === 0) {
       return null;  // No valid moves
     }
-    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    
+    // Determine if we should attempt a smart move (30% chance)
+    const attemptSmartMove = Math.random() < 0.3;
+    
+    if (attemptSmartMove) {
+      // Try to find a winning move or blocking move
+      const smartMove = this.findSmartMove(board, player, rules);
+      if (smartMove) {
+        return smartMove;
+      }
+    }
+    
+    // Make a random move with slight bias against edge spaces
+    return this.makeRandomMove(validMoves, board.size);
+  }
+  
+  private getValidMoves(board: GameBoard, player: Player, rules: GameRules): [number, number][] {
+    if (rules instanceof FeralRules) {
+      // For Feral mode, we need to check each cell individually
+      const validMoves: [number, number][] = [];
+      for (let row = 0; row < board.size; row++) {
+        for (let col = 0; col < board.size; col++) {
+          if (rules.isValidMove(board, row, col, player)) {
+            validMoves.push([row, col]);
+          }
+        }
+      }
+      return validMoves;
+    } else {
+      // For traditional modes, only empty cells are valid
+      return board.getEmptyCells();
+    }
+  }
+  
+  private findSmartMove(board: GameBoard, player: Player, rules: GameRules): [number, number] | null {
+    const opponent = player === 'X' ? 'O' : 'X';
+    const validMoves = this.getValidMoves(board, player, rules);
+    
+    // Check for winning moves (with 50% chance of taking it)
+    if (Math.random() < 0.5) {
+      for (const [row, col] of validMoves) {
+        if (rules.isWinningMove(board, row, col, player)) {
+          return [row, col];
+        }
+      }
+    }
+    
+    // Check for blocking moves (with 50% chance of blocking)
+    if (Math.random() < 0.5) {
+      for (const [row, col] of validMoves) {
+        // Create a temporary board to test if opponent would win
+        const tempBoard = board.clone();
+        if (rules instanceof FeralRules) {
+          tempBoard.makeMove(row, col, opponent, GameMode.FERAL);
+        } else {
+          tempBoard.makeMove(row, col, opponent);
+        }
+        
+        // Check if this would be a win for the opponent
+        const winner = rules.checkWinner(tempBoard);
+        if (winner === opponent) {
+          return [row, col]; // Block the opponent
+        }
+      }
+    }
+    
+    return null; // No smart move found or chance failed
+  }
+  
+  private makeRandomMove(validMoves: [number, number][], boardSize: number): [number, number] {
+    // Categorize moves as edge or non-edge
+    const edgeMoves: [number, number][] = [];
+    const nonEdgeMoves: [number, number][] = [];
+    
+    for (const [row, col] of validMoves) {
+      // Check if this is an edge move
+      if (row === 0 || row === boardSize - 1 || col === 0 || col === boardSize - 1) {
+        edgeMoves.push([row, col]);
+      } else {
+        nonEdgeMoves.push([row, col]);
+      }
+    }
+    
+    // Slight bias against edge spaces (20% less likely to choose an edge)
+    if (nonEdgeMoves.length > 0 && Math.random() < 0.2) {
+      return nonEdgeMoves[Math.floor(Math.random() * nonEdgeMoves.length)];
+    }
+    
+    // Otherwise, choose from all valid moves
+    return validMoves[Math.floor(Math.random() * validMoves.length)];
   }
 }
 

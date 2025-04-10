@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { RefreshCw, ZoomIn, ZoomOut, Flag, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import { RefreshCw, Flag, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,7 +8,8 @@ import { trackGameComplete } from '@/utils/analytics';
 import { getAIMove } from '@/utils/gameAI';
 
 type Player = 'X' | 'O' | null;
-type Board = (Player)[][];
+type Coordinate = [number, number]; // [x, y] coordinate
+type BoardMap = Record<string, Player>; // Map of coordinates to player marks
 
 interface UnrestrictedGameProps {
   className?: string;
@@ -25,6 +25,9 @@ interface UnrestrictedGameProps {
   } | null;
 }
 
+// Define Board type
+type Board = (Player)[][];
+
 const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({ 
   className,
   settings
@@ -32,6 +35,9 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
   const { toast } = useToast();
   const { user } = useAuth();
   const boardContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Viewport size (visible grid size)
+  const VIEWPORT_SIZE = 5;
   
   // Initial board size (smaller than the max to allow for expansion)
   const initialBoardSize = 10;
@@ -56,6 +62,15 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
     endCol: initialBoardSize - 1
   });
   
+  // Viewport center coordinates (for navigation)
+  const [viewportCenter, setViewportCenter] = useState<[number, number]>([0, 0]);
+  
+  // Board map for storing moves in the infinite grid
+  const [boardMap, setBoardMap] = useState<BoardMap>({});
+  
+  // Animation state for sliding effect
+  const [isSliding, setIsSliding] = useState(false);
+  
   // Zoom level (1 = normal, > 1 = zoomed in, < 1 = zoomed out)
   const [zoomLevel, setZoomLevel] = useState(1);
   
@@ -74,6 +89,179 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
   // Touch/mouse interaction state
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPosition, setLastPanPosition] = useState({ x: 0, y: 0 });
+  
+  // Convert viewport coordinates to world coordinates
+  const viewportToWorld = (viewportRow: number, viewportCol: number): Coordinate => {
+    const worldRow = viewportCenter[1] - Math.floor(VIEWPORT_SIZE/2) + viewportRow;
+    const worldCol = viewportCenter[0] - Math.floor(VIEWPORT_SIZE/2) + viewportCol;
+    return [worldCol, worldRow];
+  };
+  
+  // Convert coordinate to string key for boardMap
+  const coordToKey = (coord: Coordinate): string => {
+    return `${coord[0]},${coord[1]}`;
+  };
+  
+  // Handle cell click in the virtual grid
+  const handleCellClick = (coord: Coordinate) => {
+    const key = coordToKey(coord);
+    
+    // Check if cell is already occupied or game is over
+    if (boardMap[key] || winner || isDraw || waitingForAI) {
+      return;
+    }
+    
+    // Start game if not started
+    if (!gameStarted) {
+      setGameStarted(true);
+      if (settings?.timeLimit) {
+        setTimeLeft(settings.timeLimit);
+      }
+    }
+    
+    // Update the boardMap with the new move
+    setBoardMap(prev => ({
+      ...prev,
+      [key]: currentPlayer
+    }));
+    
+    // Increment move counter
+    setMoveCount(prev => prev + 1);
+    
+    // Check for winner based on the last move
+    const potentialWinner = checkWinnerInBoardMap(coord, currentPlayer);
+    if (potentialWinner) {
+      setWinner(potentialWinner);
+      
+      // Track the game completion
+      if (user) {
+        trackGameComplete(
+          {
+            gameId: 'unrestricted',
+            variant: 'unrestricted',
+            opponent: settings?.opponent || 'ai',
+            difficulty: settings?.difficulty,
+            result: potentialWinner === 'X' ? 'win' : 'loss'
+          }, 
+          user
+        );
+      }
+      
+      return;
+    }
+    
+    // Check for draw
+    if (moveLimit && moveCount + 1 >= moveLimit) {
+      setIsDraw(true);
+      
+      // Track the game completion as a draw
+      if (user) {
+        trackGameComplete(
+          {
+            gameId: 'unrestricted',
+            variant: 'unrestricted',
+            opponent: settings?.opponent || 'ai',
+            difficulty: settings?.difficulty,
+            result: 'draw'
+          }, 
+          user
+        );
+      }
+      
+      return;
+    }
+    
+    // Reset the timer when a move is made
+    if (settings?.timeLimit) {
+      setTimeLeft(settings.timeLimit);
+    }
+    
+    // Switch player
+    setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
+  };
+  
+  // Check for winner in the boardMap
+  const checkWinnerInBoardMap = (lastMove: Coordinate, player: Player): Player => {
+    if (!player) return null;
+    
+    const [lastX, lastY] = lastMove;
+    
+    // Directions: horizontal, vertical, diagonal down-right, diagonal up-right
+    const directions = [
+      [0, 1], [1, 0], [1, 1], [-1, 1]
+    ];
+    
+    for (const [dx, dy] of directions) {
+      let count = 1; // Start with 1 for the current cell
+      let line = [[lastY, lastX]];
+      
+      // Check in positive direction
+      for (let i = 1; i < winLength; i++) {
+        const x = lastX + dx * i;
+        const y = lastY + dy * i;
+        const key = coordToKey([x, y]);
+        
+        if (boardMap[key] !== player) break;
+        count++;
+        line.push([y, x]);
+      }
+      
+      // Check in negative direction
+      for (let i = 1; i < winLength; i++) {
+        const x = lastX - dx * i;
+        const y = lastY - dy * i;
+        const key = coordToKey([x, y]);
+        
+        if (boardMap[key] !== player) break;
+        count++;
+        line.push([y, x]);
+      }
+      
+      // Check if we have a winner
+      if (count >= winLength) {
+        setWinningLine(line);
+        return player;
+      }
+    }
+    
+    return null;
+  };
+  
+  // Shift the viewport in a direction
+  const shiftViewport = (direction: 'up' | 'down' | 'left' | 'right') => {
+    if (isSliding) return; // Prevent multiple shifts while animation is in progress
+    
+    setIsSliding(true);
+    
+    // Apply the sliding animation class based on direction
+    const boardElement = boardContainerRef.current?.querySelector('.board-grid');
+    if (boardElement) {
+      boardElement.classList.add('sliding');
+      boardElement.classList.add(`sliding-${direction}`);
+    }
+    
+    setTimeout(() => {
+      setViewportCenter(prev => {
+        const [x, y] = prev;
+        switch (direction) {
+          case 'up': return [x, y - 1];
+          case 'down': return [x, y + 1];
+          case 'left': return [x - 1, y];
+          case 'right': return [x + 1, y];
+          default: return prev;
+        }
+      });
+      
+      // Remove the animation classes after the state update
+      setTimeout(() => {
+        if (boardElement) {
+          boardElement.classList.remove('sliding');
+          boardElement.classList.remove(`sliding-${direction}`);
+        }
+        setIsSliding(false);
+      }, 300);
+    }, 50);
+  };
   
   // Determine first player based on settings
   function getInitialPlayer(): 'X' | 'O' {
@@ -101,13 +289,32 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
       const aiMoveTimer = setTimeout(() => {
         setWaitingForAI(true);
         
-        // Get the AI move based on the current board state and settings
+        // For the unrestricted mode, we need to create a virtual board from the boardMap
+        // centered around the current viewport
+        const virtualBoardSize = 7; // Slightly larger than viewport for better AI decisions
+        const virtualBoard: Board = Array(virtualBoardSize).fill(null).map(() => Array(virtualBoardSize).fill(null));
+        
+        // Fill the virtual board with moves from boardMap
+        const centerX = viewportCenter[0];
+        const centerY = viewportCenter[1];
+        const offset = Math.floor(virtualBoardSize / 2);
+        
+        for (let r = 0; r < virtualBoardSize; r++) {
+          for (let c = 0; c < virtualBoardSize; c++) {
+            const worldX = centerX - offset + c;
+            const worldY = centerY - offset + r;
+            const key = coordToKey([worldX, worldY]);
+            virtualBoard[r][c] = boardMap[key] || null;
+          }
+        }
+        
+        // Get the AI move based on the virtual board
         const aiMove = getAIMove(
-          board, 
+          virtualBoard, 
           currentPlayer, 
           {
             ...settings,
-            boardSize: board.length,
+            boardSize: virtualBoardSize,
             winLength: winLength
           }, 
           'unrestricted'
@@ -115,7 +322,27 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
         
         if (aiMove) {
           const [row, col] = aiMove;
-          handleClick(row, col);
+          // Convert AI move from virtual board coordinates to world coordinates
+          const worldX = centerX - offset + col;
+          const worldY = centerY - offset + row;
+          handleCellClick([worldX, worldY]);
+        } else {
+          // If AI couldn't find a move in the current viewport, try a random empty cell
+          const emptyCells = [];
+          for (let r = 0; r < VIEWPORT_SIZE; r++) {
+            for (let c = 0; c < VIEWPORT_SIZE; c++) {
+              const worldCoord = viewportToWorld(r, c);
+              const key = coordToKey(worldCoord);
+              if (!boardMap[key]) {
+                emptyCells.push(worldCoord);
+              }
+            }
+          }
+          
+          if (emptyCells.length > 0) {
+            const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            handleCellClick(randomCell);
+          }
         }
         
         setWaitingForAI(false);
@@ -218,7 +445,8 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
     return newBoard;
   };
   
-  // Check for a winner
+  // This function is kept for compatibility but is no longer used directly
+  // It's replaced by checkWinnerInBoardMap which works with the infinite grid
   const checkWinner = (board: Board, lastRow: number, lastCol: number): Player => {
     const size = board.length;
     const player = board[lastRow][lastCol];
@@ -261,6 +489,18 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
     return null;
   };
   
+  // Check for a draw - this is kept for compatibility but is no longer used directly
+  const checkDraw = (board: Board): boolean => {
+    // If move limit is set and reached, it's a draw
+    if (moveLimit && moveCount >= moveLimit) {
+      return true;
+    }
+    
+    // If the board is completely full, it's a draw
+    // This is unlikely in Unrestricted mode but included for completeness
+    return board.every(row => row.every(cell => cell !== null));
+  };
+  
   // Check for a draw
   const checkDraw = (board: Board): boolean => {
     // If move limit is set and reached, it's a draw
@@ -273,87 +513,16 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
     return board.every(row => row.every(cell => cell !== null));
   };
   
-  // Handle cell click
+  // This function is kept for compatibility with AI move handling
+  // but delegates to handleCellClick for actual implementation
   const handleClick = (row: number, col: number) => {
-    if (board[row][col] || winner || isDraw || waitingForAI) {
-      return;
-    }
-
-    if (!gameStarted) {
-      setGameStarted(true);
-      if (settings?.timeLimit) {
-        setTimeLeft(settings.timeLimit);
-      }
-    }
+    // Convert board coordinates to world coordinates
+    // This is an approximation since we're working with a virtual infinite grid
+    const worldX = viewportCenter[0] - Math.floor(VIEWPORT_SIZE/2) + col;
+    const worldY = viewportCenter[1] - Math.floor(VIEWPORT_SIZE/2) + row;
     
-    // Create a new board with the move
-    const newBoard = board.map(r => [...r]);
-    newBoard[row][col] = currentPlayer;
-    
-    // Expand the board if the move is near the edge
-    const expandedBoard = expandBoardIfNeeded(row, col);
-    
-    // Apply the move to the expanded board
-    if (expandedBoard !== board) {
-      expandedBoard[row + (row < 2 ? 2 : 0)][col + (col < 2 ? 2 : 0)] = currentPlayer;
-      setBoard(expandedBoard);
-    } else {
-      setBoard(newBoard);
-    }
-    
-    // Increment move counter
-    setMoveCount(prev => prev + 1);
-    
-    // Check for winner
-    const potentialWinner = checkWinner(newBoard, row, col);
-    if (potentialWinner) {
-      setWinner(potentialWinner);
-      
-      // Track the game completion
-      if (user) {
-        trackGameComplete(
-          {
-            gameId: 'unrestricted',
-            variant: 'unrestricted',
-            opponent: settings?.opponent || 'ai',
-            difficulty: settings?.difficulty,
-            result: potentialWinner === 'X' ? 'win' : 'loss'
-          }, 
-          user
-        );
-      }
-      
-      return;
-    }
-    
-    // Check for draw
-    if (checkDraw(newBoard)) {
-      setIsDraw(true);
-      
-      // Track the game completion as a draw
-      if (user) {
-        trackGameComplete(
-          {
-            gameId: 'unrestricted',
-            variant: 'unrestricted',
-            opponent: settings?.opponent || 'ai',
-            difficulty: settings?.difficulty,
-            result: 'draw'
-          }, 
-          user
-        );
-      }
-      
-      return;
-    }
-    
-    // Reset the timer when a move is made
-    if (settings?.timeLimit) {
-      setTimeLeft(settings.timeLimit);
-    }
-    
-    // Switch player
-    setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
+    // Use the handleCellClick function with world coordinates
+    handleCellClick([worldX, worldY]);
   };
   
   // Handle player resignation
@@ -386,12 +555,14 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
   // Reset the game
   const resetGame = () => {
     setBoard(Array(initialBoardSize).fill(null).map(() => Array(initialBoardSize).fill(null)));
+    setBoardMap({}); // Reset the boardMap for the infinite grid
     setVisibleArea({
       startRow: 0,
       startCol: 0,
       endRow: initialBoardSize - 1,
       endCol: initialBoardSize - 1
     });
+    setViewportCenter([0, 0]); // Reset viewport to center coordinates
     setZoomLevel(1);
     setCurrentPlayer(getInitialPlayer());
     setWinner(null);
@@ -405,8 +576,9 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
   };
   
   // Check if a cell is part of the winning line
-  const isWinningCell = (row: number, col: number) => {
-    return winningLine.some(([r, c]) => r === row && c === col);
+  const isWinningCell = (coord: Coordinate) => {
+    const [x, y] = coord;
+    return winningLine.some(([r, c]) => r === y && c === x);
   };
   
   // Handle zoom in
@@ -510,26 +682,27 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
     });
   };
   
-  // Render the visible portion of the board
+  // Render the game board
   const renderBoard = () => {
-    // Calculate the visible rows and columns based on the visible area and zoom level
-    const visibleRows = Math.ceil((visibleArea.endRow - visibleArea.startRow + 1) / zoomLevel);
-    const visibleCols = Math.ceil((visibleArea.endCol - visibleArea.startCol + 1) / zoomLevel);
+    // Create a 5x5 grid for the viewport
+    const grid = [];
     
-    // Calculate the start and end indices for the visible portion
-    const startRow = Math.floor(visibleArea.startRow);
-    const startCol = Math.floor(visibleArea.startCol);
-    const endRow = Math.min(board.length - 1, startRow + visibleRows);
-    const endCol = Math.min(board.length - 1, startCol + visibleCols);
-    
-    // Create an array of visible rows and columns
-    const visibleBoard = [];
-    for (let row = startRow; row <= endRow; row++) {
-      const visibleRow = [];
-      for (let col = startCol; col <= endCol; col++) {
-        visibleRow.push({ row, col, value: board[row][col] });
+    for (let row = 0; row < VIEWPORT_SIZE; row++) {
+      const gridRow = [];
+      for (let col = 0; col < VIEWPORT_SIZE; col++) {
+        // Convert viewport coordinates to world coordinates
+        const worldCoord = viewportToWorld(row, col);
+        const key = coordToKey(worldCoord);
+        
+        // Get the cell value from the board map
+        const value = boardMap[key] || null;
+        
+        // Determine if this cell is at the edge of the viewport
+        const isEdgeCell = row === 0 || col === 0 || row === VIEWPORT_SIZE - 1 || col === VIEWPORT_SIZE - 1;
+        
+        gridRow.push({ coord: worldCoord, value, isEdgeCell });
       }
-      visibleBoard.push(visibleRow);
+      grid.push(gridRow);
     }
     
     return (
@@ -543,48 +716,75 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
           margin: '0 auto'
         }}
         ref={boardContainerRef}
-        onMouseDown={handlePanStart}
-        onMouseMove={handlePanMove}
-        onMouseUp={handlePanEnd}
-        onMouseLeave={handlePanEnd}
-        onTouchStart={handlePanStart}
-        onTouchMove={handlePanMove}
-        onTouchEnd={handlePanEnd}
       >
         <div 
           className={cn(
-            "board-grid grid bg-muted/30 p-4 rounded-lg shadow-sm",
+            "board-grid grid bg-muted/30 p-4 rounded-lg shadow-md transition-all duration-300",
+            isSliding ? "transform-gpu translate-y-1" : "",
             (winner || isDraw) ? "opacity-90" : ""
           )}
           style={{
             display: 'grid',
-            gridTemplateColumns: `repeat(${visibleBoard[0]?.length || 1}, 1fr)`,
-            gridTemplateRows: `repeat(${visibleBoard.length || 1}, 1fr)`,
+            gridTemplateColumns: `repeat(${VIEWPORT_SIZE}, 1fr)`,
+            gridTemplateRows: `repeat(${VIEWPORT_SIZE}, 1fr)`,
             gap: '0.25rem',
-            transform: `scale(${zoomLevel})`,
-            transformOrigin: 'top left'
+            transform: isSliding ? 'scale(0.98)' : 'scale(1)',
+            transition: 'transform 300ms ease-in-out'
           }}
         >
-          {visibleBoard.flat().map(({ row, col, value }) => (
-            <button
-              key={`${row}-${col}`}
-              className={cn(
-                "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center text-lg font-bold transition-all duration-300",
-                gameStarted && !value && !winner && !isDraw && !waitingForAI ? "hover:border-primary/50" : "",
-                isWinningCell(row, col) ? "bg-primary/10 border-primary" : ""
-              )}
-              onClick={() => handleClick(row, col)}
-              disabled={!!value || !!winner || isDraw || waitingForAI || (settings?.opponent === 'ai' && currentPlayer === 'O')}
-              aria-label={`Cell ${row}-${col}`}
-            >
-              {value === 'X' && (
-                <span className="text-primary animate-x-mark">X</span>
-              )}
-              {value === 'O' && (
-                <span className="text-accent-foreground animate-o-mark">O</span>
-              )}
-            </button>
-          ))}
+          {/* Coordinate labels for columns (top) */}
+          <div className="absolute top-0 left-0 right-0 flex justify-between px-4 py-1 text-xs text-muted-foreground">
+            {Array.from({ length: VIEWPORT_SIZE }).map((_, i) => {
+              const worldX = viewportCenter[0] - Math.floor(VIEWPORT_SIZE/2) + i;
+              return (
+                <span key={`col-${i}`} className="text-center">{worldX}</span>
+              );
+            })}
+          </div>
+          
+          {/* Coordinate labels for rows (left side) */}
+          <div className="absolute top-0 bottom-0 left-0 flex flex-col justify-between py-4 px-1 text-xs text-muted-foreground">
+            {Array.from({ length: VIEWPORT_SIZE }).map((_, i) => {
+              const worldY = viewportCenter[1] - Math.floor(VIEWPORT_SIZE/2) + i;
+              return (
+                <span key={`row-${i}`} className="text-center">{worldY}</span>
+              );
+            })}
+          </div>
+          
+          {grid.flat().map(({ coord, value, isEdgeCell }, index) => {
+            const [x, y] = coord;
+            
+            return (
+              <button
+                key={`${x}-${y}`}
+                className={cn(
+                  "cell-hover aspect-square bg-background border rounded-md flex items-center justify-center text-lg font-bold transition-all duration-300 relative",
+                  isEdgeCell ? "border-border" : "border-border/30",
+                  gameStarted && !value && !winner && !isDraw && !waitingForAI ? "hover:border-primary/50 hover:bg-primary/5" : "",
+                  isWinningCell(coord) ? "bg-primary/10 border-primary" : "",
+                  x === 0 && y === 0 ? "bg-muted/20" : ""
+                )}
+                onClick={() => handleCellClick(coord)}
+                disabled={!!value || !!winner || isDraw || waitingForAI || (settings?.opponent === 'ai' && currentPlayer === 'O')}
+                aria-label={`Cell ${x},${y}`}
+                style={{
+                  boxShadow: isEdgeCell ? '0 0 0 1px rgba(0,0,0,0.05)' : 'none'
+                }}
+              >
+                {value === 'X' && (
+                  <span className="text-primary animate-x-mark text-2xl">X</span>
+                )}
+                {value === 'O' && (
+                  <span className="text-accent-foreground animate-o-mark text-2xl">O</span>
+                )}
+                <span className="text-xs text-muted-foreground absolute bottom-1 right-1 opacity-70">{x},{y}</span>
+                {x === 0 && y === 0 && (
+                  <span className="absolute top-1 left-1 text-[10px] text-primary font-medium">origin</span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     );
@@ -628,9 +828,9 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
             </p>
             <div className="text-sm text-muted-foreground mb-4">
               <p className="font-medium">Game Rules:</p>
-              <p>Board expands as you play near the edges</p>
+              <p>Navigate the infinite board using directional buttons</p>
               <p>Get {winLength} in a row to win</p>
-              <p>Use zoom and pan controls to navigate</p>
+              <p>Center coordinates are (0,0)</p>
             </div>
           </div>
         )}
@@ -681,57 +881,66 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
       </div>
       
       {/* Navigation Controls */}
-      <div className="flex justify-center space-x-2 mb-4">
+      <div className="grid grid-cols-3 gap-2 mb-4 max-w-[200px] mx-auto">
+        <div className="col-start-2">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="w-full aspect-square shadow-sm hover:bg-primary/10 hover:text-primary transition-colors"
+            onClick={() => shiftViewport('up')}
+            title="Move Up"
+            disabled={isSliding}
+          >
+            <ArrowUp className="h-5 w-5" />
+          </Button>
+        </div>
         <Button 
           variant="outline" 
           size="icon" 
-          onClick={handleZoomIn}
-          disabled={zoomLevel >= 2}
-          title="Zoom In"
+          className="w-full aspect-square shadow-sm hover:bg-primary/10 hover:text-primary transition-colors"
+          onClick={() => shiftViewport('left')}
+          title="Move Left"
+          disabled={isSliding}
         >
-          <ZoomIn className="h-4 w-4" />
+          <ArrowLeft className="h-5 w-5" />
         </Button>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={handleZoomOut}
-          disabled={zoomLevel <= 0.4}
-          title="Zoom Out"
-        >
-          <ZoomOut className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => handleArrowNavigation('up')}
-          title="Pan Up"
-        >
-          <ArrowUp className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => handleArrowNavigation('down')}
-          title="Pan Down"
-        >
-          <ArrowDown className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => handleArrowNavigation('left')}
-          title="Pan Left"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => handleArrowNavigation('right')}
-          title="Pan Right"
-        >
-          <ArrowRight className="h-4 w-4" />
-        </Button>
+        <div className="col-start-2">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="w-full aspect-square shadow-sm hover:bg-primary/10 hover:text-primary transition-colors"
+            onClick={() => shiftViewport('down')}
+            title="Move Down"
+            disabled={isSliding}
+          >
+            <ArrowDown className="h-5 w-5" />
+          </Button>
+        </div>
+        <div className="col-start-3">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="w-full aspect-square shadow-sm hover:bg-primary/10 hover:text-primary transition-colors"
+            onClick={() => shiftViewport('right')}
+            title="Move Right"
+            disabled={isSliding}
+          >
+            <ArrowRight className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+      
+      {/* Current Viewport Info */}
+      <div className="text-center mb-4 p-3 bg-muted/20 rounded-lg border border-border/50 shadow-sm">
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <div className="w-3 h-3 rounded-full bg-primary/70"></div>
+          <h3 className="text-sm font-medium">Viewport Information</h3>
+        </div>
+        <div className="text-xs text-muted-foreground space-y-1">
+          <p className="font-medium">Center: <span className="text-primary">({viewportCenter[0]}, {viewportCenter[1]})</span></p>
+          <p>Viewing area: <span className="font-mono">({viewportCenter[0] - Math.floor(VIEWPORT_SIZE/2)},{viewportCenter[1] - Math.floor(VIEWPORT_SIZE/2)})</span> to <span className="font-mono">({viewportCenter[0] + Math.floor(VIEWPORT_SIZE/2)},{viewportCenter[1] + Math.floor(VIEWPORT_SIZE/2)})</span></p>
+          <p className="text-[10px] opacity-70 mt-1">Use the navigation controls to explore the infinite grid</p>
+        </div>
       </div>
       
       {/* Game Board */}
@@ -764,9 +973,10 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
       
       {/* Game Info */}
       <div className="mt-4 text-center text-sm text-muted-foreground">
-        <p>Board Size: {board.length}x{board.length}</p>
+        <p>Board: Infinite</p>
         <p>Win Condition: {winLength} in a row</p>
         {moveLimit && <p>Move Limit: {moveLimit}</p>}
+        <p>Total Moves Placed: {Object.keys(boardMap).length}</p>
       </div>
     </div>
   );
