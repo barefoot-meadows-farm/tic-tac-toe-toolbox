@@ -711,8 +711,8 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
         style={{
           width: '100%',
           height: '100%',
-          maxWidth: '600px',
-          maxHeight: '600px',
+          maxWidth: '400px', // Reduced to ensure proper sizing
+          maxHeight: '400px', // Reduced to ensure proper sizing
           margin: '0 auto'
         }}
         ref={boardContainerRef}
@@ -729,7 +729,9 @@ const UnrestrictedGame: React.FC<UnrestrictedGameProps> = ({
             gridTemplateRows: `repeat(${VIEWPORT_SIZE}, 1fr)`,
             gap: '0.25rem',
             transform: isSliding ? 'scale(0.98)' : 'scale(1)',
-            transition: 'transform 300ms ease-in-out'
+            transition: 'transform 300ms ease-in-out',
+            width: '100%', // Ensure the grid takes full width of container
+            height: '100%' // Ensure the grid takes full height of container
           }}
         >
           {/* Coordinate labels for columns (top) */}
