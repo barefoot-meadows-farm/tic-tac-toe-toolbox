@@ -46,7 +46,8 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   // Determine if this game mode should have customizable board size
-  const hasCustomBoardSize = true;
+  // Unrestricted mode has a fixed 5x5 grid
+  const hasCustomBoardSize = gameId !== 'unrestricted';
   
   // Determine if this game mode should have customizable win length
   // Numerical mode doesn't use win length setting

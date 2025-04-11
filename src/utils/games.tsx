@@ -76,7 +76,20 @@ export const gameVariants: GameVariant[] = [
       'This is equivalent to traditional tic-tac-toe on a magic square'
     ]
   },
-
+  {
+    id: 'unrestricted',
+    name: 'Unrestricted',
+    description: 'Play on a larger 5x5 grid with customizable win conditions for an expanded challenge.',
+    difficulty: 'hard',
+    featured: true,
+    premium: false,
+    rules: [
+      'Played on a 5x5 grid for more strategic possibilities',
+      'Get 3 or more marks in a row to win (configurable)',
+      'More space means more complex strategies and longer games',
+      'Perfect for players looking for a greater challenge'
+    ]
+  },
 ];
 
 export const getFeaturedGames = (): GameVariant[] => {
