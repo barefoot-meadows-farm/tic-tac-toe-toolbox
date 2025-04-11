@@ -77,8 +77,11 @@ export const gameVariants: GameVariant[] = [
     ]
   },
   {
-    id: 'unrestricted',
-    name: 'Unrestricted',
+    
+    }
+  ]
+}
+```
     description: 'Play on a larger 5x5 grid with customizable win conditions for an expanded challenge.',
     difficulty: 'hard',
     featured: true,
