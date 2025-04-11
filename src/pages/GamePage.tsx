@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import PageLayout from '@/components/PageLayout';
 import NumericalTicTacToe from '@/Games/numerical';
 import ChaosTicTacToe from '@/Games/chaos';
-import UnrestrictedTicTacToe from '@/Games/unrestricted';
+
 
 const GamePage = () => {
   const { id } = useParams<{ id: string }>();
@@ -103,11 +103,7 @@ const GamePage = () => {
               <ChaosTicTacToe 
                 settings={settings} 
               />
-            ) : id === 'unrestricted' ? (
-              <UnrestrictedTicTacToe 
-                settings={settings} 
-              />
-            ) : (
+            ) :  (
               <TicTacToeGame 
                 variant={id || 'traditional'} 
                 settings={settings}

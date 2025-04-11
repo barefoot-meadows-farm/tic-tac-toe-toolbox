@@ -46,8 +46,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   // Determine if this game mode should have customizable board size
-  // Unrestricted mode has a fixed 5x5 grid
-  const hasCustomBoardSize = gameId !== 'unrestricted';
+  const hasCustomBoardSize = true;
   
   // Determine if this game mode should have customizable win length
   // Numerical mode doesn't use win length setting
@@ -70,16 +69,9 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
   const getWinLengthOptions = (boardSize: number) => {
     const options = [];
     
-    // For Unrestricted game mode, provide win length options from 5 to 10
-    if (gameId === 'unrestricted') {
-      for (let i = 5; i <= 10; i++) {
-        options.push(i);
-      }
-    } else {
-      // For other game modes, win length can't exceed board size
-      for (let i = 3; i <= boardSize; i++) {
-        options.push(i);
-      }
+    // Win length can't exceed board size
+    for (let i = 3; i <= boardSize; i++) {
+      options.push(i);
     }
     
     return options;
@@ -111,13 +103,15 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
       return;
     }
     
-    if (hasCustomWinLength && settings.winLength > settings.boardSize) {
-      toast({
-        title: "Invalid settings",
-        description: "Win length cannot be greater than board size.",
-        variant: "destructive"
-      });
-      return;
+    if (hasCustomWinLength) {
+      if (settings.winLength > settings.boardSize) {
+        toast({
+          title: "Invalid settings",
+          description: "Win length cannot be greater than board size.",
+          variant: "destructive"
+        });
+        return;
+      }
     }
     
     // Save settings to context
