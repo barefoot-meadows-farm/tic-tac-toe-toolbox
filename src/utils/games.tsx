@@ -76,6 +76,7 @@ export const gameVariants: GameVariant[] = [
       'This is equivalent to traditional tic-tac-toe on a magic square'
     ]
   },
+<<<<<<< HEAD
   {
     
     }
@@ -93,6 +94,9 @@ export const gameVariants: GameVariant[] = [
       'Perfect for players looking for a greater challenge'
     ]
   },
+=======
+
+>>>>>>> 9350fec (removed Unrestricted game mode)
 ];
 
 export const getFeaturedGames = (): GameVariant[] => {
