@@ -278,7 +278,13 @@ const UnrestrictedTicTacToe: React.FC<UnrestrictedTicTacToeProps> = ({ settings 
         
         {/* Game board */}
         <div className="flex flex-col items-center">
-          <div className="grid grid-cols-5 gap-1">
+          <div 
+            className="grid gap-1 w-full max-w-[320px] mx-auto aspect-square"
+            style={{
+              gridTemplateColumns: `repeat(${boardSize}, 1fr)`,
+              gridTemplateRows: `repeat(${boardSize}, 1fr)`
+            }}
+          >
             {Array.from({ length: boardSize }).map((_, rowIndex) => (
               Array.from({ length: boardSize }).map((_, colIndex) => (
                 renderCell(rowIndex, colIndex)
