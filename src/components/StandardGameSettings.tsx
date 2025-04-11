@@ -70,9 +70,16 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
   const getWinLengthOptions = (boardSize: number) => {
     const options = [];
     
-    // Win length can't exceed board size
-    for (let i = 3; i <= boardSize; i++) {
-      options.push(i);
+    // For Unrestricted game mode, provide win length options from 5 to 10
+    if (gameId === 'unrestricted') {
+      for (let i = 5; i <= 10; i++) {
+        options.push(i);
+      }
+    } else {
+      // For other game modes, win length can't exceed board size
+      for (let i = 3; i <= boardSize; i++) {
+        options.push(i);
+      }
     }
     
     return options;
