@@ -232,12 +232,11 @@ const UnrestrictedTicTacToe: React.FC<UnrestrictedTicTacToeProps> = ({ settings 
       <button
         key={`${row}-${col}`}
         className={cn(
-          "flex items-center justify-center border border-border",
-          "w-12 h-12 md:w-16 md:h-16 text-2xl md:text-3xl font-bold",
-          "transition-all duration-150",
-          isLastMove && "bg-primary/10",
-          isWinningCell && "bg-primary/20 animate-pulse",
-          gameStarted && cellValue === null && !winner && !isAiThinking && "hover:bg-primary/5",
+          "aspect-square flex items-center justify-center text-2xl font-bold rounded-md transition-all",
+          "border-2 border-border/50 hover:bg-accent/50",
+          isLastMove && "bg-accent/30",
+          isWinningCell && "bg-green-500/20 border-green-500",
+          gameStarted && cellValue === null && !winner && !isAiThinking && "hover:bg-accent/20",
           "disabled:opacity-100"
         )}
         onClick={() => handleCellClick(row, col)}
@@ -279,19 +278,15 @@ const UnrestrictedTicTacToe: React.FC<UnrestrictedTicTacToeProps> = ({ settings 
         </div>
         
         {/* Game board */}
-        <div className="flex flex-col items-center">
-          <div 
-            className={cn(
-              "grid gap-2 w-full max-w-[320px] mx-auto aspect-square",
-              boardSize === 5 ? "grid-cols-5" : "grid-cols-5"
-            )}
-          >
-            {Array.from({ length: boardSize }).map((_, rowIndex) => (
-              Array.from({ length: boardSize }).map((_, colIndex) => (
-                renderCell(rowIndex, colIndex)
-              ))
-            ))}
-          </div>
+        <div className={cn(
+          "grid gap-2 mb-4 w-full max-w-[320px] mx-auto aspect-square",
+          boardSize === 5 ? "grid-cols-5" : "grid-cols-5"
+        )}>
+          {board.map((row, rowIndex) => (
+            row.map((cell, colIndex) => (
+              renderCell(rowIndex, colIndex)
+            ))
+          ))}
         </div>
         
         <div className="bg-muted/30 p-3 rounded-md mt-4">
