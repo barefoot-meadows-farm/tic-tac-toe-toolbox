@@ -229,28 +229,30 @@ const UnrestrictedTicTacToe: React.FC<UnrestrictedTicTacToeProps> = ({ settings 
     const isWinningCell = winningLine.some(([r, c]) => r === row && c === col);
     
     return (
-      <div
+      <button
         key={`${row}-${col}`}
         className={cn(
           "flex items-center justify-center border border-border",
           "w-12 h-12 md:w-16 md:h-16 text-2xl md:text-3xl font-bold",
-          "transition-all duration-150 cursor-pointer",
+          "transition-all duration-150",
           isLastMove && "bg-primary/10",
-          isWinningCell && "bg-primary/20",
-          gameStarted && cellValue === null && !winner && "hover:bg-primary/5"
+          isWinningCell && "bg-primary/20 animate-pulse",
+          gameStarted && cellValue === null && !winner && !isAiThinking && "hover:bg-primary/5",
+          "disabled:opacity-100"
         )}
         onClick={() => handleCellClick(row, col)}
+        disabled={winner !== null || cellValue !== null || (aiEnabled && currentPlayer === 'O') || isAiThinking}
       >
         {cellValue}
-      </div>
+      </button>
     );
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg">
+    <Card className="w-full max-w-md mx-auto bg-card shadow-md border border-border/50">
       <CardHeader>
-        <CardTitle className="text-center">
-          Unrestricted Mode
+        <CardTitle className="text-center flex items-center justify-center gap-2">
+          <RotateCcw className="h-5 w-5" /> Unrestricted Mode
         </CardTitle>
       </CardHeader>
       
@@ -262,14 +264,14 @@ const UnrestrictedTicTacToe: React.FC<UnrestrictedTicTacToeProps> = ({ settings 
               {winner === 'Draw' ? 'Game ended in a Draw!' : `Player ${winner} wins!`}
             </div>
           ) : (
-            <div>
-              <div className="font-medium">
-                {gameStarted ? `Current Player: ${currentPlayer}` : 'Click any cell to start'}
+            <div className="flex justify-between items-center">
+              <div className="text-lg">
+                {gameStarted ? `Player ${currentPlayer}'s turn` : 'Click any cell to start'}
+                {isAiThinking && <span className="ml-2 animate-pulse">AI thinking...</span>}
               </div>
-              
               {timeLimit > 0 && gameStarted && !winner && (
-                <div className="mt-1 text-sm">
-                  Time left: {timeLeft}s
+                <div className="text-sm font-mono">
+                  Time: {timeLeft}s
                 </div>
               )}
             </div>
@@ -279,11 +281,10 @@ const UnrestrictedTicTacToe: React.FC<UnrestrictedTicTacToeProps> = ({ settings 
         {/* Game board */}
         <div className="flex flex-col items-center">
           <div 
-            className="grid gap-1 w-full max-w-[320px] mx-auto aspect-square"
-            style={{
-              gridTemplateColumns: `repeat(${boardSize}, 1fr)`,
-              gridTemplateRows: `repeat(${boardSize}, 1fr)`
-            }}
+            className={cn(
+              "grid gap-2 w-full max-w-[320px] mx-auto aspect-square",
+              boardSize === 5 ? "grid-cols-5" : "grid-cols-5"
+            )}
           >
             {Array.from({ length: boardSize }).map((_, rowIndex) => (
               Array.from({ length: boardSize }).map((_, colIndex) => (
@@ -293,11 +294,13 @@ const UnrestrictedTicTacToe: React.FC<UnrestrictedTicTacToeProps> = ({ settings 
           </div>
         </div>
         
-        <div className="mt-6 text-sm">
-          <p className="font-medium">Game Rules:</p>
-          <ul className="list-disc list-inside mt-1 space-y-1">
-            <li>This is an experimental game mode with a fixed 5x5 grid</li>
-            <li>Custom rules and mechanics will be added in future updates</li>
+        <div className="bg-muted/30 p-3 rounded-md mt-4">
+          <h3 className="font-medium mb-2">Game Rules:</h3>
+          <ul className="space-y-1 text-sm text-muted-foreground">
+            <li>• This is an experimental game mode with a fixed 5x5 grid</li>
+            <li>• Place your mark (X or O) in any empty cell</li>
+            <li>• Get {winLength} of your marks in a row, column, or diagonal to win</li>
+            <li>• Custom rules and mechanics will be added in future updates</li>
           </ul>
         </div>
       </CardContent>
@@ -316,6 +319,7 @@ const UnrestrictedTicTacToe: React.FC<UnrestrictedTicTacToeProps> = ({ settings 
           variant="outline"
           size="sm"
           onClick={resetGame}
+          className="flex items-center"
         >
           <RotateCcw className="w-4 h-4 mr-2" />
           Reset Game
@@ -324,6 +328,7 @@ const UnrestrictedTicTacToe: React.FC<UnrestrictedTicTacToeProps> = ({ settings 
         {!gameStarted && (
           <Button
             onClick={() => setGameStarted(true)}
+            className="ml-auto"
           >
             Start Game
           </Button>
