@@ -3,31 +3,12 @@ import { Switch } from "@/components/ui/switch";
 import { Dice1 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useGameSettings } from "@/contexts/GameSettingsContext";
-import UnrestrictedGameSettings from "./UnrestrictedGameSettings";
 import StandardGameSettings from "@/components/StandardGameSettings";
 
 const GameRulesSettings = () => {
   const { gameSettings, applyGameSettings } = useGameSettings();
   const [selectedGameMode, setSelectedGameMode] = useState<string>("traditional");
-  const [unrestrictedSettings, setUnrestrictedSettings] = useState({
-    winLength: 3,
-    moveLimit: null as number | null
-  });
 
-  // Apply unrestricted settings when they change
-  useEffect(() => {
-    if (selectedGameMode === "unrestricted") {
-      const currentSettings = gameSettings["unrestricted"] || {};
-      applyGameSettings("unrestricted", {
-        ...currentSettings,
-        customRules: {
-          ...currentSettings.customRules,
-          winLength: unrestrictedSettings.winLength,
-          moveLimit: unrestrictedSettings.moveLimit
-        }
-      });
-    }
-  }, [unrestrictedSettings, selectedGameMode]);
 
   const handleGameModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedGameMode(e.target.value);
@@ -63,19 +44,10 @@ const GameRulesSettings = () => {
             <option value="chaos">Chaos</option>
             <option value="feral">Feral</option>
             <option value="numerical">Numerical</option>
-            <option value="unrestricted">Unrestricted</option>
           </select>
         </div>
 
-        {selectedGameMode === "unrestricted" && (
-          <div className="mt-4 pt-4 border-t">
-            <h4 className="text-sm font-medium mb-3">Unrestricted Mode Settings</h4>
-            <UnrestrictedGameSettings 
-              initialSettings={unrestrictedSettings}
-              onSettingsChange={setUnrestrictedSettings}
-            />
-          </div>
-        )}
+
         
         <div className="mt-4 pt-4 border-t">
           <h4 className="text-sm font-medium mb-3">Universal Game Settings</h4>

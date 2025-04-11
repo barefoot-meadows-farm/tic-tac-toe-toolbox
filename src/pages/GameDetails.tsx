@@ -141,11 +141,7 @@ const GameDetails = () => {
                         Numerical Tic-Tac-Toe uses numbers instead of X's and O's. Players must strategically place
                         numbers to create a sum of 15 in a row, adding a mathematical dimension to the game.
                       </>
-                    ) : game.id === 'unrestricted' ? (
-                      <>
-                        Unrestricted Tic-Tac-Toe expands the playing field, allowing for longer winning sequences
-                        and more complex strategies on a larger board.
-                      </>
+
                     ) : (
                       <>
                         This unique variant of Tic-Tac-Toe offers a fresh perspective on the classic game,
