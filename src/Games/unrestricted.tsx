@@ -15,8 +15,8 @@ type Board = (Player)[][];
 
 const UnrestrictedTicTacToe: React.FC<UnrestrictedTicTacToeProps> = ({ settings }) => {
   // Game configuration options derived from settings
-  // Fixed 5x5 grid for Unrestricted mode
-  const boardSize = 5;
+  // Fixed 5x5 grid for Unrestricted mode - this is not configurable
+  const boardSize = 5; // Fixed at 5x5 regardless of settings
   const winLength = settings?.winLength || 3;
   const timeLimit = settings?.timeLimit || 0; // 0 means no time limit
   const aiEnabled = settings?.opponent === 'ai';
@@ -85,8 +85,105 @@ const UnrestrictedTicTacToe: React.FC<UnrestrictedTicTacToeProps> = ({ settings 
 
   // Check for winner
   const checkWinner = (board: Board): Player | 'Draw' | null => {
-    // Placeholder for custom win logic to be implemented later
-    // For now, just check if the board is full for a draw
+    // Check for win conditions in 5x5 grid
+    
+    // Check rows
+    for (let row = 0; row < boardSize; row++) {
+      for (let col = 0; col <= boardSize - winLength; col++) {
+        const player = board[row][col];
+        if (player !== null) {
+          let win = true;
+          for (let i = 1; i < winLength; i++) {
+            if (board[row][col + i] !== player) {
+              win = false;
+              break;
+            }
+          }
+          if (win) {
+            const line: [number, number][] = [];
+            for (let i = 0; i < winLength; i++) {
+              line.push([row, col + i]);
+            }
+            setWinningLine(line);
+            return player;
+          }
+        }
+      }
+    }
+    
+    // Check columns
+    for (let col = 0; col < boardSize; col++) {
+      for (let row = 0; row <= boardSize - winLength; row++) {
+        const player = board[row][col];
+        if (player !== null) {
+          let win = true;
+          for (let i = 1; i < winLength; i++) {
+            if (board[row + i][col] !== player) {
+              win = false;
+              break;
+            }
+          }
+          if (win) {
+            const line: [number, number][] = [];
+            for (let i = 0; i < winLength; i++) {
+              line.push([row + i, col]);
+            }
+            setWinningLine(line);
+            return player;
+          }
+        }
+      }
+    }
+    
+    // Check diagonals (top-left to bottom-right)
+    for (let row = 0; row <= boardSize - winLength; row++) {
+      for (let col = 0; col <= boardSize - winLength; col++) {
+        const player = board[row][col];
+        if (player !== null) {
+          let win = true;
+          for (let i = 1; i < winLength; i++) {
+            if (board[row + i][col + i] !== player) {
+              win = false;
+              break;
+            }
+          }
+          if (win) {
+            const line: [number, number][] = [];
+            for (let i = 0; i < winLength; i++) {
+              line.push([row + i, col + i]);
+            }
+            setWinningLine(line);
+            return player;
+          }
+        }
+      }
+    }
+    
+    // Check diagonals (top-right to bottom-left)
+    for (let row = 0; row <= boardSize - winLength; row++) {
+      for (let col = winLength - 1; col < boardSize; col++) {
+        const player = board[row][col];
+        if (player !== null) {
+          let win = true;
+          for (let i = 1; i < winLength; i++) {
+            if (board[row + i][col - i] !== player) {
+              win = false;
+              break;
+            }
+          }
+          if (win) {
+            const line: [number, number][] = [];
+            for (let i = 0; i < winLength; i++) {
+              line.push([row + i, col - i]);
+            }
+            setWinningLine(line);
+            return player;
+          }
+        }
+      }
+    }
+    
+    // Check if the board is full for a draw
     const isFull = board.every(row => row.every(cell => cell !== null));
     if (isFull) return 'Draw';
     
