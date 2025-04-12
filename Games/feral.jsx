@@ -413,29 +413,31 @@ const [feralRules] = useState(new FeralRules());
               gameStarted && gameStatus === 'Game in progress' ? "hover:border-primary/50" : "",
               isWinningCell(index) ? "bg-primary/10 border-primary" : "",
               lastMove === index ? "bg-accent/20" : "",
-              boardSize > 3 ? "text-xl" : "text-3xl",
-              feralRules.isCellLocked(Math.floor(index / boardSize), index % boardSize) ? 'locked' : '',
-              feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X') > 0 ? 'x-overwrites-' + feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X') : '',
-              feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O') > 0 ? 'o-overwrites-' + feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O') : ''
+              boardSize > 3 ? "text-xl" : "text-3xl"
             )}
             onClick={() => handleCellClick(index)}
             disabled={!gameStarted || gameStatus !== 'Game in progress'}
           >
+            {/* Main cell content */}
             {cell === 'X' && <span className="text-primary">{cell}</span>}
             {cell === 'O' && <span className="text-accent-foreground">{cell}</span>}
+            
+            {/* Lock icon or overwrite counters */}
             {feralRules.isCellLocked(Math.floor(index / boardSize), index % boardSize) ? (
-              <svg className="w-4 h-4 absolute" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 17a2 2 0 0 1-2-2c0-1.11.89-2 2-2a2 2 0 0 1 2 2 2 2 0 0 1-2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V8a5 5 0 0 1 10 0v2h1m-6-5a3 3 0 0 0-3 3v2h6V8a3 3 0 0 0-3-3z" />
-              </svg>
+              <div className="absolute inset-0 flex items-center justify-center bg-background/50 transition-opacity duration-300">
+                <svg className="w-6 h-6 text-gray-500" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 17a2 2 0 0 1-2-2c0-1.11.89-2 2-2a2 2 0 0 1 2 2 2 2 0 0 1-2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V8a5 5 0 0 1 10 0v2h1m-6-5a3 3 0 0 0-3 3v2h6V8a3 3 0 0 0-3-3z" />
+                </svg>
+              </div>
             ) : (
-              <div className="absolute bottom-1 left-1 flex gap-1">
+              <div className="absolute bottom-1 left-1 flex gap-1 items-center">
                 {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X') > 0 && (
-                  <span className="text-xs text-blue-600">
+                  <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600">
                     {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X')}
                   </span>
                 )}
                 {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O') > 0 && (
-                  <span className="text-xs text-red-600">
+                  <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">
                     {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O')}
                   </span>
                 )}
