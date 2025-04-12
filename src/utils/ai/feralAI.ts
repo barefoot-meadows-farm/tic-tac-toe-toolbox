@@ -90,13 +90,14 @@ class FeralRules extends GameRules {
   }
 
   recordOverwrite(row: number, col: number, player: Player) {
+    // Always increment counter for both initial placement and overwrites
     if (player === 'X') {
       this.overwriteCounts[row][col].X++;
     } else {
       this.overwriteCounts[row][col].O++;
     }
     
-    // Lock cell if both players have maxed their overwrites
+    // Lock cell if either player has maxed their overwrites
     const counts = this.overwriteCounts[row][col];
     if (counts.X >= 3 && counts.O >= 3) {
       this.lockedCells[row][col] = true;
