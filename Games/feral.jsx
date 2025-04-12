@@ -409,7 +409,7 @@ const [feralRules] = useState(new FeralRules());
           <button
             key={index}
             className={cn(
-              "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center font-bold transition-all duration-300",
+              "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center font-bold transition-all duration-300 relative",
               gameStarted && gameStatus === 'Game in progress' ? "hover:border-primary/50" : "",
               isWinningCell(index) ? "bg-primary/10 border-primary" : "",
               lastMove === index ? "bg-accent/20" : "",
@@ -423,6 +423,24 @@ const [feralRules] = useState(new FeralRules());
           >
             {cell === 'X' && <span className="text-primary">{cell}</span>}
             {cell === 'O' && <span className="text-accent-foreground">{cell}</span>}
+            {feralRules.isCellLocked(Math.floor(index / boardSize), index % boardSize) ? (
+              <svg className="w-4 h-4 absolute" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 17a2 2 0 0 1-2-2c0-1.11.89-2 2-2a2 2 0 0 1 2 2 2 2 0 0 1-2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V8a5 5 0 0 1 10 0v2h1m-6-5a3 3 0 0 0-3 3v2h6V8a3 3 0 0 0-3-3z" />
+              </svg>
+            ) : (
+              <div className="absolute bottom-1 left-1 flex gap-1">
+                {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X') > 0 && (
+                  <span className="text-xs text-blue-600">
+                    {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X')}
+                  </span>
+                )}
+                {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O') > 0 && (
+                  <span className="text-xs text-red-600">
+                    {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O')}
+                  </span>
+                )}
+              </div>
+            )}
           </button>
         ))}
       </div>
