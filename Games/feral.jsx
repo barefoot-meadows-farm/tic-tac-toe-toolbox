@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { GameRules } from '../gameAI';
+import FeralRules from '../utils/ai/feralAI';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +16,7 @@ const FeralTicTacToe = () => {
   
   // Game state
   const [board, setBoard] = useState([]);
+const [feralRules] = useState(new FeralRules());
   const [currentPlayer, setCurrentPlayer] = useState('X');
   const [overwriteCount, setOverwriteCount] = useState({ X: 0, O: 0 });
   const [gameStatus, setGameStatus] = useState('Configure your game settings and press Start Game');
@@ -78,6 +81,12 @@ const FeralTicTacToe = () => {
 
   // Handle player move
   const handleCellClick = (index) => {
+  const row = Math.floor(index / boardSize);
+  const col = index % boardSize;
+  if (feralRules.isCellLocked(row, col)) return;
+
+  const canOverwrite = feralRules.canOverwriteCell(row, col, currentPlayer);
+  if (!canOverwrite) return;
     // Check if the game is active
     if (!gameStarted || gameStatus !== 'Game in progress') {
       return;
@@ -102,6 +111,7 @@ const FeralTicTacToe = () => {
     
     newBoard[index] = currentPlayer;
     setBoard(newBoard);
+feralRules.recordOverwrite(Math.floor(index / boardSize), index % boardSize, currentPlayer);
     
     // Update move history
     const newMoveHistory = [...moveHistory, { player: currentPlayer, position: index, wasOverwrite }];
@@ -398,7 +408,10 @@ const FeralTicTacToe = () => {
               gameStarted && gameStatus === 'Game in progress' ? "hover:border-primary/50" : "",
               isWinningCell(index) ? "bg-primary/10 border-primary" : "",
               lastMove === index ? "bg-accent/20" : "",
-              boardSize > 3 ? "text-xl" : "text-3xl"
+              boardSize > 3 ? "text-xl" : "text-3xl",
+              feralRules.isCellLocked(Math.floor(index / boardSize), index % boardSize) ? 'locked' : '',
+              feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X') > 0 ? 'x-overwrites-' + feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X') : '',
+              feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O') > 0 ? 'o-overwrites-' + feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O') : ''
             )}
             onClick={() => handleCellClick(index)}
             disabled={!gameStarted || gameStatus !== 'Game in progress'}

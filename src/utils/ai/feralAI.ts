@@ -1,7 +1,30 @@
 import { GameRules } from '../gameAI';
 
+type OverwriteCount = {
+  X: number;
+  O: number;
+};
+
 class FeralRules extends GameRules {
+  private overwriteCounts: OverwriteCount[][];
+  private lockedCells: boolean[][];
+
+  constructor() {
+    super();
+    this.overwriteCounts = [];
+    this.lockedCells = [];
+  }
+
+  initializeBoard(size: number) {
+    this.overwriteCounts = Array(size).fill(0).map(() => 
+      Array(size).fill(0).map(() => ({ X: 0, O: 0 }))
+    );
+    this.lockedCells = Array(size).fill(0).map(() => Array(size).fill(false));
+  }
   checkWinner(board: GameBoard, lastMove?: [number, number]): Player {
+    if (!this.overwriteCounts.length) {
+      this.initializeBoard(board.size);
+    }
     const size = board.size;
     
     // Check rows
@@ -57,6 +80,37 @@ class FeralRules extends GameRules {
     }
     
     return null;
+  }
+
+  canOverwriteCell(row: number, col: number, player: Player): boolean {
+    if (this.lockedCells[row][col]) return false;
+    
+    const counts = this.overwriteCounts[row][col];
+    return player === 'X' ? counts.X < 3 : counts.O < 3;
+  }
+
+  recordOverwrite(row: number, col: number, player: Player) {
+    if (player === 'X') {
+      this.overwriteCounts[row][col].X++;
+    } else {
+      this.overwriteCounts[row][col].O++;
+    }
+    
+    // Lock cell if both players have maxed their overwrites
+    const counts = this.overwriteCounts[row][col];
+    if (counts.X >= 3 && counts.O >= 3) {
+      this.lockedCells[row][col] = true;
+    }
+  }
+
+  getOverwriteCount(row: number, col: number, player: Player): number {
+    return player === 'X' 
+      ? this.overwriteCounts[row][col].X 
+      : this.overwriteCounts[row][col].O;
+  }
+
+  isCellLocked(row: number, col: number): boolean {
+    return this.lockedCells[row][col];
   }
 
   evaluateBoard(board: GameBoard, player: Player): number {
