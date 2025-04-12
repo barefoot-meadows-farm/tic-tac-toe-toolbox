@@ -14,6 +14,11 @@ const FeralTicTacToe = () => {
   const [difficulty, setDifficulty] = useState('medium');
   const [cpuDelay, setCpuDelay] = useState(800);
   
+  // Helper function to get cell overwrite count
+  const getCellOverwriteCount = (row, col, player) => {
+    return feralRules.getOverwriteCount(row, col, player);
+  };
+  
   // Game state
   const [board, setBoard] = useState([]);
 const [feralRules] = useState(new FeralRules());
@@ -111,7 +116,7 @@ const [feralRules] = useState(new FeralRules());
     
     newBoard[index] = currentPlayer;
     setBoard(newBoard);
-feralRules.recordOverwrite(Math.floor(index / boardSize), index % boardSize, currentPlayer);
+    feralRules.recordOverwrite(Math.floor(index / boardSize), index % boardSize, currentPlayer);
     
     // Update move history
     const newMoveHistory = [...moveHistory, { player: currentPlayer, position: index, wasOverwrite }];
@@ -422,6 +427,15 @@ feralRules.recordOverwrite(Math.floor(index / boardSize), index % boardSize, cur
         ))}
       </div>
     );
+  };
+
+  // Get cell background color based on overwrite count
+  const getCellBackground = (row, col, player) => {
+    const count = feralRules.getOverwriteCount(row, col, player);
+    if (count === 0) return '';
+    if (count === 1) return player === 'X' ? 'bg-blue-50' : 'bg-red-50';
+    if (count === 2) return player === 'X' ? 'bg-blue-100' : 'bg-red-100';
+    return player === 'X' ? 'bg-blue-200' : 'bg-red-200';
   };
 
   return (
