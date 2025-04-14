@@ -181,17 +181,51 @@ class TraditionalRules extends GameRules {
 
 // Misere Rules: Win by avoiding three in a row
 class MisereRules extends TraditionalRules {
+  checkWinner(board: GameBoard, lastMove?: [number, number]): Player {
+    // In Misere, the player who completes a line loses
+    const lineFormer = super.checkWinner(board, lastMove);
+    if (lineFormer === null) {
+      return null; // No line formed yet
+    }
+    // Return the opposite player as winner since forming a line loses in Misere
+    return lineFormer === 'X' ? 'O' : 'X';
+  }
+
   evaluateBoard(board: GameBoard, player: Player): number {
-    // In Misere, the evaluation is flipped - you want the opponent to get 3 in a row
-    const traditionalEval = super.evaluateBoard(board, player);
-    return -traditionalEval;  // Flip the evaluation
+    const winner = this.checkWinner(board);
+    if (winner === player) {
+      return 10; // Player wins (opponent formed a line)
+    } else if (winner !== null) {
+      return -10; // Player loses (formed a line)
+    }
+    return 0; // Game continues
   }
 
   isWinningMove(board: GameBoard, row: number, col: number, player: Player): boolean {
-    // In Misere, a "winning" move is actually one that would make you lose in traditional rules
-    // So we need to invert the result of the traditional check
-    const wouldFormLine = super.isWinningMove(board, row, col, player);
-    return !wouldFormLine; // In Misere, NOT forming a line is a "winning" move
+    // A winning move in Misere is one that forces the opponent to complete a line
+    const tempBoard = board.clone();
+    tempBoard.makeMove(row, col, player);
+    
+    // If this move forms a line, it's a losing move
+    if (super.checkWinner(tempBoard) === player) {
+      return false;
+    }
+    
+    // Check if this move forces opponent to complete a line on their next turn
+    const opponent = player === 'X' ? 'O' : 'X';
+    const emptyCells = tempBoard.getEmptyCells();
+    
+    // If no empty cells left and no line formed, it's a draw
+    if (emptyCells.length === 0) {
+      return false;
+    }
+    
+    // Check if ALL opponent's possible next moves would form a line
+    return emptyCells.every(([r, c]) => {
+      const nextBoard = tempBoard.clone();
+      nextBoard.makeMove(r, c, opponent);
+      return super.checkWinner(nextBoard) === opponent;
+    });
   }
 }
 
