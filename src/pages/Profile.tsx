@@ -82,6 +82,7 @@ const Profile = () => {
     
     const fetchGameStats = async () => {
       try {
+        // Fetch detailed game stats
         const { data, error } = await supabase
           .from('game_stats')
           .select('*')
@@ -93,6 +94,14 @@ const Profile = () => {
         if (data) {
           setGameStats(data as GameStat[]);
         }
+        
+        // Fetch aggregated player stats from the leaderboard utility
+        const { fetchUserStats } = await import('@/utils/leaderboard');
+        const userStats = await fetchUserStats(user.id);
+        
+        // You can use userStats to display additional metrics in the profile
+        // such as total score, highest score, favorite variant, etc.
+        
       } catch (error) {
         console.error('Error fetching game stats:', error);
       } finally {

@@ -16,6 +16,9 @@ type GameEvent = {
   variant: string;
   opponent: 'ai' | 'human';
   difficulty?: 'easy' | 'medium' | 'hard';
+  movesCount?: number;
+  gameDurationSeconds?: number;
+  playerSymbol?: string;
 };
 
 type PremiumEvent = {
@@ -62,9 +65,14 @@ export const trackGameStart = async (event: GameEvent, user?: User | null): Prom
   // but we typically don't need to record game starts
 };
 
-// Track game completion and record to database
+// Track game completion and record to database with enhanced metrics
 export const trackGameComplete = async (
-  event: GameEvent & { result: 'win' | 'loss' | 'draw' },
+  event: GameEvent & { 
+    result: 'win' | 'loss' | 'draw',
+    movesCount?: number,
+    gameDurationSeconds?: number,
+    playerSymbol?: string 
+  },
   user?: User | null
 ): Promise<void> => {
   // Push to Google Analytics dataLayer
@@ -74,10 +82,12 @@ export const trackGameComplete = async (
     variant: event.variant,
     opponent: event.opponent,
     difficulty: event.difficulty,
-    result: event.result
+    result: event.result,
+    movesCount: event.movesCount,
+    gameDurationSeconds: event.gameDurationSeconds
   });
   
-  // If user is logged in, record this in our database
+  // If user is logged in, record this in our database with enhanced metrics
   if (user) {
     try {
       await supabase.from('game_stats').insert({
@@ -86,7 +96,11 @@ export const trackGameComplete = async (
         variant: event.variant,
         opponent: event.opponent,
         difficulty: event.difficulty,
-        result: event.result
+        result: event.result,
+        moves_count: event.movesCount,
+        game_duration_seconds: event.gameDurationSeconds,
+        player_symbol: event.playerSymbol
+        // score will be calculated automatically by the database trigger
       });
     } catch (error) {
       console.error('Error recording game stats:', error);
