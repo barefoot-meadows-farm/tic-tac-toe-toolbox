@@ -568,44 +568,122 @@ class MediumAI extends AIStrategy {
       return null;
     }
     
-    // Check for winning moves
-    for (const [row, col] of emptyCells) {
-      if (rules.isWinningMove(board, row, col, player)) {
-        return [row, col];
+    // 50/50 random vs strategic move selection
+    const useStrategicMove = Math.random() < 0.5;
+    
+    if (useStrategicMove) {
+      // Try strategic moves with probabilistic decision-making
+      
+      // 65% chance to make winning moves
+      if (Math.random() < 0.65) {
+        for (const [row, col] of emptyCells) {
+          if (rules.isWinningMove(board, row, col, player)) {
+            return [row, col];
+          }
+        }
+      }
+      
+      // 65% chance to block winning moves
+      if (Math.random() < 0.65) {
+        for (const [row, col] of emptyCells) {
+          if (rules.isWinningMove(board, row, col, opponent)) {
+            return [row, col];
+          }
+        }
+      }
+      
+      // 50% chance to create/block forks with single-move look-ahead
+      if (Math.random() < 0.5) {
+        // Check for fork creation
+        const forkMove = this.findForkMove(board, player, rules);
+        if (forkMove) {
+          return forkMove;
+        }
+        
+        // Check for blocking opponent's fork
+        const blockForkMove = this.findForkMove(board, opponent, rules);
+        if (blockForkMove) {
+          return blockForkMove;
+        }
+      }
+      
+      // 60% chance to take center when available
+      const center = Math.floor(board.size / 2);
+      if (Math.random() < 0.6 && board.isValidMove(center, center)) {
+        return [center, center];
+      }
+      
+      // 50% chance to prioritize corners
+      if (Math.random() < 0.5) {
+        const corners = [
+          [0, 0], 
+          [0, board.size - 1], 
+          [board.size - 1, 0], 
+          [board.size - 1, board.size - 1]
+        ] as [number, number][];
+        
+        const availableCorners = corners.filter(
+          ([r, c]) => board.isValidMove(r, c)
+        );
+        
+        if (availableCorners.length > 0) {
+          return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+        }
+      }
+      
+      // 10% chance for edge selection
+      if (Math.random() < 0.1) {
+        const edges: [number, number][] = [];
+        for (let i = 0; i < board.size; i++) {
+          // Top and bottom edges (excluding corners)
+          if (i > 0 && i < board.size - 1) {
+            if (board.isValidMove(0, i)) edges.push([0, i]);
+            if (board.isValidMove(board.size - 1, i)) edges.push([board.size - 1, i]);
+          }
+          // Left and right edges (excluding corners)
+          if (i > 0 && i < board.size - 1) {
+            if (board.isValidMove(i, 0)) edges.push([i, 0]);
+            if (board.isValidMove(i, board.size - 1)) edges.push([i, board.size - 1]);
+          }
+        }
+        
+        if (edges.length > 0) {
+          return edges[Math.floor(Math.random() * edges.length)];
+        }
       }
     }
     
-    // Check for blocking moves
-    for (const [row, col] of emptyCells) {
-      if (rules.isWinningMove(board, row, col, opponent)) {
-        return [row, col];
-      }
-    }
-    
-    // Take center if available (basic strategy)
-    const center = Math.floor(board.size / 2);
-    if (board.isValidMove(center, center)) {
-      return [center, center];
-    }
-    
-    // Take a corner if available
-    const corners = [
-      [0, 0], 
-      [0, board.size - 1], 
-      [board.size - 1, 0], 
-      [board.size - 1, board.size - 1]
-    ] as [number, number][];
-    
-    const availableCorners = corners.filter(
-      ([r, c]) => board.isValidMove(r, c)
-    );
-    
-    if (availableCorners.length > 0) {
-      return availableCorners[Math.floor(Math.random() * availableCorners.length)];
-    }
-    
-    // Take a random move
+    // If no strategic move was made or if random move was chosen,
+    // take a random move from all empty cells
     return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+  }
+  
+  // Helper method to find fork moves (two-way winning threats)
+  private findForkMove(board: GameBoard, player: Player, rules: GameRules): [number, number] | null {
+    const emptyCells = board.getEmptyCells();
+    
+    for (const [row, col] of emptyCells) {
+      // Create a temporary board with this move
+      const tempBoard = board.clone();
+      tempBoard.makeMove(row, col, player);
+      
+      // Count potential winning lines after this move
+      let winningLines = 0;
+      const tempEmptyCells = tempBoard.getEmptyCells();
+      
+      for (const [r, c] of tempEmptyCells) {
+        if (rules.isWinningMove(tempBoard, r, c, player)) {
+          winningLines++;
+        }
+      }
+      
+      // If there are at least two winning threats, this is a fork
+      if (winningLines >= 2) {
+        return [row, col];
+      }
+    }
+    
+    return null;
   }
   
   private getFeralMove(
