@@ -21,7 +21,7 @@ const FeralTicTacToe = () => {
   
   // Game state
   const [board, setBoard] = useState([]);
-const [feralRules] = useState(new FeralRules());
+  const [feralRules] = useState(new FeralRules());
   const [currentPlayer, setCurrentPlayer] = useState('X');
   const [overwriteCount, setOverwriteCount] = useState({ X: 0, O: 0 });
   const [gameStatus, setGameStatus] = useState('Configure your game settings and press Start Game');
@@ -59,6 +59,8 @@ const [feralRules] = useState(new FeralRules());
     setBoard(Array(boardSize * boardSize).fill(null));
     setWinningSequence([]);
     setMoveHistory([]);
+    // Initialize the FeralRules board with the current size
+    feralRules.initializeBoard(boardSize);
   };
 
   const startGame = () => {
@@ -68,6 +70,8 @@ const [feralRules] = useState(new FeralRules());
     setGameStatus('Game in progress');
     setGameStarted(true);
     setGameHistory([]);
+    // Initialize the FeralRules board with the current size
+    feralRules.initializeBoard(boardSize);
     addToHistory("Game started");
   };
 
@@ -76,6 +80,8 @@ const [feralRules] = useState(new FeralRules());
     setCurrentPlayer('X');
     setOverwriteCount({ X: 0, O: 0 });
     setGameStatus('Game in progress');
+    // Initialize the FeralRules board with the current size
+    feralRules.initializeBoard(boardSize);
     addToHistory("Game reset");
   };
 
@@ -86,27 +92,41 @@ const [feralRules] = useState(new FeralRules());
 
   // Handle player move
   const handleCellClick = (index) => {
-  const row = Math.floor(index / boardSize);
-  const col = index % boardSize;
-  if (feralRules.isCellLocked(row, col)) return;
-
-  const canOverwrite = feralRules.canOverwriteCell(row, col, currentPlayer);
-  if (!canOverwrite) return;
     // Check if the game is active
     if (!gameStarted || gameStatus !== 'Game in progress') {
       return;
     }
-
-    // In Feral Tic-Tac-Toe, players can always place their mark, even on occupied cells
+    
+    const row = Math.floor(index / boardSize);
+    const col = index % boardSize;
+    
+    // Check if cell is locked (both players have used all their overwrites)
+    if (feralRules.isCellLocked(row, col)) {
+      return;
+    }
+    
+    // Check if player can overwrite this cell
+    if (!feralRules.canOverwriteCell(row, col, currentPlayer)) {
+      return;
+    }
+    
+    // In Feral Tic-Tac-Toe, players can place their mark on empty cells or overwrite existing marks
     makeMove(index);
   };
 
   const makeMove = (index) => {
     // Create a new board with the current move
     const newBoard = [...board];
+    const row = Math.floor(index / boardSize);
+    const col = index % boardSize;
     const wasOverwrite = newBoard[index] !== null;
     
-    // If this is an overwrite, record it
+    // Check if the move is valid according to FeralRules
+    if (!feralRules.canOverwriteCell(row, col, currentPlayer)) {
+      return; // Move is not valid, don't proceed
+    }
+    
+    // If this is an overwrite, update the global overwrite counter
     if (wasOverwrite) {
       setOverwriteCount({
         ...overwriteCount,
@@ -114,9 +134,13 @@ const [feralRules] = useState(new FeralRules());
       });
     }
     
+    // Update the board
     newBoard[index] = currentPlayer;
     setBoard(newBoard);
-    feralRules.recordOverwrite(Math.floor(index / boardSize), index % boardSize, currentPlayer);
+    
+    // Record the overwrite in the FeralRules instance
+    // This will increment the counter for this cell and player
+    feralRules.recordOverwrite(row, col, currentPlayer);
     
     // Update move history
     const newMoveHistory = [...moveHistory, { player: currentPlayer, position: index, wasOverwrite }];
@@ -155,7 +179,23 @@ const [feralRules] = useState(new FeralRules());
     
     if (difficulty === 'easy') {
       // Easy: Random move, might overwrite randomly
-      moveIndex = Math.floor(Math.random() * (boardSize * boardSize));
+      // Get all valid moves
+      const validMoves = [];
+      for (let i = 0; i < boardSize * boardSize; i++) {
+        const row = Math.floor(i / boardSize);
+        const col = i % boardSize;
+        if (feralRules.canOverwriteCell(row, col, currentPlayer)) {
+          validMoves.push(i);
+        }
+      }
+      
+      // Choose a random valid move
+      if (validMoves.length > 0) {
+        moveIndex = validMoves[Math.floor(Math.random() * validMoves.length)];
+      } else {
+        // No valid moves available
+        return;
+      }
     } else {
       // Medium/Hard: Strategic move
       moveIndex = findStrategicMove(difficulty === 'hard');
@@ -324,15 +364,45 @@ const [feralRules] = useState(new FeralRules());
 
   // Check for winner
   const checkWinner = (boardState, lastMoveIndex) => {
-    // If no last move provided, check the entire board
-    const indices = lastMoveIndex !== undefined 
-      ? [lastMoveIndex] 
-      : Array.from({length: boardState.length}, (_, i) => i);
+    // Convert the flat board array to a 2D array for FeralRules
+    const board2D = [];
+    for (let i = 0; i < boardSize; i++) {
+      const row = [];
+      for (let j = 0; j < boardSize; j++) {
+        row.push(boardState[i * boardSize + j]);
+      }
+      board2D.push(row);
+    }
     
-    for (const pos of indices) {
-      if (boardState[pos] === null) continue;
+    // Create a GameBoard-like object for FeralRules
+    const gameBoard = {
+      size: boardSize,
+      cells: board2D
+    };
+    
+    // Use FeralRules to check for a winner
+    const lastMove = lastMoveIndex !== undefined ? 
+      [Math.floor(lastMoveIndex / boardSize), lastMoveIndex % boardSize] : undefined;
+    const winner = feralRules.checkWinner(gameBoard, lastMove);
+    
+    // If we have a winner, find the winning sequence for highlighting
+    if (winner) {
+      // Find the winning sequence by checking all possible lines
+      const sequence = findWinningSequence(boardState, winner);
+      if (sequence.length >= winLength) {
+        setWinningSequence(sequence);
+      }
+      return winner;
+    }
+    
+    return null;
+  };
+  
+  // Helper function to find the winning sequence
+  const findWinningSequence = (boardState, mark) => {
+    for (let pos = 0; pos < boardState.length; pos++) {
+      if (boardState[pos] !== mark) continue;
       
-      const mark = boardState[pos];
       const row = Math.floor(pos / boardSize);
       const col = pos % boardSize;
       
@@ -373,13 +443,12 @@ const [feralRules] = useState(new FeralRules());
         
         // Check if we have a winner
         if (inARow >= winLength) {
-          setWinningSequence(sequence);
-          return mark;
+          return sequence;
         }
       }
     }
     
-    return null;
+    return [];
   };
 
   // History tracking
@@ -410,10 +479,11 @@ const [feralRules] = useState(new FeralRules());
             key={index}
             className={cn(
               "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center font-bold transition-all duration-300 relative",
-              gameStarted && gameStatus === 'Game in progress' ? "hover:border-primary/50" : "",
+              gameStarted && gameStatus === 'Game in progress' && canOverwriteCell(index) ? "hover:border-primary/50" : "cursor-not-allowed",
               isWinningCell(index) ? "bg-primary/10 border-primary" : "",
               lastMove === index ? "bg-accent/20" : "",
-              boardSize > 3 ? "text-xl" : "text-3xl"
+              boardSize > 3 ? "text-xl" : "text-3xl",
+              feralRules.isCellLocked(Math.floor(index / boardSize), index % boardSize) ? "opacity-70" : ""
             )}
             onClick={() => handleCellClick(index)}
             disabled={!gameStarted || gameStatus !== 'Game in progress'}
@@ -431,15 +501,19 @@ const [feralRules] = useState(new FeralRules());
               </div>
             ) : (
               <div className="absolute bottom-1 left-1 flex gap-1 items-center">
-                {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X') > 0 && (
-                  <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600">
-                    {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X')}
-                  </span>
-                )}
-                {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O') > 0 && (
-                  <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">
-                    {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O')}
-                  </span>
+                {cell && (
+                  <>
+                    {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X') > 0 && (
+                      <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600">
+                        {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'X')}/3
+                      </span>
+                    )}
+                    {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O') > 0 && (
+                      <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">
+                        {feralRules.getOverwriteCount(Math.floor(index / boardSize), index % boardSize, 'O')}/3
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -456,6 +530,13 @@ const [feralRules] = useState(new FeralRules());
     if (count === 1) return player === 'X' ? 'bg-blue-50' : 'bg-red-50';
     if (count === 2) return player === 'X' ? 'bg-blue-100' : 'bg-red-100';
     return player === 'X' ? 'bg-blue-200' : 'bg-red-200';
+  };
+  
+  // Check if a cell can be overwritten by the current player
+  const canOverwriteCell = (index) => {
+    const row = Math.floor(index / boardSize);
+    const col = index % boardSize;
+    return feralRules.canOverwriteCell(row, col, currentPlayer);
   };
 
   return (
@@ -648,6 +729,10 @@ const [feralRules] = useState(new FeralRules());
               <h3 className="font-bold mb-2">Overwrite Stats</h3>
               <p><strong>Player X overwrites:</strong> {overwriteCount.X}</p>
               <p><strong>Player O overwrites:</strong> {overwriteCount.O}</p>
+              <div className="mt-2 text-sm">
+                <p className="text-blue-600">X: <span className="font-mono">■</span> = 1/3, <span className="font-mono">■■</span> = 2/3, <span className="font-mono">■■■</span> = 3/3 (locked)</p>
+                <p className="text-red-600">O: <span className="font-mono">■</span> = 1/3, <span className="font-mono">■■</span> = 2/3, <span className="font-mono">■■■</span> = 3/3 (locked)</p>
+              </div>
             </div>
             
             <div className="bg-background/80 p-4 rounded-lg border border-border">
