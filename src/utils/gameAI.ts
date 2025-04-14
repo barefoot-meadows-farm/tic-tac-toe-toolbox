@@ -439,10 +439,14 @@ class EasyAI extends AIStrategy {
       return null;  // No valid moves
     }
     
-    // Determine if we should attempt a smart move (30% chance)
-    const attemptSmartMove = Math.random() < 0.3;
+    // Add a response delay of 0.5-0.9 seconds to simulate thinking time
+    // This is implemented client-side, so we just return the move
+    // The actual delay will be applied when rendering
     
-    if (attemptSmartMove) {
+    // Determine if we should attempt a strategic move (20% chance) or random move (80% chance)
+    const attemptStrategicMove = Math.random() < 0.2;
+    
+    if (attemptStrategicMove) {
       // Try to find a winning move or blocking move
       const smartMove = this.findSmartMove(board, player, rules);
       if (smartMove) {
@@ -450,7 +454,7 @@ class EasyAI extends AIStrategy {
       }
     }
     
-    // Make a random move with slight bias against edge spaces
+    // Make a random move with equal position preference
     return this.makeRandomMove(validMoves, board.size);
   }
   
@@ -485,8 +489,8 @@ class EasyAI extends AIStrategy {
       }
     }
     
-    // Check for blocking moves (with 50% chance of blocking)
-    if (Math.random() < 0.5) {
+    // Check for blocking moves (with 40% chance of blocking)
+    if (Math.random() < 0.4) {
       for (const [row, col] of validMoves) {
         // Create a temporary board to test if opponent would win
         const tempBoard = board.clone();
@@ -508,27 +512,43 @@ class EasyAI extends AIStrategy {
   }
   
   private makeRandomMove(validMoves: [number, number][], boardSize: number): [number, number] {
-    // Categorize moves as edge or non-edge
+    // Categorize moves by position type
+    const centerMoves: [number, number][] = [];
+    const cornerMoves: [number, number][] = [];
     const edgeMoves: [number, number][] = [];
-    const nonEdgeMoves: [number, number][] = [];
+    
+    const center = Math.floor(boardSize / 2);
     
     for (const [row, col] of validMoves) {
-      // Check if this is an edge move
-      if (row === 0 || row === boardSize - 1 || col === 0 || col === boardSize - 1) {
+      // Check if this is a center move
+      if (row === center && col === center) {
+        centerMoves.push([row, col]);
+      }
+      // Check if this is a corner move
+      else if ((row === 0 || row === boardSize - 1) && (col === 0 || col === boardSize - 1)) {
+        cornerMoves.push([row, col]);
+      }
+      // Otherwise it's an edge move
+      else {
         edgeMoves.push([row, col]);
-      } else {
-        nonEdgeMoves.push([row, col]);
       }
     }
     
-    // Slight bias against edge spaces (20% less likely to choose an edge)
-    if (nonEdgeMoves.length > 0 && Math.random() < 0.2) {
-      return nonEdgeMoves[Math.floor(Math.random() * nonEdgeMoves.length)];
+    // Equal position preference (33/33/34% for center/corners/edges)
+    const positionRoll = Math.random();
+    
+    if (positionRoll < 0.33 && centerMoves.length > 0) {
+      return centerMoves[Math.floor(Math.random() * centerMoves.length)];
+    } else if (positionRoll < 0.66 && cornerMoves.length > 0) {
+      return cornerMoves[Math.floor(Math.random() * cornerMoves.length)];
+    } else if (edgeMoves.length > 0) {
+      return edgeMoves[Math.floor(Math.random() * edgeMoves.length)];
     }
     
-    // Otherwise, choose from all valid moves
+    // If the preferred position type is empty, choose from all valid moves
     return validMoves[Math.floor(Math.random() * validMoves.length)];
   }
+
 }
 
 // Medium AI: Basic Strategy
