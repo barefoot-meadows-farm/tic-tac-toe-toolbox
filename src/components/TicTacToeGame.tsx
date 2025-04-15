@@ -144,6 +144,16 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
   }, [timeLeft, gameStarted, winner, isDraw, settings?.timeLimit, currentPlayer]);
 
   const checkWinner = (board: Board) => {
+    // For numerical mode, use a different winner check
+    if (variant === 'numerical') {
+      return checkNumericalWinner(numericalBoard);
+    }
+    
+    // For custom mode with special rules
+    if (variant === 'custom' && settings?.customRules) {
+      return checkCustomWinner(board);
+    }
+    
     const size = board.length;
     const winLength = settings?.winLength || size;
     
@@ -154,6 +164,10 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         if (sequence.every(cell => cell === 'X') || sequence.every(cell => cell === 'O')) {
           const winLine = Array.from({length: winLength}, (_, k) => [i, j + k]);
           setWinningLine(winLine);
+          // For misere variant, invert the winner
+          if (variant === 'misere') {
+            return sequence[0] === 'X' ? 'O' : 'X';
+          }
           return sequence[0];
         }
       }
@@ -176,6 +190,10 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         if (match) {
           const winLine = Array.from({length: winLength}, (_, k) => [i + k, j]);
           setWinningLine(winLine);
+          // For misere variant, invert the winner
+          if (variant === 'misere') {
+            return firstCell === 'X' ? 'O' : 'X';
+          }
           return firstCell;
         }
       }
@@ -198,6 +216,10 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         if (match) {
           const winLine = Array.from({length: winLength}, (_, k) => [i + k, j + k]);
           setWinningLine(winLine);
+          // For misere variant, invert the winner
+          if (variant === 'misere') {
+            return firstCell === 'X' ? 'O' : 'X';
+          }
           return firstCell;
         }
       }
@@ -220,6 +242,10 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         if (match) {
           const winLine = Array.from({length: winLength}, (_, k) => [i + k, j - k]);
           setWinningLine(winLine);
+          // For misere variant, invert the winner
+          if (variant === 'misere') {
+            return firstCell === 'X' ? 'O' : 'X';
+          }
           return firstCell;
         }
       }
@@ -231,6 +257,30 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
       setIsDraw(true);
     }
     
+    return null;
+  };
+  
+  // Custom winner check for special game modes
+  const checkCustomWinner = (board: Board) => {
+    if (!settings?.customRules) return null;
+    
+    // Implement custom win conditions based on settings
+    const { winCondition, targetSum } = settings.customRules;
+    const size = board.length;
+    
+    if (winCondition === 'sum' && targetSum) {
+      // Check for sum-based win conditions (like numerical mode)
+      // This is a simplified version - would need to be expanded based on actual rules
+      return checkSumBasedWinner(board, targetSum);
+    }
+    
+    return null;
+  };
+  
+  // Helper for sum-based win conditions
+  const checkSumBasedWinner = (board: Board, targetSum: number) => {
+    // Implementation would depend on how values are assigned to X and O
+    // This is a placeholder for the actual implementation
     return null;
   };
 
