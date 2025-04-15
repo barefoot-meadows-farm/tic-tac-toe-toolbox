@@ -3,11 +3,21 @@ import { GameRules } from '../gameAI';
 class NumericalRules extends GameRules {
   xValues: number[];
   oValues: number[];
+  targetSum: number;
   
-  constructor() {
+  constructor(targetSum: number = 15) {
     super();
-    this.xValues = [1, 3, 5, 7, 9];
-    this.oValues = [2, 4, 6, 8];
+    this.targetSum = targetSum;
+    
+    // Set number pools based on target sum
+    if (targetSum === 34) {
+      this.xValues = [1, 3, 5, 7, 9, 11, 13, 15];
+      this.oValues = [2, 4, 6, 8, 10, 12, 14, 16];
+    } else {
+      // Default to standard 15 sum
+      this.xValues = [1, 3, 5, 7, 9];
+      this.oValues = [2, 4, 6, 8];
+    }
   }
 
   checkWinner(board: GameBoard, lastMove?: [number, number]): Player {
@@ -21,8 +31,10 @@ class NumericalRules extends GameRules {
         return sum;
       }, 0);
       
-      if (rowSum === 15) return 'X';
-      if (rowSum === 10) return 'O';
+      if (rowSum === this.targetSum) return 'X';
+      // For player O, calculate their target sum based on their number pool
+      const oTargetSum = this.oValues.slice(0, 3).reduce((sum, val) => sum + val, 0);
+      if (rowSum === oTargetSum) return 'O';
     }
     
     // Check columns
@@ -34,8 +46,10 @@ class NumericalRules extends GameRules {
         if (cell === 'O') colSum += this.oValues[0];
       }
       
-      if (colSum === 15) return 'X';
-      if (colSum === 10) return 'O';
+      if (colSum === this.targetSum) return 'X';
+      // For player O, calculate their target sum based on their number pool
+      const oTargetSum = this.oValues.slice(0, 3).reduce((sum, val) => sum + val, 0);
+      if (colSum === oTargetSum) return 'O';
     }
     
     // Check main diagonal
@@ -45,8 +59,10 @@ class NumericalRules extends GameRules {
       if (cell === 'X') diagSum += this.xValues[0];
       if (cell === 'O') diagSum += this.oValues[0];
     }
-    if (diagSum === 15) return 'X';
-    if (diagSum === 10) return 'O';
+    if (diagSum === this.targetSum) return 'X';
+    // For player O, calculate their target sum based on their number pool
+    const oTargetSum = this.oValues.slice(0, 3).reduce((sum, val) => sum + val, 0);
+    if (diagSum === oTargetSum) return 'O';
     
     // Check other diagonal
     diagSum = 0;
@@ -55,8 +71,8 @@ class NumericalRules extends GameRules {
       if (cell === 'X') diagSum += this.xValues[0];
       if (cell === 'O') diagSum += this.oValues[0];
     }
-    if (diagSum === 15) return 'X';
-    if (diagSum === 10) return 'O';
+    if (diagSum === this.targetSum) return 'X';
+    if (diagSum === oTargetSum) return 'O';
     
     return null;
   }

@@ -67,10 +67,21 @@ const GameStart: React.FC<GameStartProps> = ({ game, initialSettings, onStart, o
         );
         
       case 'numerical':
+        // Determine number pools based on selected target sum
+        const oddNumbers = settings.customRules.targetSum === 34 ? 
+          "1, 3, 5, 7, 9, 11, 13, 15" : 
+          "1, 3, 5, 7, 9";
+        const evenNumbers = settings.customRules.targetSum === 34 ? 
+          "2, 4, 6, 8, 10, 12, 14, 16" : 
+          "2, 4, 6, 8";
+          
         return (
           <div className="mb-6 bg-muted/40 p-3 rounded-md">
             <p className="text-sm text-accent-foreground font-medium mb-2">Numerical Mode</p>
-            <p className="text-xs text-muted-foreground">Player 1 uses odd numbers (1,3,5,7,9) and Player 2 uses even numbers (2,4,6,8). Win by getting three numbers that sum to 15.</p>
+            <p className="text-xs text-muted-foreground">
+              Player 1 uses odd numbers ({oddNumbers}) and Player 2 uses even numbers ({evenNumbers}). 
+              Win by getting three numbers that sum to {settings.customRules.targetSum || 15}.
+            </p>
           </div>
         );
         

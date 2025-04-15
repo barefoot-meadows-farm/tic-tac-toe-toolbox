@@ -31,12 +31,17 @@ const NumericalTicTacToe: React.FC<NumericalTicTacToeProps> = ({ settings }) => 
   });
   const [isAiThinking, setIsAiThinking] = useState(false);
   
-  // Available numbers for each player
-  const oddNumbers = [1, 3, 5, 7, 9].filter(num => !usedNumbers.odd.includes(num));
-  const evenNumbers = [2, 4, 6, 8].filter(num => !usedNumbers.even.includes(num));
+  // Target sum from settings (defaults to 15 if not specified)
+  const targetSum = settings?.customRules?.targetSum || 15;
   
-  // Target sum (traditionally 15 for all board sizes)
-  const targetSum = 15;
+  // Available numbers for each player based on target sum
+  const oddNumbers = targetSum === 34 ?
+    [1, 3, 5, 7, 9, 11, 13, 15].filter(num => !usedNumbers.odd.includes(num)) :
+    [1, 3, 5, 7, 9].filter(num => !usedNumbers.odd.includes(num));
+    
+  const evenNumbers = targetSum === 34 ?
+    [2, 4, 6, 8, 10, 12, 14, 16].filter(num => !usedNumbers.even.includes(num)) :
+    [2, 4, 6, 8].filter(num => !usedNumbers.even.includes(num));
 
   // Initialize game on component mount
   useEffect(() => {
@@ -420,13 +425,18 @@ const NumericalTicTacToe: React.FC<NumericalTicTacToeProps> = ({ settings }) => 
   // Render the game board
   const renderBoard = () => {
     return (
-      <div 
-        className="grid gap-2 w-full max-w-[320px] mx-auto aspect-square"
-        style={{
-          gridTemplateColumns: `repeat(${boardSize}, 1fr)`
-        }}
-      >
-        {board.map((_, index) => renderCell(index))}
+      <div>
+        <div className="text-center mb-4 text-sm text-muted-foreground">
+          Target Sum: <span className="font-semibold">{targetSum}</span>
+        </div>
+        <div 
+          className="grid gap-2 w-full max-w-[320px] mx-auto aspect-square"
+          style={{
+            gridTemplateColumns: `repeat(${boardSize}, 1fr)`
+          }}
+        >
+          {board.map((_, index) => renderCell(index))}
+        </div>
       </div>
     );
   };
@@ -445,7 +455,9 @@ const NumericalTicTacToe: React.FC<NumericalTicTacToeProps> = ({ settings }) => 
       return "AI's Turn (Even Numbers)";
     }
     
-    return `Player ${currentPlayer}'s Turn (${currentPlayer === 1 ? 'Odd' : 'Even'} Numbers)`;
+    return `Player ${currentPlayer}'s Turn (${currentPlayer === 1 ? 
+      `Odd Numbers (${targetSum === 34 ? "1-15 odds" : "1-9 odds"})` : 
+      `Even Numbers (${targetSum === 34 ? "2-16 evens" : "2-8 evens"})`})`;
   };
 
   return (

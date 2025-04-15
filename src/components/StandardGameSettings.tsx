@@ -244,6 +244,36 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
         </div>
       )}
       
+      {gameId === 'numerical' && (
+        <div>
+          <h3 className="flex items-center text-sm font-medium mb-2">
+            Win Sum
+          </h3>
+          <RadioGroup 
+            value={String(settings.customRules?.targetSum || 15)}
+            onValueChange={(value) => {
+              const targetSum = parseInt(value);
+              handleSettingsChange({
+                customRules: {
+                  ...settings.customRules,
+                  targetSum
+                }
+              });
+            }}
+            className="flex gap-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="15" id="sum-15" />
+              <Label htmlFor="sum-15" className="text-sm">15</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="34" id="sum-34" />
+              <Label htmlFor="sum-34" className="text-sm">34</Label>
+            </div>
+          </RadioGroup>
+        </div>
+      )}
+      
       {hasCustomWinLength && (
         <div>
           <h3 className="flex items-center text-sm font-medium mb-2">
