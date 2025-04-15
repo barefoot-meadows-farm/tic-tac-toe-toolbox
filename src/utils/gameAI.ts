@@ -862,6 +862,18 @@ class MediumAI extends AIStrategy {
     // take a random move from all valid moves
     return validMoves[Math.floor(Math.random() * validMoves.length)];
   }
+  
+  private getFeralStrategyMove(board: GameBoard, player: Player, opponent: Player): [number, number] | null {
+    const center = Math.floor(board.size / 2);
+    const corners = [
+      [0, 0], 
+      [0, board.size - 1], 
+      [board.size - 1, 0], 
+      [board.size - 1, board.size - 1]
+    ] as [number, number][];
+    
+    // Try to take center if available
+    if (board.cells[center][center] === null || board.cells[center][center] === opponent) {
       return [center, center];
     }
     
