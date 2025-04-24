@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -181,7 +182,10 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
       const gameWinner = checkWinner(newBoard);
       if (gameWinner) {
         setWinner(gameWinner);
-        trackGameComplete('chaos', gameWinner === 'Draw' ? 'draw' : gameWinner === currentPlayer ? 'win' : 'loss');
+        trackGameComplete({
+          gameType: 'chaos',
+          result: gameWinner === 'Draw' ? 'draw' : gameWinner === currentPlayer ? 'win' : 'loss'
+        });
         roundInProgressRef.current = false;
         return;
       }
@@ -189,7 +193,10 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
       // Check for draw
       if (isBoardFull(newBoard)) {
         setWinner('Draw');
-        trackGameComplete('chaos', 'draw');
+        trackGameComplete({
+          gameType: 'chaos',
+          result: 'draw'
+        });
         roundInProgressRef.current = false;
         return;
       }
@@ -216,7 +223,10 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
       const gameWinner = checkWinner(newBoard);
       if (gameWinner) {
         setWinner(gameWinner);
-        trackGameComplete('chaos', gameWinner === 'Draw' ? 'draw' : gameWinner === currentPlayer ? 'win' : 'loss');
+        trackGameComplete({
+          gameType: 'chaos',
+          result: gameWinner === 'Draw' ? 'draw' : gameWinner === currentPlayer ? 'win' : 'loss'
+        });
         roundInProgressRef.current = false;
         return;
       }
@@ -224,7 +234,10 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
       // Check for draw
       if (isBoardFull(newBoard)) {
         setWinner('Draw');
-        trackGameComplete('chaos', 'draw');
+        trackGameComplete({
+          gameType: 'chaos',
+          result: 'draw'
+        });
         roundInProgressRef.current = false;
         return;
       }
@@ -256,7 +269,10 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
     const gameWinner = checkWinner(newBoard);
     if (gameWinner) {
       setWinner(gameWinner);
-      trackGameComplete('chaos', gameWinner === 'Draw' ? 'draw' : gameWinner === currentPlayer ? 'win' : 'loss');
+      trackGameComplete({
+        gameType: 'chaos',
+        result: gameWinner === 'Draw' ? 'draw' : gameWinner === currentPlayer ? 'win' : 'loss'
+      });
       roundInProgressRef.current = false;
       return;
     }
@@ -264,7 +280,10 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
     // Check for draw
     if (isBoardFull(newBoard)) {
       setWinner('Draw');
-      trackGameComplete('chaos', 'draw');
+      trackGameComplete({
+        gameType: 'chaos',
+        result: 'draw'
+      });
       roundInProgressRef.current = false;
       return;
     }
@@ -333,10 +352,16 @@ const ChaosTicTacToe: React.FC<ChaosTicTacToeProps> = ({ settings }) => {
       const gameWinner = checkWinner(newBoard);
       if (gameWinner) {
         setWinner(gameWinner);
-        trackGameComplete('chaos', gameWinner === 'Draw' ? 'draw' : gameWinner === currentPlayer ? 'win' : 'loss');
+        trackGameComplete({
+          gameType: 'chaos',
+          result: gameWinner === 'Draw' ? 'draw' : gameWinner === currentPlayer ? 'win' : 'loss'
+        });
       } else if (isBoardFull(newBoard)) {
         setWinner('Draw');
-        trackGameComplete('chaos', 'draw');
+        trackGameComplete({
+          gameType: 'chaos',
+          result: 'draw'
+        });
       }
       
       // Reset round state

@@ -19,10 +19,6 @@ export type Database = {
           result: string
           user_id: string
           variant: string
-          score: number
-          moves_count: number | null
-          game_duration_seconds: number | null
-          player_symbol: string | null
         }
         Insert: {
           created_at?: string
@@ -33,10 +29,6 @@ export type Database = {
           result: string
           user_id: string
           variant: string
-          score?: number
-          moves_count?: number | null
-          game_duration_seconds?: number | null
-          player_symbol?: string | null
         }
         Update: {
           created_at?: string
@@ -47,10 +39,6 @@ export type Database = {
           result?: string
           user_id?: string
           variant?: string
-          score?: number
-          moves_count?: number | null
-          game_duration_seconds?: number | null
-          player_symbol?: string | null
         }
         Relationships: [
           {
@@ -165,66 +153,9 @@ export type Database = {
       }
     }
     Views: {
-      global_leaderboard: {
-        Row: {
-          username: string | null
-          user_id: string
-          variant: string
-          difficulty: string | null
-          games_played: number
-          wins: number
-          losses: number
-          draws: number
-          total_score: number
-          last_played: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "game_stats_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      leaderboard_weekly: {
-        Row: {
-          username: string | null
-          user_id: string
-          variant: string
-          difficulty: string | null
-          games_played: number
-          wins: number
-          losses: number
-          draws: number
-          total_score: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "game_stats_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
-      calculate_game_score: {
-        Args: {
-          p_result: string
-          p_difficulty: string
-          p_moves_count: number
-          p_game_duration_seconds: number
-        }
-        Returns: number
-      }
-      refresh_leaderboard_weekly: {
-        Args: Record<PropertyKey, never>
-        Returns: unknown
-      }
       save_user_story: {
         Args: {
           p_user_id: string
@@ -236,10 +167,6 @@ export type Database = {
           p_result: Json
         }
         Returns: string
-      }
-      update_game_score: {
-        Args: Record<PropertyKey, never>
-        Returns: unknown
       }
     }
     Enums: {
