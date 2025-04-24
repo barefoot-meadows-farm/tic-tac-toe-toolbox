@@ -62,25 +62,26 @@ const Settings = () => {
                                   <p className="text-sm text-muted-foreground">Sets universal game rules, which can be tweaked individually on each game</p>
                                 </div>
                               </div>
-                              <div className="pl-7 pointer-events-auto">
+                              <div className="pl-7">
                                 <StandardGameSettings 
                                   gameId="traditional" 
                                   onSettingsChanged={(newSettings) => {
                                     // This callback will be triggered when settings are changed
                                     // We don't need to do anything special here as the component
                                     // will handle saving the settings to the context
+                                    console.log('Settings changed:', newSettings);
                                   }}
                                 />
                               </div>
                           </div>
-                          
+
                           {/* Simplified Appearance Settings */}
                           <div className="space-y-4">
                               <div className="flex items-center space-x-2">
                                 <Palette className="h-5 w-5" />
                                 <h2 className="text-2xl font-semibold">Appearance</h2>
                               </div>
-                              
+
                               <div className="pl-7 space-y-6">
                                   {/* Theme Colors */}
                                   <div className="space-y-2">
@@ -106,7 +107,7 @@ const Settings = () => {
                                           ))}
                                       </div>
                                   </div>
-                                  
+
                                   {/* Dark Mode Toggle */}
                                   <div className="space-y-2">
                                       <h3 className="text-lg font-medium">Dark Mode</h3>

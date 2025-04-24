@@ -28,12 +28,12 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
 }) => {
   // Use settings?.boardSize or default to 3
   const boardSize = settings?.boardSize || 3;
-  
+
   // Initialize the board based on boardSize
   const [board, setBoard] = useState<Board>(
     Array(boardSize).fill(null).map(() => Array(boardSize).fill(null))
   );
-  
+
   // For numerical mode, track the numbers placed and available numbers
   const [numericalBoard, setNumericalBoard] = useState<NumericalBoard>(
     Array(boardSize).fill(null).map(() => Array(boardSize).fill(null))
@@ -45,15 +45,15 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
     player1: [],
     player2: []
   });
-  
+
   // Available numbers for numerical mode
   const player1Numbers = [1, 3, 5, 7, 9].filter(n => !usedNumbers.player1.includes(n));
   const player2Numbers = [2, 4, 6, 8].filter(n => !usedNumbers.player2.includes(n));
-  
+
   // Track currently selected number for placement
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
   const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null);
-  
+
   // Determine first player based on settings
   const getInitialPlayer = (): 'X' | 'O' => {
     if (!settings || settings.firstPlayer === 'random') {
@@ -61,25 +61,25 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
     }
     return settings.firstPlayer === 'player1' ? 'X' : 'O';
   };
-  
+
   const [currentPlayer, setCurrentPlayer] = useState<'X' | 'O'>(getInitialPlayer());
   const [winner, setWinner] = useState<Player>(null);
   const [isDraw, setIsDraw] = useState(false);
   const [winningLine, setWinningLine] = useState<number[][]>([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [waitingForAI, setWaitingForAI] = useState(false);
-  
+
   // Reset the timer when it's used
   const [timeLeft, setTimeLeft] = useState(settings?.timeLimit || null);
-  
+
   // Get auth context
   const { user } = useAuth();
-  
+
   // Reset the game when settings change
   useEffect(() => {
     resetGame();
   }, [settings, boardSize]);
-  
+
   // AI move handling
   useEffect(() => {
     // When it's AI's turn and game is in progress
@@ -88,11 +88,11 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         !isDraw && 
         settings?.opponent === 'ai' && 
         currentPlayer === 'O') {
-      
+
       // Add a small delay to make the AI move seem more natural
       const aiMoveTimer = setTimeout(() => {
         setWaitingForAI(true);
-        
+
         // Get the AI move based on the current board state and settings
         const aiMove = getAIMove(
           board, 
@@ -100,7 +100,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
           settings, 
           variant
         );
-        
+
         if (aiMove) {
           if (variant === 'numerical') {
             // For numerical mode, AI needs to choose a number and place it
@@ -115,31 +115,31 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
             handleClick(row, col);
           }
         }
-        
+
         setWaitingForAI(false);
       }, 500);
-      
+
       return () => clearTimeout(aiMoveTimer);
     }
   }, [gameStarted, winner, isDraw, settings?.opponent, currentPlayer, board, variant, player2Numbers]);
-  
+
   // Timer logic
   useEffect(() => {
     if (!gameStarted || winner || isDraw || !settings?.timeLimit) return;
-    
+
     if (timeLeft === 0) {
       // Time's up, switch player
       setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
       setTimeLeft(settings.timeLimit);
       return;
     }
-    
+
     const timer = setTimeout(() => {
       if (timeLeft !== null) {
         setTimeLeft(timeLeft - 1);
       }
     }, 1000);
-    
+
     return () => clearTimeout(timer);
   }, [timeLeft, gameStarted, winner, isDraw, settings?.timeLimit, currentPlayer]);
 
@@ -148,15 +148,15 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
     if (variant === 'numerical') {
       return checkNumericalWinner(numericalBoard);
     }
-    
+
     // For custom mode with special rules
     if (variant === 'custom' && settings?.customRules) {
       return checkCustomWinner(board);
     }
-    
+
     const size = board.length;
     const winLength = settings?.winLength || size;
-    
+
     // Check rows
     for (let i = 0; i < size; i++) {
       for (let j = 0; j <= size - winLength; j++) {
@@ -172,21 +172,21 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         }
       }
     }
-    
+
     // Check columns
     for (let i = 0; i <= size - winLength; i++) {
       for (let j = 0; j < size; j++) {
         let match = true;
         let firstCell = board[i][j];
         if (!firstCell) continue;
-        
+
         for (let k = 1; k < winLength; k++) {
           if (board[i + k][j] !== firstCell) {
             match = false;
             break;
           }
         }
-        
+
         if (match) {
           const winLine = Array.from({length: winLength}, (_, k) => [i + k, j]);
           setWinningLine(winLine);
@@ -198,21 +198,21 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         }
       }
     }
-    
+
     // Check diagonals (top-left to bottom-right)
     for (let i = 0; i <= size - winLength; i++) {
       for (let j = 0; j <= size - winLength; j++) {
         let match = true;
         let firstCell = board[i][j];
         if (!firstCell) continue;
-        
+
         for (let k = 1; k < winLength; k++) {
           if (board[i + k][j + k] !== firstCell) {
             match = false;
             break;
           }
         }
-        
+
         if (match) {
           const winLine = Array.from({length: winLength}, (_, k) => [i + k, j + k]);
           setWinningLine(winLine);
@@ -224,21 +224,21 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         }
       }
     }
-    
+
     // Check diagonals (top-right to bottom-left)
     for (let i = 0; i <= size - winLength; i++) {
       for (let j = winLength - 1; j < size; j++) {
         let match = true;
         let firstCell = board[i][j];
         if (!firstCell) continue;
-        
+
         for (let k = 1; k < winLength; k++) {
           if (board[i + k][j - k] !== firstCell) {
             match = false;
             break;
           }
         }
-        
+
         if (match) {
           const winLine = Array.from({length: winLength}, (_, k) => [i + k, j - k]);
           setWinningLine(winLine);
@@ -250,33 +250,33 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         }
       }
     }
-    
+
     // Check for draw
     const isDraw = board.every(row => row.every(cell => cell !== null));
     if (isDraw) {
       setIsDraw(true);
     }
-    
+
     return null;
   };
-  
+
   // Custom winner check for special game modes
   const checkCustomWinner = (board: Board) => {
     if (!settings?.customRules) return null;
-    
+
     // Implement custom win conditions based on settings
     const { winCondition, targetSum } = settings.customRules;
     const size = board.length;
-    
+
     if (winCondition === 'sum' && targetSum) {
       // Check for sum-based win conditions (like numerical mode)
       // This is a simplified version - would need to be expanded based on actual rules
       return checkSumBasedWinner(board, targetSum);
     }
-    
+
     return null;
   };
-  
+
   // Helper for sum-based win conditions
   const checkSumBasedWinner = (board: Board, targetSum: number) => {
     // Implementation would depend on how values are assigned to X and O
@@ -287,7 +287,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
   // Check for numerical win (sum of 15)
   const checkNumericalWinner = (board: NumericalBoard) => {
     const size = board.length;
-    
+
     // Check rows
     for (let i = 0; i < size; i++) {
       const rowSum = board[i].reduce((sum, cell) => sum + (cell || 0), 0);
@@ -298,13 +298,13 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         return isPlayer1Win ? 'X' : 'O';
       }
     }
-    
+
     // Check columns
     for (let j = 0; j < size; j++) {
       let colSum = 0;
       let hasNull = false;
       const colNumbers: number[] = [];
-      
+
       for (let i = 0; i < size; i++) {
         if (board[i][j] === null) {
           hasNull = true;
@@ -313,7 +313,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         colSum += board[i][j]!;
         colNumbers.push(board[i][j]!);
       }
-      
+
       if (!hasNull && colSum === 15) {
         setWinningLine(Array.from({length: size}, (_, k) => [k, j]));
         // Determine which player won
@@ -321,12 +321,12 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         return isPlayer1Win ? 'X' : 'O';
       }
     }
-    
+
     // Check main diagonal
     let diagSum = 0;
     let hasDiagNull = false;
     const diagNumbers: number[] = [];
-    
+
     for (let i = 0; i < size; i++) {
       if (board[i][i] === null) {
         hasDiagNull = true;
@@ -335,19 +335,19 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
       diagSum += board[i][i]!;
       diagNumbers.push(board[i][i]!);
     }
-    
+
     if (!hasDiagNull && diagSum === 15) {
       setWinningLine(Array.from({length: size}, (_, k) => [k, k]));
       // Determine which player won
       const isPlayer1Win = diagNumbers.some(num => num % 2 === 1);
       return isPlayer1Win ? 'X' : 'O';
     }
-    
+
     // Check other diagonal
     let otherDiagSum = 0;
     let hasOtherDiagNull = false;
     const otherDiagNumbers: number[] = [];
-    
+
     for (let i = 0; i < size; i++) {
       if (board[i][size - 1 - i] === null) {
         hasOtherDiagNull = true;
@@ -356,31 +356,31 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
       otherDiagSum += board[i][size - 1 - i]!;
       otherDiagNumbers.push(board[i][size - 1 - i]!);
     }
-    
+
     if (!hasOtherDiagNull && otherDiagSum === 15) {
       setWinningLine(Array.from({length: size}, (_, k) => [k, size - 1 - k]));
       // Determine which player won
       const isPlayer1Win = otherDiagNumbers.some(num => num % 2 === 1);
       return isPlayer1Win ? 'X' : 'O';
     }
-    
+
     // Check for draw - either board is full or players have used all their numbers
     const isNumericalDraw = board.every(row => row.every(cell => cell !== null)) || 
                             (player1Numbers.length === 0 || player2Numbers.length === 0);
-    
+
     if (isNumericalDraw) {
       setIsDraw(true);
     }
-    
+
     return null;
   };
 
   // Handle number selection for numerical mode
   const handleNumberSelect = (number: number) => {
     if (!selectedCell || winner || isDraw || waitingForAI) return;
-    
+
     setSelectedNumber(number);
-    
+
     // Place the number on the board
     if (selectedCell) {
       const [row, col] = selectedCell;
@@ -391,12 +391,12 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
   // Handle numerical move
   const handleNumericalMove = (row: number, col: number, number: number) => {
     if (winner || isDraw || waitingForAI) return;
-    
+
     // Create a new board with the move
     const newNumericalBoard = numericalBoard.map(r => [...r]);
     newNumericalBoard[row][col] = number;
     setNumericalBoard(newNumericalBoard);
-    
+
     // Update used numbers
     const newUsedNumbers = {...usedNumbers};
     if (currentPlayer === 'X') {
@@ -405,21 +405,21 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
       newUsedNumbers.player2 = [...newUsedNumbers.player2, number];
     }
     setUsedNumbers(newUsedNumbers);
-    
+
     // Update the regular board too (for AI logic)
     const newBoard = board.map(r => [...r]);
     newBoard[row][col] = currentPlayer;
     setBoard(newBoard);
-    
+
     // Reset selected cell and number
     setSelectedCell(null);
     setSelectedNumber(null);
-    
+
     // Check for winner
     const winnerPlayer = checkNumericalWinner(newNumericalBoard);
     if (winnerPlayer) {
       setWinner(winnerPlayer);
-      
+
       // Track the game completion
       if (user) {
         trackGameComplete(
@@ -433,10 +433,10 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
           user
         );
       }
-      
+
       return;
     }
-    
+
     // Check for draw
     if (isDraw) {
       // Track the game completion as a draw
@@ -454,12 +454,12 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
       }
       return;
     }
-    
+
     // Reset the timer when a move is made
     if (settings?.timeLimit) {
       setTimeLeft(settings.timeLimit);
     }
-    
+
     // Switch player
     setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
   };
@@ -468,22 +468,22 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
     // For numerical mode, handle cell selection differently
     if (variant === 'numerical') {
       if (winner || isDraw || waitingForAI || numericalBoard[row][col] !== null) return;
-      
+
       if (!gameStarted) {
         setGameStarted(true);
         if (settings?.timeLimit) {
           setTimeLeft(settings.timeLimit);
         }
       }
-      
+
       // Select the cell (for numerical, we'll place the number after selecting it)
       setSelectedCell([row, col]);
       return;
     }
-    
+
     // Handle special case for Feral variant
     const canOverwrite = variant === 'feral';
-    
+
     // For feral mode, can overwrite opponent's moves but not your own
     if ((!canOverwrite && board[row][col]) || 
         (canOverwrite && board[row][col] === currentPlayer) || 
@@ -499,11 +499,11 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         setTimeLeft(settings.timeLimit);
       }
     }
-    
+
     const newBoard = [...board.map(row => [...row])];
     newBoard[row][col] = currentPlayer;
     setBoard(newBoard);
-    
+
     // For misere variant, we invert the winner logic
     if (variant === 'misere') {
       const potentialWinner = checkWinner(newBoard);
@@ -511,7 +511,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         // In misere, the player who makes three in a row loses
         const actualWinner = potentialWinner === 'X' ? 'O' : 'X';
         setWinner(actualWinner);
-        
+
         // Track the game completion
         if (user) {
           const opponent = settings?.opponent || 'ai';
@@ -526,7 +526,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
             user
           );
         }
-        
+
         return;
       }
     } else {
@@ -534,7 +534,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
       const potentialWinner = checkWinner(newBoard);
       if (potentialWinner) {
         setWinner(potentialWinner);
-        
+
         // Track the game completion
         if (user) {
           const opponent = settings?.opponent || 'ai';
@@ -549,11 +549,11 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
             user
           );
         }
-        
+
         return;
       }
     }
-    
+
     // Check for draw
     if (isDraw) {
       // Track the game completion as a draw
@@ -571,12 +571,12 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
         );
       }
     }
-    
+
     // Reset the timer when a move is made
     if (settings?.timeLimit) {
       setTimeLeft(settings.timeLimit);
     }
-    
+
     const nextPlayer = currentPlayer === 'X' ? 'O' : 'X';
     setCurrentPlayer(nextPlayer);
   };
@@ -604,7 +604,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
   // Render the number options for the numerical mode
   const renderNumberOptions = () => {
     const availableNumbers = currentPlayer === 'X' ? player1Numbers : player2Numbers;
-    
+
     return (
       <div className="flex justify-center space-x-2 mb-4">
         {availableNumbers.map(number => (
@@ -643,7 +643,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
             </div>
           </div>
         )}
-      
+
         {!gameStarted && (
           <div className="animate-fade-in">
             <p className="text-lg text-muted-foreground mb-4">
@@ -661,7 +661,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
             )}
           </div>
         )}
-        
+
         {gameStarted && !winner && !isDraw && (
           <div className="animate-fade-in">
             <p className="text-xl font-medium mb-2">Current player</p>
@@ -689,10 +689,10 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
             )}
           </div>
         )}
-        
+
         {winner && (
           <div className="animate-scale-in">
-            <p className="text-xl font-medium mb-2">Winner</p>
+            <p className="text-xl font-medium mb-2">{variant === 'misere' ? "Game Over" : "Winner"}</p>
             {variant === 'numerical' ? (
               <div 
                 className={cn(
@@ -706,15 +706,22 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
               <div 
                 className={cn(
                   "w-14 h-14 mx-auto border-2 rounded-md flex items-center justify-center font-bold text-3xl",
-                  winner === 'X' ? "border-primary text-primary" : "border-accent-foreground text-accent-foreground"
+                  variant === 'misere' 
+                    ? (winner === 'X' ? "border-primary text-primary" : "border-red-500 text-red-500")
+                    : (winner === 'X' ? "border-primary text-primary" : "border-accent-foreground text-accent-foreground")
                 )}
               >
                 {winner}
               </div>
             )}
+            {variant === 'misere' && (
+              <p className="text-sm text-muted-foreground mt-2">
+                In Misere mode, making three in a row loses!
+              </p>
+            )}
           </div>
         )}
-        
+
         {isDraw && !winner && (
           <div className="animate-scale-in">
             <p className="text-xl font-medium mb-2">
@@ -728,11 +735,11 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
           </div>
         )}
       </div>
-      
+
       {variant === 'numerical' && gameStarted && !winner && !isDraw && (
         renderNumberOptions()
       )}
-      
+
       <div 
         className={cn(
           "board-grid w-full max-w-sm mx-auto bg-muted/30 p-4 rounded-lg shadow-sm",
@@ -751,7 +758,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
             Array.from({ length: boardSize }, (_, colIndex) => {
               const cellValue = numericalBoard[rowIndex][colIndex];
               const isSelected = selectedCell && selectedCell[0] === rowIndex && selectedCell[1] === colIndex;
-              
+
               return (
                 <button
                   key={`${rowIndex}-${colIndex}`}
@@ -759,7 +766,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
                     "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center font-bold transition-all duration-300",
                     gameStarted && cellValue === null && !winner && !isDraw && !waitingForAI 
                       ? "hover:border-primary/50" : "",
-                    isWinningCell(rowIndex, colIndex) ? "bg-primary/10 border-primary" : "",
+                    isWinningCell(rowIndex, colIndex) ? variant === 'misere' ? "bg-red-500/10 border-red-500" : "bg-primary/10 border-primary" : "",
                     isSelected ? "bg-primary/5 border-primary/70" : "",
                     boardSize > 3 ? "text-xl" : "text-3xl"
                   )}
@@ -770,7 +777,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
                         setTimeLeft(settings.timeLimit);
                       }
                     }
-                    
+
                     if (cellValue === null && !winner && !isDraw && !waitingForAI && 
                         !(settings?.opponent === 'ai' && currentPlayer === 'O')) {
                       setSelectedCell([rowIndex, colIndex]);
@@ -802,7 +809,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
                 className={cn(
                   "cell-hover aspect-square bg-background border border-border/50 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-300",
                   gameStarted && !cell && !winner && !isDraw && !waitingForAI ? "hover:border-primary/50" : "",
-                  isWinningCell(rowIndex, colIndex) ? "bg-primary/10 border-primary" : "",
+                  isWinningCell(rowIndex, colIndex) ? variant === 'misere' ? "bg-red-500/10 border-red-500" : "bg-primary/10 border-primary" : "",
                   boardSize > 3 ? "text-xl" : "text-3xl"
                 )}
                 onClick={() => handleClick(rowIndex, colIndex)}
@@ -820,7 +827,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
           )).flat()
         )}
       </div>
-      
+
       <div className="mt-6 text-center">
         <Button 
           onClick={resetGame} 

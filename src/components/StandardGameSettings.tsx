@@ -39,7 +39,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
 }) => {
   const { toast } = useToast();
   const { getGameSettings, applyGameSettings, defaultGameSettings } = useGameSettings();
-  
+
   // Get game-specific settings or use defaults
   const storedSettings = getGameSettings(gameId);
   const [settings, setSettings] = useState<GameSettings>(initialSettings || storedSettings || defaultGameSettings);
@@ -47,14 +47,14 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
 
   // Determine if this game mode should have customizable board size
   const hasCustomBoardSize = true;
-  
+
   // Determine if this game mode should have customizable win length
   // Numerical mode doesn't use win length setting
   const hasCustomWinLength = gameId !== 'numerical';
-  
+
   // Board size options as per requirements
   const boardSizeOptions = [3, 4, 5];
-  
+
   // Time limit options in seconds as per requirements
   const timeLimitOptions = [
     { value: 10, label: '10 seconds' },
@@ -68,25 +68,25 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
   // Get available win length options based on board size and game mode
   const getWinLengthOptions = (boardSize: number) => {
     const options = [];
-    
+
     // Win length can't exceed board size
     for (let i = 3; i <= boardSize; i++) {
       options.push(i);
     }
-    
+
     return options;
   };
 
   const handleSettingsChange = (newSettings: Partial<GameSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
-    
+
     // If board size changes, ensure win length is valid
     if (newSettings.boardSize && updatedSettings.winLength > newSettings.boardSize) {
       updatedSettings.winLength = newSettings.boardSize;
     }
-    
+
     setSettings(updatedSettings);
-    
+
     if (onSettingsChanged) {
       onSettingsChanged(updatedSettings);
     }
@@ -102,7 +102,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
       });
       return;
     }
-    
+
     if (hasCustomWinLength) {
       if (settings.winLength > settings.boardSize) {
         toast({
@@ -113,15 +113,15 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
         return;
       }
     }
-    
+
     // Save settings to context
     applyGameSettings(gameId, settings);
-    
+
     toast({
       title: "Settings saved",
       description: "Your game settings have been updated.",
     });
-    
+
     setIsOpen(false);
   };
 
@@ -153,7 +153,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
           </div>
         </RadioGroup>
       </div>
-      
+
       {settings.opponent === 'ai' && (
         <div>
           <h3 className="text-sm font-medium mb-2">AI Difficulty</h3>
@@ -179,7 +179,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
           </RadioGroup>
         </div>
       )}
-      
+
       <div>
         <h3 className="flex items-center text-sm font-medium mb-2">
           <Trophy className="w-4 h-4 mr-1" />
@@ -212,7 +212,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
           </div>
         </RadioGroup>
       </div>
-      
+
       {hasCustomBoardSize && (
         <div>
           <h3 className="flex items-center text-sm font-medium mb-2">
@@ -243,7 +243,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
           </Select>
         </div>
       )}
-      
+
       {gameId === 'numerical' && (
         <div>
           <h3 className="flex items-center text-sm font-medium mb-2">
@@ -273,7 +273,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
           </RadioGroup>
         </div>
       )}
-      
+
       {hasCustomWinLength && (
         <div>
           <h3 className="flex items-center text-sm font-medium mb-2">
@@ -300,7 +300,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
           </Select>
         </div>
       )}
-      
+
       <div className="flex items-center justify-between">
         <span className="flex items-center text-sm font-medium">
           <Clock className="w-4 h-4 mr-1" />
@@ -315,7 +315,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
           }
         />
       </div>
-      
+
       {settings.timeLimit !== null && (
         <div>
           <h3 className="text-sm font-medium mb-2">
@@ -362,11 +362,11 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
               Customize your gameplay experience
             </SheetDescription>
           </SheetHeader>
-          
+
           <div className="py-4">
             {renderSettingsForm()}
           </div>
-          
+
           <div className="mt-6 flex justify-end">
             <Button onClick={handleSaveSettings}>
               Save Settings
@@ -379,11 +379,11 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
 
   // Full version shows all settings inline
   return (
-    <div className="bg-card border border-border rounded-lg shadow-sm p-6 max-w-md mx-auto animate-fade-in pointer-events-auto">
+    <div className="bg-card border border-border rounded-lg shadow-sm p-6 max-w-md mx-auto animate-fade-in">
       <h2 className="text-2xl font-bold mb-6 text-center">Game Settings</h2>
-      
+
       {renderSettingsForm()}
-      
+
       <div className="mt-8 flex justify-between gap-4">
         <Button
           variant="outline"
@@ -392,7 +392,7 @@ const StandardGameSettings: React.FC<StandardGameSettingsProps> = ({
         >
           Reset to Defaults
         </Button>
-        
+
         <Button
           onClick={handleSaveSettings}
           className="flex-1"
