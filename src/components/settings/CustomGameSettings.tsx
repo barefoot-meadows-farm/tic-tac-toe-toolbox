@@ -43,18 +43,18 @@ interface CustomGameSettingsProps {
 interface CustomRules {
   // Board dimensions
   boardSize: number;
-  
+
   // Cell behavior
   allowOverwriting: boolean;
   randomSwaps: boolean;
   swapsPerRound: number;
-  
+
   // Win conditions
   winCondition: 'line' | 'sum';
   winLength: number;
   targetSum: number;
   inversedWinCondition: boolean; // For Misere mode
-  
+
   // Turn mechanics
   turnMechanics: 'standard' | 'modified';
 }
@@ -67,7 +67,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
 }) => {
   const { toast } = useToast();
   const { getGameSettings, applyGameSettings, defaultGameSettings } = useGameSettings();
-  
+
   // Get game-specific settings or use defaults
   const storedSettings = getGameSettings(gameId);
   const [settings, setSettings] = useState<GameSettings>(initialSettings || storedSettings || {
@@ -75,37 +75,37 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
     customRules: {
       // Board dimensions
       boardSize: 3,
-      
+
       // Cell behavior
       allowOverwriting: false, // Feral mode
       randomSwaps: false, // Chaos mode
       swapsPerRound: 1,
-      
+
       // Win conditions
       winCondition: 'line',
       winLength: 3,
       targetSum: 15, // For numerical mode
       inversedWinCondition: false, // Misere mode
-      
+
       // Turn mechanics
       turnMechanics: 'standard',
-      
+
       // Game balance settings
       maxOverwrites: 3, // Limit number of overwrites in Feral mode
       swapCooldown: 2, // Minimum turns between swaps in Chaos mode
       balanceModifier: 1.0 // Adjusts win condition difficulty based on rule combinations
     }
   });
-  
+
   // Track rule conflicts and balance
   const [ruleConflicts, setRuleConflicts] = useState<string[]>([]);
   const [gameBalance, setGameBalance] = useState<number>(1.0); // 1.0 is balanced
-  
+
   const [isOpen, setIsOpen] = useState(false);
 
   // Board size options
   const boardSizeOptions = [3, 4, 5, 6, 7, 8, 9, 10];
-  
+
   // Time limit options in seconds
   const timeLimitOptions = [
     { value: 10, label: '10 seconds' },
@@ -119,12 +119,12 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
   // Get available win length options based on board size
   const getWinLengthOptions = (boardSize: number) => {
     const options = [];
-    
+
     // Win length can't exceed board size
     for (let i = 3; i <= boardSize; i++) {
       options.push(i);
     }
-    
+
     return options;
   };
 
@@ -137,15 +137,15 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
 
   const handleSettingsChange = (newSettings: Partial<GameSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
-    
+
     // If board size changes, ensure win length is valid
     if (newSettings.customRules?.boardSize && 
         updatedSettings.customRules.winLength > newSettings.customRules.boardSize) {
       updatedSettings.customRules.winLength = newSettings.customRules.boardSize;
     }
-    
+
     setSettings(updatedSettings);
-    
+
     if (onSettingsChanged) {
       onSettingsChanged(updatedSettings);
     }
@@ -153,7 +153,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
 
   const handleCustomRuleChange = (key: keyof CustomRules, value: any) => {
     const updatedRules = { ...settings.customRules, [key]: value };
-    
+
     // Handle interdependent settings
     if (key === 'boardSize') {
       // Ensure win length doesn't exceed board size
@@ -165,7 +165,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
         updatedRules.targetSum = value === 4 ? 34 : 45;
       }
     }
-    
+
     // If win condition changes, update related settings
     if (key === 'winCondition') {
       if (value === 'sum') {
@@ -173,54 +173,53 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
         updatedRules.targetSum = updatedRules.boardSize > 3 ? 34 : 15;
       }
     }
-    
+
     // Handle rule conflicts and balance
     const conflicts = validateRuleCombination(updatedRules);
     setRuleConflicts(conflicts);
-    
+
     // Calculate game balance based on rule combination
     const balance = calculateGameBalance(updatedRules);
     setGameBalance(balance);
     updatedRules.balanceModifier = balance;
-    
+
     handleSettingsChange({ customRules: updatedRules });
   };
-  
+
   // Validate rule combinations and return any conflicts
   const validateRuleCombination = (rules: CustomRules): string[] => {
     const conflicts: string[] = [];
-    
+
     // Check for potential rule conflicts
     if (rules.allowOverwriting && rules.randomSwaps) {
       conflicts.push('Combining Feral and Chaos modes may lead to unpredictable gameplay');
     }
-    
+
     if (rules.winCondition === 'sum' && rules.randomSwaps) {
       conflicts.push('Random swaps may disrupt numerical win conditions');
     }
-    
+
     if (rules.inversedWinCondition && rules.winCondition === 'sum') {
       conflicts.push('Misere mode with numerical win conditions may be too complex');
     }
-    
+
     return conflicts;
   };
-  
+
   // Calculate game balance based on rule combination
   const calculateGameBalance = (rules: CustomRules): number => {
     let balance = 1.0;
-    
+
     // Adjust balance based on rule combinations
     if (rules.allowOverwriting) balance *= 1.2; // Feral mode makes winning easier
     if (rules.randomSwaps) balance *= 0.8; // Chaos mode makes winning harder
     if (rules.inversedWinCondition) balance *= 0.9; // Misere mode is slightly harder
     if (rules.winCondition === 'sum') balance *= 0.85; // Numerical mode is harder
-    
+
     // Adjust for board size
     balance *= (3 / rules.boardSize); // Larger boards are harder
-    
+
     return Number(balance.toFixed(2));
-  }
   };
 
   const handleSaveSettings = () => {
@@ -233,11 +232,11 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
       });
       return;
     }
-    
+
     // Save settings
     applyGameSettings(gameId, settings);
     setIsOpen(false);
-    
+
     toast({
       title: "Settings saved",
       description: "Your custom game settings have been saved."
@@ -248,10 +247,10 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
   const getRulePreview = () => {
     const rules = settings.customRules;
     const descriptions = [];
-    
+
     // Board size
     descriptions.push(`${rules.boardSize}x${rules.boardSize} board`);
-    
+
     // Cell behavior
     if (rules.allowOverwriting) {
       descriptions.push('Overwriting allowed (Feral)');
@@ -259,7 +258,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
     if (rules.randomSwaps) {
       descriptions.push(`${rules.swapsPerRound} random swap(s) per round (Chaos)`);
     }
-    
+
     // Win conditions
     if (rules.winCondition === 'line') {
       descriptions.push(`${rules.winLength} in a row`);
@@ -269,7 +268,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
     } else {
       descriptions.push(`Sum to ${rules.targetSum} (Numerical)`);
     }
-    
+
     return descriptions.join(' • ');
   };
 
@@ -290,7 +289,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
               Mix and match rules from different game modes to create your own custom experience.
             </SheetDescription>
           </SheetHeader>
-          
+
           <div className="mt-4 space-y-6">
             {/* Current rule combination preview */}
             <div className="bg-muted/40 p-3 rounded-md">
@@ -333,7 +332,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                  gameBalance > 1.2 ? "Easy" : "Balanced"}
               </p>
             </div>
-            
+
             <Accordion type="single" collapsible className="w-full">
               {/* Board Dimensions */}
               <AccordionItem value="board-dimensions">
@@ -364,7 +363,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              
+
               {/* Cell Behavior */}
               <AccordionItem value="cell-behavior">
                 <AccordionTrigger className="text-sm font-medium">
@@ -385,7 +384,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                         onCheckedChange={(checked) => handleCustomRuleChange('allowOverwriting', checked)}
                       />
                     </div>
-                    
+
                     {/* Random Swaps (Chaos mode) */}
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
@@ -398,7 +397,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                         onCheckedChange={(checked) => handleCustomRuleChange('randomSwaps', checked)}
                       />
                     </div>
-                    
+
                     {/* Swaps per round */}
                     {settings.customRules.randomSwaps && (
                       <div className="space-y-2">
@@ -416,7 +415,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              
+
               {/* Win Conditions */}
               <AccordionItem value="win-conditions">
                 <AccordionTrigger className="text-sm font-medium">
@@ -443,7 +442,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                         </div>
                       </RadioGroup>
                     </div>
-                    
+
                     {/* Line-specific settings */}
                     {settings.customRules.winCondition === 'line' && (
                       <>
@@ -465,7 +464,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                             </SelectContent>
                           </Select>
                         </div>
-                        
+
                         {/* Inverse win condition (Misere) */}
                         <div className="flex items-center justify-between">
                           <div className="space-y-0.5">
@@ -480,7 +479,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                         </div>
                       </>
                     )}
-                    
+
                     {/* Sum-specific settings */}
                     {settings.customRules.winCondition === 'sum' && (
                       <div className="space-y-2">
@@ -509,7 +508,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              
+
               {/* Turn Mechanics */}
               <AccordionItem value="turn-mechanics">
                 <AccordionTrigger className="text-sm font-medium">
@@ -538,7 +537,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              
+
               {/* Opponent Settings */}
               <AccordionItem value="opponent">
                 <AccordionTrigger className="text-sm font-medium">
@@ -561,7 +560,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                         <Label htmlFor="opponent-human">Play against human</Label>
                       </div>
                     </RadioGroup>
-                    
+
                     {settings.opponent === 'ai' && (
                       <div className="space-y-2 pt-2">
                         <Label>AI Difficulty</Label>
@@ -588,7 +587,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              
+
               {/* Time Limit */}
               <AccordionItem value="time-limit">
                 <AccordionTrigger className="text-sm font-medium">
@@ -605,7 +604,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                         onCheckedChange={(checked) => handleSettingsChange({ timeLimit: checked ? 30 : null })}
                       />
                     </div>
-                    
+
                     {settings.timeLimit !== null && (
                       <div className="space-y-2">
                         <Label htmlFor="time-limit">Time Per Move</Label>
@@ -629,7 +628,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              
+
               {/* First Player */}
               <AccordionItem value="first-player">
                 <AccordionTrigger className="text-sm font-medium">
@@ -658,7 +657,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-            
+
             <div className="flex justify-end space-x-2 pt-4">
               <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
               <Button onClick={handleSaveSettings}>Save Settings</Button>
@@ -666,7 +665,7 @@ const CustomGameSettings: React.FC<CustomGameSettingsProps> = ({
           </div>
         </SheetContent>
       </Sheet>
-      
+
       {/* Preview of current settings */}
       {!isMinimal && (
         <div className="mt-4 bg-muted/40 p-3 rounded-md">

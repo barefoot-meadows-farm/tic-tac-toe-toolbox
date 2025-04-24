@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TicTacToeGame } from '@/components/TicTacToeGame';
+import TicTacToeGame from '@/components/TicTacToeGame';
 import CustomGameSettings from '@/components/settings/CustomGameSettings';
 import { useGameSettings } from '@/contexts/GameSettingsContext';
 import { GameSettings } from '@/components/GameStart';

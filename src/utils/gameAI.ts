@@ -90,7 +90,7 @@ class GameBoard {
 }
 
 // Abstract GameRules interface
-abstract class GameRules {
+export abstract class GameRules {
   abstract checkWinner(board: GameBoard, lastMove?: [number, number]): Player;
   abstract evaluateBoard(board: GameBoard, player: Player): number;
   abstract isWinningMove(board: GameBoard, row: number, col: number, player: Player): boolean;
@@ -100,7 +100,7 @@ abstract class GameRules {
 class TraditionalRules extends GameRules {
   checkWinner(board: GameBoard, lastMove?: [number, number]): Player {
     const size = board.size;
-    
+
     // Check rows
     for (let row = 0; row < size; row++) {
       if (board.cells[row][0] !== null && 
@@ -108,7 +108,7 @@ class TraditionalRules extends GameRules {
         return board.cells[row][0];
       }
     }
-    
+
     // Check columns
     for (let col = 0; col < size; col++) {
       if (board.cells[0][col] !== null) {
@@ -124,7 +124,7 @@ class TraditionalRules extends GameRules {
         }
       }
     }
-    
+
     // Check main diagonal
     if (board.cells[0][0] !== null) {
       let allSame = true;
@@ -138,7 +138,7 @@ class TraditionalRules extends GameRules {
         return board.cells[0][0];
       }
     }
-    
+
     // Check other diagonal
     if (board.cells[0][size - 1] !== null) {
       let allSame = true;
@@ -152,13 +152,13 @@ class TraditionalRules extends GameRules {
         return board.cells[0][size - 1];
       }
     }
-    
+
     return null;
   }
 
   evaluateBoard(board: GameBoard, player: Player): number {
     const winner = this.checkWinner(board);
-    
+
     if (winner === player) {
       return 10;
     } else if (winner !== null) {  // Other player won
@@ -172,7 +172,7 @@ class TraditionalRules extends GameRules {
     // Create a temporary board with the move
     const tempBoard = board.clone();
     tempBoard.makeMove(row, col, player);
-    
+
     // Check if this results in a win
     const winner = this.checkWinner(tempBoard);
     return winner === player;
@@ -205,21 +205,21 @@ class MisereRules extends TraditionalRules {
     // A winning move in Misere is one that forces the opponent to complete a line
     const tempBoard = board.clone();
     tempBoard.makeMove(row, col, player);
-    
+
     // If this move forms a line, it's a losing move
     if (super.checkWinner(tempBoard) === player) {
       return false;
     }
-    
+
     // Check if this move forces opponent to complete a line on their next turn
     const opponent = player === 'X' ? 'O' : 'X';
     const emptyCells = tempBoard.getEmptyCells();
-    
+
     // If no empty cells left and no line formed, it's a draw
     if (emptyCells.length === 0) {
       return false;
     }
-    
+
     // Check if ALL opponent's possible next moves would form a line
     return emptyCells.every(([r, c]) => {
       const nextBoard = tempBoard.clone();
@@ -233,23 +233,23 @@ class MisereRules extends TraditionalRules {
 class NumericalRules extends GameRules {
   xValues: number[];
   oValues: number[];
-  
+
   constructor() {
     super();
     this.xValues = [1, 3, 5, 7, 9];  // Odd numbers for X
     this.oValues = [2, 4, 6, 8];     // Even numbers for O
   }
-  
+
   // Helper to convert the board to a numerical representation
   getBoardNumericalValues(board: GameBoard): number[][] {
     const numBoard = Array(board.size).fill(0).map(() => Array(board.size).fill(0));
-    
+
     // Track which values have been used
     const usedXValues: Set<number> = new Set();
     const usedOValues: Set<number> = new Set();
     let nextXIndex = 0;
     let nextOIndex = 0;
-    
+
     for (let row = 0; row < board.size; row++) {
       for (let col = 0; col < board.size; col++) {
         if (board.cells[row][col] === 'X') {
@@ -271,21 +271,21 @@ class NumericalRules extends GameRules {
         }
       }
     }
-    
+
     return numBoard;
   }
-  
+
   checkWinner(board: GameBoard): Player {
     const size = board.size;
     const numBoard = this.getBoardNumericalValues(board);
-    
+
     // Check for magic square (sum of 15) in any row, column, or diagonal
     // Check rows
     for (let row = 0; row < size; row++) {
       let sum = 0;
       let hasPlayer: Player = null;
       let allSamePlayer = true;
-      
+
       for (let col = 0; col < size; col++) {
         sum += numBoard[row][col];
         if (hasPlayer === null && board.cells[row][col] !== null) {
@@ -294,18 +294,18 @@ class NumericalRules extends GameRules {
           allSamePlayer = false;
         }
       }
-      
+
       if (sum === 15 && allSamePlayer && hasPlayer !== null) {
         return hasPlayer;
       }
     }
-    
+
     // Check columns
     for (let col = 0; col < size; col++) {
       let sum = 0;
       let hasPlayer: Player = null;
       let allSamePlayer = true;
-      
+
       for (let row = 0; row < size; row++) {
         sum += numBoard[row][col];
         if (hasPlayer === null && board.cells[row][col] !== null) {
@@ -314,18 +314,18 @@ class NumericalRules extends GameRules {
           allSamePlayer = false;
         }
       }
-      
+
       if (sum === 15 && allSamePlayer && hasPlayer !== null) {
         return hasPlayer;
       }
     }
-    
+
     // Check diagonals
     // Main diagonal
     let sum = 0;
     let hasPlayer: Player = null;
     let allSamePlayer = true;
-    
+
     for (let i = 0; i < size; i++) {
       sum += numBoard[i][i];
       if (hasPlayer === null && board.cells[i][i] !== null) {
@@ -334,16 +334,16 @@ class NumericalRules extends GameRules {
         allSamePlayer = false;
       }
     }
-    
+
     if (sum === 15 && allSamePlayer && hasPlayer !== null) {
       return hasPlayer;
     }
-    
+
     // Other diagonal
     sum = 0;
     hasPlayer = null;
     allSamePlayer = true;
-    
+
     for (let i = 0; i < size; i++) {
       sum += numBoard[i][size - 1 - i];
       if (hasPlayer === null && board.cells[i][size - 1 - i] !== null) {
@@ -352,14 +352,14 @@ class NumericalRules extends GameRules {
         allSamePlayer = false;
       }
     }
-    
+
     if (sum === 15 && allSamePlayer && hasPlayer !== null) {
       return hasPlayer;
     }
-    
+
     return null;
   }
-  
+
   evaluateBoard(board: GameBoard, player: Player): number {
     // Check for winner
     const winner = this.checkWinner(board);
@@ -368,17 +368,17 @@ class NumericalRules extends GameRules {
     } else if (winner !== null) {
       return -10;
     }
-    
+
     // If no winner, calculate potential for forming magic squares
     const numBoard = this.getBoardNumericalValues(board);
     let score = 0;
-    
+
     // Check potential in rows
     for (let row = 0; row < board.size; row++) {
       let sum = 0;
       let emptyCells = 0;
       let playerCells = 0;
-      
+
       for (let col = 0; col < board.size; col++) {
         if (board.cells[row][col] === null) {
           emptyCells++;
@@ -387,24 +387,24 @@ class NumericalRules extends GameRules {
           playerCells++;
         }
       }
-      
+
       // If 2 player cells and 1 empty, and potential for magic square
       if (playerCells === 2 && emptyCells === 1 && (15 - sum) > 0) {
         score += 3;
       }
     }
-    
+
     // Similar checks for columns and diagonals...
     // (Additional evaluation logic for columns and diagonals would go here)
-    
+
     return score;
   }
-  
+
   isWinningMove(board: GameBoard, row: number, col: number, player: Player): boolean {
     // Create a temporary board with the move
     const tempBoard = board.clone();
     tempBoard.makeMove(row, col, player);
-    
+
     // Check if this results in a win
     const winner = this.checkWinner(tempBoard);
     return winner === player;
@@ -416,39 +416,39 @@ class FeralRules extends TraditionalRules {
   constructor() {
     super();
   }
-  
+
   isValidMove(board: GameBoard, row: number, col: number, player: Player): boolean {
     // Check if the move is in bounds
     if (!(0 <= row && row < board.size && 0 <= col && col < board.size)) {
       return false;
     }
-    
+
     // Get current cell value
     const current = board.cells[row][col];
-    
+
     // Valid if empty or contains opponent's mark
     return current === null || (current !== player && current !== null);
   }
-  
+
   evaluateBoard(board: GameBoard, player: Player): number {
     // Get basic evaluation
     const basicEval = super.evaluateBoard(board, player);
-    
+
     // In Feral mode, having more pieces on the board is slightly less valuable
     // since they can be overwritten, but controlling key positions still matters
-    
+
     // Count player's pieces vs opponent's pieces to determine board control
     const opponent = player === 'X' ? 'O' : 'X';
     let playerCount = 0;
     let opponentCount = 0;
     let playerPositionScore = 0;
     let opponentPositionScore = 0;
-    
+
     const center = Math.floor(board.size / 2);
     const isCorner = (r: number, c: number) => {
       return (r === 0 || r === board.size - 1) && (c === 0 || c === board.size - 1);
     };
-    
+
     for (let row = 0; row < board.size; row++) {
       for (let col = 0; col < board.size; col++) {
         if (board.cells[row][col] === player) {
@@ -474,13 +474,13 @@ class FeralRules extends TraditionalRules {
         }
       }
     }
-    
+
     // Calculate position advantage
     const positionAdvantage = (playerPositionScore - opponentPositionScore) * 0.3;
-    
+
     // Give a small bonus for controlling more of the board
     const controlBonus = (playerCount - opponentCount) * 0.5;
-    
+
     return basicEval + controlBonus + positionAdvantage;
   }
 }
@@ -498,14 +498,14 @@ class EasyAI extends AIStrategy {
     if (validMoves.length === 0) {
       return null;  // No valid moves
     }
-    
+
     // Add a response delay of 0.5-0.9 seconds to simulate thinking time
     // This is implemented client-side, so we just return the move
     // The actual delay will be applied when rendering
-    
+
     // Determine if we should attempt a strategic move (20% chance) or random move (80% chance)
     const attemptStrategicMove = Math.random() < 0.2;
-    
+
     if (attemptStrategicMove) {
       // Try to find a winning move or blocking move
       const smartMove = this.findSmartMove(board, player, rules);
@@ -513,11 +513,11 @@ class EasyAI extends AIStrategy {
         return smartMove;
       }
     }
-    
+
     // Make a random move with equal position preference
     return this.makeRandomMove(validMoves, board.size);
   }
-  
+
   private getValidMoves(board: GameBoard, player: Player, rules: GameRules): [number, number][] {
     if (rules instanceof FeralRules) {
       // For Feral mode, we need to check each cell individually
@@ -535,11 +535,11 @@ class EasyAI extends AIStrategy {
       return board.getEmptyCells();
     }
   }
-  
+
   private findSmartMove(board: GameBoard, player: Player, rules: GameRules): [number, number] | null {
     const opponent = player === 'X' ? 'O' : 'X';
     const validMoves = this.getValidMoves(board, player, rules);
-    
+
     // Check for winning moves (with 50% chance of taking it)
     if (Math.random() < 0.5) {
       for (const [row, col] of validMoves) {
@@ -548,7 +548,7 @@ class EasyAI extends AIStrategy {
         }
       }
     }
-    
+
     // Check for blocking moves (with 40% chance of blocking)
     if (Math.random() < 0.4) {
       for (const [row, col] of validMoves) {
@@ -559,7 +559,7 @@ class EasyAI extends AIStrategy {
         } else {
           tempBoard.makeMove(row, col, opponent);
         }
-        
+
         // Check if this would be a win for the opponent
         const winner = rules.checkWinner(tempBoard);
         if (winner === opponent) {
@@ -567,18 +567,18 @@ class EasyAI extends AIStrategy {
         }
       }
     }
-    
+
     return null; // No smart move found or chance failed
   }
-  
+
   private makeRandomMove(validMoves: [number, number][], boardSize: number): [number, number] {
     // Categorize moves by position type
     const centerMoves: [number, number][] = [];
     const cornerMoves: [number, number][] = [];
     const edgeMoves: [number, number][] = [];
-    
+
     const center = Math.floor(boardSize / 2);
-    
+
     for (const [row, col] of validMoves) {
       // Check if this is a center move
       if (row === center && col === center) {
@@ -593,10 +593,10 @@ class EasyAI extends AIStrategy {
         edgeMoves.push([row, col]);
       }
     }
-    
+
     // Equal position preference (33/33/34% for center/corners/edges)
     const positionRoll = Math.random();
-    
+
     if (positionRoll < 0.33 && centerMoves.length > 0) {
       return centerMoves[Math.floor(Math.random() * centerMoves.length)];
     } else if (positionRoll < 0.66 && cornerMoves.length > 0) {
@@ -604,7 +604,7 @@ class EasyAI extends AIStrategy {
     } else if (edgeMoves.length > 0) {
       return edgeMoves[Math.floor(Math.random() * edgeMoves.length)];
     }
-    
+
     // If the preferred position type is empty, choose from all valid moves
     return validMoves[Math.floor(Math.random() * validMoves.length)];
   }
@@ -616,24 +616,24 @@ class MediumAI extends AIStrategy {
   getMove(board: GameBoard, player: Player, rules: GameRules): [number, number] | null {
     // Find opponent player
     const opponent = player === 'X' ? 'O' : 'X';
-    
+
     // Handle Feral mode specially
     if (rules instanceof FeralRules) {
       return this.getFeralMove(board, player, rules, opponent);
     }
-    
+
     // Standard mode logic
     const emptyCells = board.getEmptyCells();
     if (emptyCells.length === 0) {
       return null;
     }
-    
+
     // 50/50 random vs strategic move selection
     const useStrategicMove = Math.random() < 0.5;
-    
+
     if (useStrategicMove) {
       // Try strategic moves with probabilistic decision-making
-      
+
       // 65% chance to make winning moves
       if (Math.random() < 0.65) {
         for (const [row, col] of emptyCells) {
@@ -642,7 +642,7 @@ class MediumAI extends AIStrategy {
           }
         }
       }
-      
+
       // 65% chance to block winning moves
       if (Math.random() < 0.65) {
         for (const [row, col] of emptyCells) {
@@ -651,7 +651,7 @@ class MediumAI extends AIStrategy {
           }
         }
       }
-      
+
       // 50% chance to create/block forks with single-move look-ahead
       if (Math.random() < 0.5) {
         // Check for fork creation
@@ -659,20 +659,20 @@ class MediumAI extends AIStrategy {
         if (forkMove) {
           return forkMove;
         }
-        
+
         // Check for blocking opponent's fork
         const blockForkMove = this.findForkMove(board, opponent, rules);
         if (blockForkMove) {
           return blockForkMove;
         }
       }
-      
+
       // 60% chance to take center when available
       const center = Math.floor(board.size / 2);
       if (Math.random() < 0.6 && board.isValidMove(center, center)) {
         return [center, center];
       }
-      
+
       // 50% chance to prioritize corners
       if (Math.random() < 0.5) {
         const corners = [
@@ -681,16 +681,16 @@ class MediumAI extends AIStrategy {
           [board.size - 1, 0], 
           [board.size - 1, board.size - 1]
         ] as [number, number][];
-        
+
         const availableCorners = corners.filter(
           ([r, c]) => board.isValidMove(r, c)
         );
-        
+
         if (availableCorners.length > 0) {
           return availableCorners[Math.floor(Math.random() * availableCorners.length)];
         }
       }
-      
+
       // 10% chance for edge selection
       if (Math.random() < 0.1) {
         const edges: [number, number][] = [];
@@ -706,46 +706,46 @@ class MediumAI extends AIStrategy {
             if (board.isValidMove(i, board.size - 1)) edges.push([i, board.size - 1]);
           }
         }
-        
+
         if (edges.length > 0) {
           return edges[Math.floor(Math.random() * edges.length)];
         }
       }
     }
-    
+
     // If no strategic move was made or if random move was chosen,
     // take a random move from all empty cells
     return emptyCells[Math.floor(Math.random() * emptyCells.length)];
   }
-  
+
   // Helper method to find fork moves (two-way winning threats)
   private findForkMove(board: GameBoard, player: Player, rules: GameRules): [number, number] | null {
     const emptyCells = board.getEmptyCells();
-    
+
     for (const [row, col] of emptyCells) {
       // Create a temporary board with this move
       const tempBoard = board.clone();
       tempBoard.makeMove(row, col, player);
-      
+
       // Count potential winning lines after this move
       let winningLines = 0;
       const tempEmptyCells = tempBoard.getEmptyCells();
-      
+
       for (const [r, c] of tempEmptyCells) {
         if (rules.isWinningMove(tempBoard, r, c, player)) {
           winningLines++;
         }
       }
-      
+
       // If there are at least two winning threats, this is a fork
       if (winningLines >= 2) {
         return [row, col];
       }
     }
-    
+
     return null;
   }
-  
+
   private getFeralMove(
     board: GameBoard, 
     player: Player, 
@@ -761,17 +761,17 @@ class MediumAI extends AIStrategy {
         }
       }
     }
-    
+
     if (validMoves.length === 0) {
       return null;
     }
-    
+
     // 50/50 random vs strategic move selection (aligned with Traditional mode)
     const useStrategicMove = Math.random() < 0.5;
-    
+
     if (useStrategicMove) {
       // Try strategic moves with probabilistic decision-making
-      
+
       // 65% chance to make winning moves (aligned with Traditional mode)
       if (Math.random() < 0.65) {
         for (const [row, col] of validMoves) {
@@ -780,7 +780,7 @@ class MediumAI extends AIStrategy {
           }
         }
       }
-      
+
       // 65% chance to block winning moves (aligned with Traditional mode)
       if (Math.random() < 0.65) {
         for (const [row, col] of validMoves) {
@@ -792,7 +792,7 @@ class MediumAI extends AIStrategy {
           }
         }
       }
-      
+
       // 50% chance to create/block forks with single-move look-ahead (aligned with Traditional mode)
       if (Math.random() < 0.5) {
         // Check for fork creation
@@ -800,14 +800,14 @@ class MediumAI extends AIStrategy {
         if (forkMove) {
           return forkMove;
         }
-        
+
         // Check for blocking opponent's fork
         const blockForkMove = this.findForkMove(board, opponent, rules);
         if (blockForkMove) {
           return blockForkMove;
         }
       }
-      
+
       // 60% chance to take center when available (aligned with Traditional mode)
       const center = Math.floor(board.size / 2);
       if (Math.random() < 0.6) {
@@ -816,7 +816,7 @@ class MediumAI extends AIStrategy {
           return [center, center];
         }
       }
-      
+
       // 50% chance to prioritize corners (aligned with Traditional mode)
       if (Math.random() < 0.5) {
         const corners = [
@@ -825,17 +825,17 @@ class MediumAI extends AIStrategy {
           [board.size - 1, 0], 
           [board.size - 1, board.size - 1]
         ] as [number, number][];
-        
+
         // Filter corners that are valid moves (empty or opponent's)
         const availableCorners = corners.filter(
           ([r, c]) => board.cells[r][c] === null || board.cells[r][c] === opponent
         );
-        
+
         if (availableCorners.length > 0) {
           return availableCorners[Math.floor(Math.random() * availableCorners.length)];
         }
       }
-      
+
       // 10% chance for edge selection (aligned with Traditional mode)
       if (Math.random() < 0.1) {
         const edges: [number, number][] = [];
@@ -851,18 +851,18 @@ class MediumAI extends AIStrategy {
             if (board.cells[i][board.size - 1] === null || board.cells[i][board.size - 1] === opponent) edges.push([i, board.size - 1]);
           }
         }
-        
+
         if (edges.length > 0) {
           return edges[Math.floor(Math.random() * edges.length)];
         }
       }
     }
-    
+
     // If no strategic move was made or if random move was chosen,
     // take a random move from all valid moves
     return validMoves[Math.floor(Math.random() * validMoves.length)];
   }
-  
+
   private getFeralStrategyMove(board: GameBoard, player: Player, opponent: Player): [number, number] | null {
     const center = Math.floor(board.size / 2);
     const corners = [
@@ -871,29 +871,29 @@ class MediumAI extends AIStrategy {
       [board.size - 1, 0], 
       [board.size - 1, board.size - 1]
     ] as [number, number][];
-    
+
     // Try to take center if available
     if (board.cells[center][center] === null || board.cells[center][center] === opponent) {
       return [center, center];
     }
-    
+
     // Try to take corners by overwriting if needed
     for (const [row, col] of corners) {
       if (board.cells[row][col] === opponent) {
         return [row, col];
       }
     }
-    
+
     // 4. Take empty center or corners
     if (board.cells[center][center] === null) {
       return [center, center];
     }
-    
+
     const emptyCorners = corners.filter(([r, c]) => board.cells[r][c] === null);
     if (emptyCorners.length > 0) {
       return emptyCorners[Math.floor(Math.random() * emptyCorners.length)];
     }
-    
+
     // 5. Take a random valid move
     return validMoves[Math.floor(Math.random() * validMoves.length)];
   }
@@ -903,21 +903,21 @@ class MediumAI extends AIStrategy {
 class HardAI extends AIStrategy {
   getMove(board: GameBoard, player: Player, rules: GameRules): [number, number] | null {
     const opponent = player === 'X' ? 'O' : 'X';
-    
+
     // Get valid moves based on game mode
     const validMoves = this.getValidMoves(board, player, rules);
     if (validMoves.length === 0) {
       return null;
     }
-    
+
     // Handle Feral mode specially
     if (rules instanceof FeralRules) {
       return this.getFeralMove(board, player, rules, opponent);
     }
-    
+
     // Strategic vs random move selection (90/10 split)
     const useStrategicMove = Math.random() < 0.9;
-    
+
     if (useStrategicMove) {
       // 90% chance to make winning moves
       if (Math.random() < 0.9) {
@@ -927,7 +927,7 @@ class HardAI extends AIStrategy {
           }
         }
       }
-      
+
       // 90% chance to block opponent's winning moves
       if (Math.random() < 0.9) {
         for (const [row, col] of validMoves) {
@@ -936,7 +936,7 @@ class HardAI extends AIStrategy {
           }
         }
       }
-      
+
       // 90% chance to create or block forks with two-move look-ahead
       if (Math.random() < 0.9) {
         // Check for fork creation
@@ -944,22 +944,22 @@ class HardAI extends AIStrategy {
         if (forkMove) {
           return forkMove;
         }
-        
+
         // Check for blocking opponent's fork
         const blockForkMove = this.findAdvancedForkMove(board, opponent, rules);
         if (blockForkMove) {
           return blockForkMove;
         }
       }
-      
+
       // Position preference strategy
       return this.getStrategicPositionMove(board, validMoves);
     }
-    
+
     // Random move (10% chance)
     return validMoves[Math.floor(Math.random() * validMoves.length)];
   }
-  
+
   private getValidMoves(board: GameBoard, player: Player, rules: GameRules): [number, number][] {
     if (rules instanceof FeralRules) {
       // For Feral mode, we need to check each cell individually
@@ -977,7 +977,7 @@ class HardAI extends AIStrategy {
       return board.getEmptyCells();
     }
   }
-  
+
   private createNewBoardWithMove(
     board: GameBoard, 
     row: number, 
@@ -986,68 +986,68 @@ class HardAI extends AIStrategy {
     rules: GameRules
   ): GameBoard {
     const newBoard = board.clone();
-    
+
     // Apply the move using the appropriate game mode
     if (rules instanceof FeralRules) {
       newBoard.makeMove(row, col, player, GameMode.FERAL);
     } else {
       newBoard.makeMove(row, col, player);
     }
-    
+
     return newBoard;
   }
-  
+
   // Advanced fork detection with two-move look-ahead
   private findAdvancedForkMove(board: GameBoard, player: Player, rules: GameRules): [number, number] | null {
     const emptyCells = board.getEmptyCells();
     const opponent = player === 'X' ? 'O' : 'X';
-    
+
     // First, check for immediate fork opportunities
     for (const [row, col] of emptyCells) {
       // Create a temporary board with this move
       const tempBoard = this.createNewBoardWithMove(board, row, col, player, rules);
-      
+
       // Count potential winning lines after this move
       let winningLines = 0;
       const tempEmptyCells = tempBoard.getEmptyCells();
-      
+
       for (const [r, c] of tempEmptyCells) {
         if (rules.isWinningMove(tempBoard, r, c, player)) {
           winningLines++;
         }
       }
-      
+
       // If there are at least two winning threats, this is a fork
       if (winningLines >= 2) {
         return [row, col];
       }
     }
-    
+
     // Second, look two moves ahead for potential forks
     for (const [row1, col1] of emptyCells) {
       // First move by player
       const boardAfterMove1 = this.createNewBoardWithMove(board, row1, col1, player, rules);
       const emptyCellsAfterMove1 = boardAfterMove1.getEmptyCells();
-      
+
       // Simulate opponent's response
       for (const [row2, col2] of emptyCellsAfterMove1) {
         const boardAfterOpponentMove = this.createNewBoardWithMove(boardAfterMove1, row2, col2, opponent, rules);
         const emptyCellsAfterOpponentMove = boardAfterOpponentMove.getEmptyCells();
-        
+
         // Check if any of player's next moves creates a fork
         for (const [row3, col3] of emptyCellsAfterOpponentMove) {
           const boardAfterMove2 = this.createNewBoardWithMove(boardAfterOpponentMove, row3, col3, player, rules);
-          
+
           // Count potential winning lines
           let winningLines = 0;
           const finalEmptyCells = boardAfterMove2.getEmptyCells();
-          
+
           for (const [r, c] of finalEmptyCells) {
             if (rules.isWinningMove(boardAfterMove2, r, c, player)) {
               winningLines++;
             }
           }
-          
+
           // If this sequence leads to a fork, the initial move is good
           if (winningLines >= 2) {
             return [row1, col1];
@@ -1055,19 +1055,19 @@ class HardAI extends AIStrategy {
         }
       }
     }
-    
+
     return null; // No fork move found
   }
-  
+
   // Strategic position selection based on probabilities
   private getStrategicPositionMove(board: GameBoard, validMoves: [number, number][]): [number, number] {
     // Categorize moves by position type
     const centerMoves: [number, number][] = [];
     const cornerMoves: [number, number][] = [];
     const edgeMoves: [number, number][] = [];
-    
+
     const center = Math.floor(board.size / 2);
-    
+
     for (const [row, col] of validMoves) {
       // Check if this is a center move
       if (row === center && col === center) {
@@ -1082,30 +1082,30 @@ class HardAI extends AIStrategy {
         edgeMoves.push([row, col]);
       }
     }
-    
+
     // Apply position preferences based on probabilities
     // 80% preference for center and corners, 10% for edges
     const positionRoll = Math.random();
-    
+
     // Try center first (80% preference when available)
     if (centerMoves.length > 0 && positionRoll < 0.8) {
       return centerMoves[Math.floor(Math.random() * centerMoves.length)];
     }
-    
+
     // Then try corners (80% preference when available)
     if (cornerMoves.length > 0 && positionRoll < 0.8) {
       return cornerMoves[Math.floor(Math.random() * cornerMoves.length)];
     }
-    
+
     // Then try edges (10% preference)
     if (edgeMoves.length > 0 && positionRoll < 0.1) {
       return edgeMoves[Math.floor(Math.random() * edgeMoves.length)];
     }
-    
+
     // If we get here, choose from all available moves
     return validMoves[Math.floor(Math.random() * validMoves.length)];
   }
-  
+
   private getFeralMove(
     board: GameBoard, 
     player: Player, 
@@ -1121,14 +1121,14 @@ class HardAI extends AIStrategy {
         }
       }
     }
-    
+
     if (validMoves.length === 0) {
       return null;
     }
-    
+
     // Strategic vs random move selection (90/10 split - aligned with Traditional mode)
     const useStrategicMove = Math.random() < 0.9;
-    
+
     if (useStrategicMove) {
       // 90% chance to make winning moves (aligned with Traditional mode)
       if (Math.random() < 0.9) {
@@ -1138,7 +1138,7 @@ class HardAI extends AIStrategy {
           }
         }
       }
-      
+
       // 90% chance to block opponent's winning moves
       if (Math.random() < 0.9) {
         const opponentValidMoves: [number, number][] = [];
@@ -1149,12 +1149,12 @@ class HardAI extends AIStrategy {
             }
           }
         }
-        
+
         for (const [row, col] of opponentValidMoves) {
           // Create a temporary board with opponent's move
           const tempBoard = board.clone();
           tempBoard.makeMove(row, col, opponent, GameMode.FERAL);
-          
+
           // Check if this results in a win for opponent
           const winner = rules.checkWinner(tempBoard);
           if (winner === opponent) {
@@ -1163,7 +1163,7 @@ class HardAI extends AIStrategy {
           }
         }
       }
-      
+
       // Position preference strategy for Feral mode
       const center = Math.floor(board.size / 2);
       const corners = [
@@ -1172,7 +1172,7 @@ class HardAI extends AIStrategy {
         [board.size - 1, 0], 
         [board.size - 1, board.size - 1]
       ] as [number, number][];
-      
+
       // 80% preference for center
       if (Math.random() < 0.8) {
         // Try to take center by overwriting if needed
@@ -1180,7 +1180,7 @@ class HardAI extends AIStrategy {
           return [center, center];
         }
       }
-      
+
       // 70% chance to create/block forks with single-move look-ahead (aligned with Traditional mode)
       if (Math.random() < 0.7) {
         // Check for fork creation
@@ -1188,14 +1188,14 @@ class HardAI extends AIStrategy {
         if (forkMove) {
           return forkMove;
         }
-        
+
         // Check for blocking opponent's fork
         const blockForkMove = this.findForkMove(board, opponent, rules);
         if (blockForkMove) {
           return blockForkMove;
         }
       }
-      
+
       // 80% preference for corners (aligned with Traditional mode)
       if (Math.random() < 0.8) {
         // Filter corners that are valid moves (empty or opponent's)
@@ -1204,7 +1204,7 @@ class HardAI extends AIStrategy {
           return validCorners[Math.floor(Math.random() * validCorners.length)];
         }
       }
-      
+
       // 30% preference for edges (aligned with Traditional mode)
       if (Math.random() < 0.3) {
         const edges: [number, number][] = [];
@@ -1220,17 +1220,17 @@ class HardAI extends AIStrategy {
             if (rules.isValidMove(board, i, board.size - 1, player)) edges.push([i, board.size - 1]);
           }
         }
-        
+
         if (edges.length > 0) {
           return edges[Math.floor(Math.random() * edges.length)];
         }
       }
     }
-    
+
     // Random move (10% chance or if no strategic move was made)
     return validMoves[Math.floor(Math.random() * validMoves.length)];
   }
-  
+
   // Minimax algorithm with alpha-beta pruning for evaluation
   private minimax(
     board: GameBoard, 
@@ -1257,119 +1257,119 @@ class HardAI extends AIStrategy {
       }
       return 0;  // Draw
     }
-    
+
     const currentPlayer = isMaximizing ? player : opponent;
-    
+
     // Get valid moves for the current player
     const validMoves = this.getValidMoves(board, currentPlayer, rules);
-    
+
     if (isMaximizing) {
       // AI's turn (maximizing)
       let bestScore = -Infinity;
-      
+
       for (const [row, col] of validMoves) {
         // Create a new board with this move
         const newBoard = this.createNewBoardWithMove(
           board, row, col, currentPlayer, rules
         );
-        
+
         // Recursive call
         const score = this.minimax(
           newBoard, depth + 1, maxDepth, false, player, opponent, rules, alpha, beta
         );
         bestScore = Math.max(bestScore, score);
-        
+
         // Alpha-beta pruning
         alpha = Math.max(alpha, bestScore);
         if (beta <= alpha) {
           break;  // Beta cutoff
         }
       }
-      
+
       return bestScore;
     } else {
       // Opponent's turn (minimizing)
       let bestScore = Infinity;
-      
+
       for (const [row, col] of validMoves) {
         // Create a new board with this move
         const newBoard = this.createNewBoardWithMove(
           board, row, col, currentPlayer, rules
         );
-        
+
         // Recursive call
         const score = this.minimax(
           newBoard, depth + 1, maxDepth, true, player, opponent, rules, alpha, beta
         );
         bestScore = Math.min(bestScore, score);
-        
+
         // Alpha-beta pruning
         beta = Math.min(beta, bestScore);
         if (beta <= alpha) {
           break;  // Alpha cutoff
         }
       }
-      
+
       return bestScore;
     }
   }
-  
+
   // Enhanced board evaluation that considers forks
   private evaluateBoardWithForks(board: GameBoard, player: Player, opponent: Player, rules: GameRules): number {
     const baseEvaluation = rules.evaluateBoard(board, player);
-    
+
     // If there's already a winner or the board is full, return the base evaluation
     if (baseEvaluation !== 0 || board.isFull()) {
       return baseEvaluation;
     }
-    
+
     // Count potential winning lines and forks
     let playerForkCount = 0;
     let opponentForkCount = 0;
-    
+
     // Check for player's forks
     const emptyCells = board.getEmptyCells();
     for (const [row, col] of emptyCells) {
       // Create a temporary board with player's move
       const tempBoard = this.createNewBoardWithMove(board, row, col, player, rules);
-      
+
       // Count potential winning lines after this move
       let winningLines = 0;
       const tempEmptyCells = tempBoard.getEmptyCells();
-      
+
       for (const [r, c] of tempEmptyCells) {
         if (rules.isWinningMove(tempBoard, r, c, player)) {
           winningLines++;
         }
       }
-      
+
       // If there are at least two winning threats, this is a fork
       if (winningLines >= 2) {
         playerForkCount++;
       }
     }
-    
+
     // Check for opponent's forks
     for (const [row, col] of emptyCells) {
       // Create a temporary board with opponent's move
       const tempBoard = this.createNewBoardWithMove(board, row, col, opponent, rules);
-      
+
       // Count potential winning lines after this move
       let winningLines = 0;
       const tempEmptyCells = tempBoard.getEmptyCells();
-      
+
       for (const [r, c] of tempEmptyCells) {
         if (rules.isWinningMove(tempBoard, r, c, opponent)) {
           winningLines++;
         }
       }
-      
+
       // If there are at least two winning threats, this is a fork
       if (winningLines >= 2) {
         opponentForkCount++;
       }
     }
-    
+
     // Adjust evaluation based on fork counts
     // Player forks are good, opponent forks are bad
     return baseEvaluation + (playerForkCount * 2) - (opponentForkCount * 2);
@@ -1421,7 +1421,7 @@ export class TicTacToeAI {
   aiPlayer: Player;
   currentPlayer: Player;
   boardSize: number;
-  
+
   constructor(
     mode: string = 'traditional',
     difficulty: string = 'medium',
@@ -1438,31 +1438,31 @@ export class TicTacToeAI {
     this.aiPlayer = humanPlayer === 'X' ? 'O' : 'X';
     this.currentPlayer = 'X';  // X always goes first
   }
-  
+
   resetGame(): void {
     this.board.reset();
     this.currentPlayer = 'X';
   }
-  
+
   makeHumanMove(row: number, col: number): boolean {
     if (this.currentPlayer !== this.humanPlayer) {
       return false;
     }
-    
+
     // Use appropriate game mode for move validation
     if (!this.board.makeMove(row, col, this.humanPlayer, this.mode as GameMode)) {
       return false;
     }
-    
+
     this.currentPlayer = this.aiPlayer;
     return true;
   }
-  
+
   makeAIMove(): [number, number] | null {
     if (this.currentPlayer !== this.aiPlayer) {
       return null;
     }
-    
+
     const move = this.ai.getMove(this.board, this.aiPlayer, this.rules);
     if (move) {
       const [row, col] = move;
@@ -1473,10 +1473,10 @@ export class TicTacToeAI {
     }
     return null;
   }
-  
+
   checkGameOver(): [boolean, Player | 'draw'] {
     const winner = this.rules.checkWinner(this.board);
-    
+
     if (winner) {
       return [true, winner];
     } else if (this.board.isFull()) {
@@ -1485,7 +1485,7 @@ export class TicTacToeAI {
       return [false, null];
     }
   }
-  
+
   // Helper function to get the board state for React components
   getBoardState(): Board {
     return this.board.cells;
@@ -1511,17 +1511,17 @@ export const getAIMove = (
   // Get AI configuration from settings
   const difficulty = gameSettings?.difficulty || 'medium';
   const boardSize = board.length;
-  
+
   // Create a board from the current state
   const gameBoard = new GameBoard(boardSize);
   gameBoard.cells = [...board];
-  
+
   // Get the appropriate rules for this game variant
   const rules = RulesFactory.createRules(variant);
-  
+
   // Create the AI
   const ai = AIFactory.createAI(difficulty);
-  
+
   // Get the AI's move
   return ai.getMove(gameBoard, currentPlayer, rules);
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GameRules } from '../gameAI';
-import FeralRules from '../utils/ai/feralAI';
+import FeralRules from '../src/utils/ai/feralAI';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -13,12 +13,12 @@ const FeralTicTacToe = () => {
   const [player2Type, setPlayer2Type] = useState('human');
   const [difficulty, setDifficulty] = useState('medium');
   const [cpuDelay, setCpuDelay] = useState(800);
-  
+
   // Helper function to get cell overwrite count
   const getCellOverwriteCount = (row, col, player) => {
     return feralRules.getOverwriteCount(row, col, player);
   };
-  
+
   // Game state
   const [board, setBoard] = useState([]);
   const [feralRules] = useState(new FeralRules());
@@ -41,11 +41,11 @@ const FeralTicTacToe = () => {
   // Computer player logic
   useEffect(() => {
     if (!gameStarted || gameStatus !== 'Game in progress') return;
-    
+
     const isCurrentPlayerComputer = 
       (currentPlayer === 'X' && player1Type === 'computer') || 
       (currentPlayer === 'O' && player2Type === 'computer');
-    
+
     if (isCurrentPlayerComputer) {
       const timer = setTimeout(() => {
         makeComputerMove();
@@ -96,20 +96,20 @@ const FeralTicTacToe = () => {
     if (!gameStarted || gameStatus !== 'Game in progress') {
       return;
     }
-    
+
     const row = Math.floor(index / boardSize);
     const col = index % boardSize;
-    
+
     // Check if cell is locked (both players have used all their overwrites)
     if (feralRules.isCellLocked(row, col)) {
       return;
     }
-    
+
     // Check if player can overwrite this cell
     if (!feralRules.canOverwriteCell(row, col, currentPlayer)) {
       return;
     }
-    
+
     // In Feral Tic-Tac-Toe, players can place their mark on empty cells or overwrite existing marks
     makeMove(index);
   };
@@ -120,12 +120,12 @@ const FeralTicTacToe = () => {
     const row = Math.floor(index / boardSize);
     const col = index % boardSize;
     const wasOverwrite = newBoard[index] !== null;
-    
+
     // Check if the move is valid according to FeralRules
     if (!feralRules.canOverwriteCell(row, col, currentPlayer)) {
       return; // Move is not valid, don't proceed
     }
-    
+
     // If this is an overwrite, update the global overwrite counter
     if (wasOverwrite) {
       setOverwriteCount({
@@ -133,29 +133,29 @@ const FeralTicTacToe = () => {
         [currentPlayer]: overwriteCount[currentPlayer] + 1
       });
     }
-    
+
     // Update the board
     newBoard[index] = currentPlayer;
     setBoard(newBoard);
-    
+
     // Record the overwrite in the FeralRules instance
     // This will increment the counter for this cell and player
     feralRules.recordOverwrite(row, col, currentPlayer);
-    
+
     // Update move history
     const newMoveHistory = [...moveHistory, { player: currentPlayer, position: index, wasOverwrite }];
     setMoveHistory(newMoveHistory);
-    
+
     // Set last move for highlighting
     setLastMove(index);
-    
+
     // Animate the placement
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 300);
-    
+
     // Add to history
     addToHistory(`Player ${currentPlayer} ${wasOverwrite ? 'overwrote' : 'placed'} at position ${index}`);
-    
+
     // Check for winner
     const winner = checkWinner(newBoard, index);
     if (winner) {
@@ -168,7 +168,7 @@ const FeralTicTacToe = () => {
       }
       return;
     }
-    
+
     // Switch to next player
     setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
   };
@@ -176,7 +176,7 @@ const FeralTicTacToe = () => {
   // Computer player move
   const makeComputerMove = () => {
     let moveIndex;
-    
+
     if (difficulty === 'easy') {
       // Easy: Random move, might overwrite randomly
       // Get all valid moves
@@ -188,7 +188,7 @@ const FeralTicTacToe = () => {
           validMoves.push(i);
         }
       }
-      
+
       // Choose a random valid move
       if (validMoves.length > 0) {
         moveIndex = validMoves[Math.floor(Math.random() * validMoves.length)];
@@ -200,7 +200,7 @@ const FeralTicTacToe = () => {
       // Medium/Hard: Strategic move
       moveIndex = findStrategicMove(difficulty === 'hard');
     }
-    
+
     makeMove(moveIndex);
   };
 
@@ -208,7 +208,7 @@ const FeralTicTacToe = () => {
   const findStrategicMove = (isHardMode) => {
     const currentMark = currentPlayer;
     const opponentMark = currentPlayer === 'X' ? 'O' : 'X';
-    
+
     // Check if we can win in the next move
     for (let i = 0; i < board.length; i++) {
       const tempBoard = [...board];
@@ -217,7 +217,7 @@ const FeralTicTacToe = () => {
         return i;
       }
     }
-    
+
     // Check if opponent can win in their next move and block
     for (let i = 0; i < board.length; i++) {
       const tempBoard = [...board];
@@ -226,20 +226,20 @@ const FeralTicTacToe = () => {
         return i;
       }
     }
-    
+
     if (isHardMode) {
       // Try to create forks (two ways to win)
       for (let i = 0; i < board.length; i++) {
         const tempBoard = [...board];
         // Skip if we're not overwriting our own mark
         if (tempBoard[i] === currentMark) continue;
-        
+
         tempBoard[i] = currentMark;
         if (countWinningDirections(tempBoard, i, currentMark) >= 2) {
           return i;
         }
       }
-      
+
       // Try to block opponent's forks
       // First, find squares that could create forks for opponent
       const potentialForks = [];
@@ -247,31 +247,31 @@ const FeralTicTacToe = () => {
         const tempBoard = [...board];
         // Skip if we're not overwriting our own mark
         if (tempBoard[i] === opponentMark) continue;
-        
+
         tempBoard[i] = opponentMark;
         if (countWinningDirections(tempBoard, i, opponentMark) >= 2) {
           potentialForks.push(i);
         }
       }
-      
+
       if (potentialForks.length > 0) {
         // If there's only one potential fork, block it
         if (potentialForks.length === 1) {
           return potentialForks[0];
         }
-        
+
         // If there are multiple potential forks, try to create a threat
         // that will force the opponent to defend rather than create a fork
         for (let i = 0; i < board.length; i++) {
           if (board[i] !== null && board[i] !== currentMark) continue;
-          
+
           const tempBoard = [...board];
           tempBoard[i] = currentMark;
-          
+
           let canWinNextTurn = false;
           for (let j = 0; j < board.length; j++) {
             if (tempBoard[j] !== null) continue;
-            
+
             const tempBoard2 = [...tempBoard];
             tempBoard2[j] = currentMark;
             if (checkWinner(tempBoard2)) {
@@ -279,37 +279,37 @@ const FeralTicTacToe = () => {
               break;
             }
           }
-          
+
           if (canWinNextTurn) {
             return i;
           }
         }
-        
+
         // If we can't create a threat, just block one of the forks
         return potentialForks[0];
       }
     }
-    
+
     // Try to take center
     const center = Math.floor(board.length / 2);
     if (boardSize % 2 === 1 && (board[center] === null || board[center] === opponentMark)) {
       return center;
     }
-    
+
     // Try to take corners if empty or opponent's
     const corners = [0, boardSize - 1, board.length - boardSize, board.length - 1];
     const availableCorners = corners.filter(i => board[i] !== currentMark);
     if (availableCorners.length > 0) {
       return availableCorners[Math.floor(Math.random() * availableCorners.length)];
     }
-    
+
     // Take any open space or overwrite opponent's marks
     const availableSpaces = Array.from({length: board.length}, (_, i) => i)
       .filter(i => board[i] !== currentMark);
     if (availableSpaces.length > 0) {
       return availableSpaces[Math.floor(Math.random() * availableSpaces.length)];
     }
-    
+
     // If all else fails, overwrite own mark (this should rarely happen)
     return Math.floor(Math.random() * board.length);
   };
@@ -319,31 +319,31 @@ const FeralTicTacToe = () => {
     const row = Math.floor(pos / boardSize);
     const col = pos % boardSize;
     let count = 0;
-    
+
     // Define directions: horizontal, vertical, diagonal down-right, diagonal down-left
     const directions = [
       [0, 1], [1, 0], [1, 1], [1, -1]
     ];
-    
+
     for (const [dx, dy] of directions) {
       let inARow = 1; // Start with 1 for the current position
-      
+
       // Look in both directions along this line
       for (let dir = -1; dir <= 1; dir += 2) {
         if (dir === 0) continue; // Skip the center point
-        
+
         // Look ahead by winLength - 1 positions
         for (let step = 1; step < winLength; step++) {
           const newRow = row + step * dir * dx;
           const newCol = col + step * dir * dy;
-          
+
           // Check bounds
           if (newRow < 0 || newRow >= boardSize || newCol < 0 || newCol >= boardSize) {
             break;
           }
-          
+
           const newPos = newRow * boardSize + newCol;
-          
+
           // If position has our mark or is empty, count it as potential
           if (boardState[newPos] === mark || boardState[newPos] === null) {
             inARow++;
@@ -352,13 +352,13 @@ const FeralTicTacToe = () => {
           }
         }
       }
-      
+
       // If we have enough potential spaces in a row to win
       if (inARow >= winLength) {
         count++;
       }
     }
-    
+
     return count;
   };
 
@@ -373,18 +373,18 @@ const FeralTicTacToe = () => {
       }
       board2D.push(row);
     }
-    
+
     // Create a GameBoard-like object for FeralRules
     const gameBoard = {
       size: boardSize,
       cells: board2D
     };
-    
+
     // Use FeralRules to check for a winner
     const lastMove = lastMoveIndex !== undefined ? 
       [Math.floor(lastMoveIndex / boardSize), lastMoveIndex % boardSize] : undefined;
     const winner = feralRules.checkWinner(gameBoard, lastMove);
-    
+
     // If we have a winner, find the winning sequence for highlighting
     if (winner) {
       // Find the winning sequence by checking all possible lines
@@ -394,43 +394,43 @@ const FeralTicTacToe = () => {
       }
       return winner;
     }
-    
+
     return null;
   };
-  
+
   // Helper function to find the winning sequence
   const findWinningSequence = (boardState, mark) => {
     for (let pos = 0; pos < boardState.length; pos++) {
       if (boardState[pos] !== mark) continue;
-      
+
       const row = Math.floor(pos / boardSize);
       const col = pos % boardSize;
-      
+
       // Define directions: horizontal, vertical, diagonal down-right, diagonal down-left
       const directions = [
         [0, 1], [1, 0], [1, 1], [1, -1]
       ];
-      
+
       for (const [dx, dy] of directions) {
         let inARow = 1; // Start with 1 for the current position
         const sequence = [pos];
-        
+
         // Look in both directions along this line
         for (let dir = -1; dir <= 1; dir += 2) {
           if (dir === 0) continue; // Skip the center point
-          
+
           // Look ahead by winLength - 1 positions
           for (let step = 1; step < winLength; step++) {
             const newRow = row + step * dir * dx;
             const newCol = col + step * dir * dy;
-            
+
             // Check bounds
             if (newRow < 0 || newRow >= boardSize || newCol < 0 || newCol >= boardSize) {
               break;
             }
-            
+
             const newPos = newRow * boardSize + newCol;
-            
+
             // If position has same mark, count it
             if (boardState[newPos] === mark) {
               inARow++;
@@ -440,14 +440,14 @@ const FeralTicTacToe = () => {
             }
           }
         }
-        
+
         // Check if we have a winner
         if (inARow >= winLength) {
           return sequence;
         }
       }
     }
-    
+
     return [];
   };
 
@@ -491,7 +491,7 @@ const FeralTicTacToe = () => {
             {/* Main cell content */}
             {cell === 'X' && <span className="text-primary">{cell}</span>}
             {cell === 'O' && <span className="text-accent-foreground">{cell}</span>}
-            
+
             {/* Lock icon or overwrite counters */}
             {feralRules.isCellLocked(Math.floor(index / boardSize), index % boardSize) ? (
               <div className="absolute inset-0 flex items-center justify-center bg-background/50 transition-opacity duration-300">
@@ -531,7 +531,7 @@ const FeralTicTacToe = () => {
     if (count === 2) return player === 'X' ? 'bg-blue-100' : 'bg-red-100';
     return player === 'X' ? 'bg-blue-200' : 'bg-red-200';
   };
-  
+
   // Check if a cell can be overwritten by the current player
   const canOverwriteCell = (index) => {
     const row = Math.floor(index / boardSize);
@@ -542,7 +542,7 @@ const FeralTicTacToe = () => {
   return (
     <div className="flex flex-col items-center p-4 max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold mb-4">Feral Tic-Tac-Toe</h1>
-      
+
       <div className="w-full bg-blue-100/80 p-4 rounded-lg mb-6">
         <h2 className="text-xl font-semibold mb-2">Game Rules:</h2>
         <p className="text-sm mb-1">• Players take turns placing X or O on the grid</p>
@@ -550,15 +550,15 @@ const FeralTicTacToe = () => {
         <p className="text-sm mb-1">• Get {winLength} in a row (horizontally, vertically, or diagonally) to win</p>
         <p className="text-sm">• Board can be {boardSize}×{boardSize}</p>
       </div>
-      
+
       {!gameStarted ? (
         <div className="w-full bg-white p-6 rounded-lg shadow-md mb-6">
           <h2 className="text-2xl font-bold mb-4 text-center">Game Settings</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-bold mb-3 text-lg">Board Options</h3>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Board Size:</label>
                 <select 
@@ -577,7 +577,7 @@ const FeralTicTacToe = () => {
                   <option value={4}>4×4</option>
                 </select>
               </div>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Win Condition:</label>
                 <select 
@@ -590,10 +590,10 @@ const FeralTicTacToe = () => {
                 </select>
               </div>
             </div>
-            
+
             <div>
               <h3 className="font-bold mb-3 text-lg">Player Options</h3>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Player X:</label>
                 <select 
@@ -605,7 +605,7 @@ const FeralTicTacToe = () => {
                   <option value="computer">Computer</option>
                 </select>
               </div>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Player O:</label>
                 <select 
@@ -618,11 +618,11 @@ const FeralTicTacToe = () => {
                 </select>
               </div>
             </div>
-            
+
             {(player1Type === 'computer' || player2Type === 'computer') && (
               <div className="md:col-span-2">
                 <h3 className="font-bold mb-3 text-lg">Computer Settings</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Computer Difficulty:</label>
@@ -636,7 +636,7 @@ const FeralTicTacToe = () => {
                       <option value="hard">Hard</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-1">CPU Move Delay (ms):</label>
                     <input 
@@ -654,7 +654,7 @@ const FeralTicTacToe = () => {
               </div>
             )}
           </div>
-          
+
           <div className="flex justify-center mt-6">
             <Button 
               className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold py-2 px-6 rounded text-lg"
@@ -680,7 +680,7 @@ const FeralTicTacToe = () => {
                 </span>
               </div>
             </div>
-            
+
             <div className="text-center mb-4">
               <div className="text-lg font-semibold text-foreground">
                 {gameStatus === 'Game in progress' 
@@ -688,9 +688,9 @@ const FeralTicTacToe = () => {
                   : gameStatus}
               </div>
             </div>
-            
+
             {renderBoard()}
-            
+
             <div className="flex justify-center gap-4 mt-6">
               <Button 
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold py-2 px-4 rounded"
@@ -709,7 +709,7 @@ const FeralTicTacToe = () => {
               </Button>
             </div>
           </div>
-          
+
           <div className="md:w-2/5">
             <div className="bg-background/80 p-4 rounded-lg mb-4 border border-border">
               <h3 className="font-bold mb-2">Current Settings</h3>
@@ -724,7 +724,7 @@ const FeralTicTacToe = () => {
                 </>
               )}
             </div>
-            
+
             <div className="bg-background/80 p-4 rounded-lg mb-4 border border-border">
               <h3 className="font-bold mb-2">Overwrite Stats</h3>
               <p><strong>Player X overwrites:</strong> {overwriteCount.X}</p>
@@ -734,7 +734,7 @@ const FeralTicTacToe = () => {
                 <p className="text-red-600">O: <span className="font-mono">■</span> = 1/3, <span className="font-mono">■■</span> = 2/3, <span className="font-mono">■■■</span> = 3/3 (locked)</p>
               </div>
             </div>
-            
+
             <div className="bg-background/80 p-4 rounded-lg border border-border">
               <h3 className="font-bold mb-2">Game History</h3>
               <div className="h-48 overflow-y-auto text-sm text-foreground">
@@ -752,4 +752,3 @@ const FeralTicTacToe = () => {
 };
 
 export default FeralTicTacToe;
-
