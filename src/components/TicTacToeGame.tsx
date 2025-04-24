@@ -707,7 +707,7 @@ const TicTacToeGame: React.FC<TicTacToeGameProps> = ({
                 className={cn(
                   "w-14 h-14 mx-auto border-2 rounded-md flex items-center justify-center font-bold text-3xl",
                   variant === 'misere' 
-                    ? (winner === 'X' ? "border-primary text-primary" : "border-red-500 text-red-500")
+                    ? (winner === 'X' ? "border-red-500 text-red-500" : "border-primary text-primary")
                     : (winner === 'X' ? "border-primary text-primary" : "border-accent-foreground text-accent-foreground")
                 )}
               >
